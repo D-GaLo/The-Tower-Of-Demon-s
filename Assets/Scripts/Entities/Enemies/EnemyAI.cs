@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class EnemyAI : MonoBehaviour {
     public Transform player;
@@ -7,7 +6,6 @@ public class EnemyAI : MonoBehaviour {
     public float speed = 2f;
 
     void Start() {
-        // Si no asignaste el jugador, intenta buscarlo por Tag
         if (player == null) {
             GameObject p = GameObject.FindGameObjectWithTag("Player");
             if(p != null) player = p.transform;
@@ -15,7 +13,8 @@ public class EnemyAI : MonoBehaviour {
     }
 
     void Update() {
-        if (player == null) return;
+        // Si el tiempo está detenido (en combate), el enemigo no se mueve
+        if (player == null || Time.timeScale == 0) return;
 
         float distance = Vector2.Distance(transform.position, player.position);
 
@@ -26,8 +25,10 @@ public class EnemyAI : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D other) {
         if (other.CompareTag("Player")) {
-            Debug.Log("El enemigo te alcanzó. ¡Modo combate!");
-            SceneManager.LoadScene("Combate"); // Cambio a escena de combate 
+            // Regla del GDD: Al entrar en contacto con el enemigo, iniciar combate
+            if (GameFlowController.Instance != null) {
+                GameFlowController.Instance.IniciarCombate(gameObject);
+            }
         }
     }
 }

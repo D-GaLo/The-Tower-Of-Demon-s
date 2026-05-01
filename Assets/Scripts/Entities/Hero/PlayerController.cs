@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class PlayerController : MonoBehaviour {
@@ -24,7 +23,9 @@ public class PlayerController : MonoBehaviour {
     }
 
     void Update() {
-        // Capturamos el input
+        // No permitimos inputs si el juego está en pausa (combate)
+        if (Time.timeScale == 0) return;
+
         inputMovimiento.x = Input.GetAxisRaw("Horizontal");
         inputMovimiento.y = Input.GetAxisRaw("Vertical");
 
@@ -38,7 +39,10 @@ public class PlayerController : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        // Movimiento físico profesional: evita atravesar paredes
+        if (Time.timeScale == 0) {
+            rb.velocity = Vector2.zero; // Detiene resbalones si se pausa
+            return;
+        }
         rb.velocity = inputMovimiento.normalized * speed;
     }
 
@@ -58,7 +62,8 @@ public class PlayerController : MonoBehaviour {
             espadaVisual.SetActive(true);
             float tiempo = 0;
             while(tiempo < duracionAtaque) {
-                tiempo += Time.deltaTime;
+                // Time.deltaTime se detiene en pausa, lo cual es correcto aquí
+                tiempo += Time.deltaTime; 
                 float progresoArco = Mathf.Lerp(90, -90, tiempo / duracionAtaque);
                 espadaVisual.transform.localRotation = Quaternion.Euler(0, 0, anguloBase + progresoArco);
                 yield return null;
@@ -71,7 +76,11 @@ public class PlayerController : MonoBehaviour {
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(transform.position, attackRange);
         foreach(Collider2D enemy in hitEnemies) {
             if(enemy.CompareTag("Enemy")) {
-                SceneManager.LoadScene("Combate");
+                // Llamamos al GameFlowController en lugar de cargar escena
+                if (GameFlowController.Instance != null) {
+                    GameFlowController.Instance.IniciarCombate(enemy.gameObject);
+                }
+                break; // Solo atacamos a un enemigo a la vez para iniciar la pelea
             }
         }
     }

@@ -45,6 +45,7 @@ GameObject:
   - component: {fileID: 7132908071884512929}
   - component: {fileID: 8021895026843381267}
   - component: {fileID: 7457547995742996091}
+  - component: {fileID: 7842492579454285924}
   m_Layer: 3
   m_Name: Merlin
   m_TagString: Untagged
@@ -196,6 +197,30 @@ CapsuleCollider2D:
   m_Offset: {x: -0.010825441, y: -0.3707677}
   m_Size: {x: 0.57781667, y: 0.2584709}
   m_Direction: 1
+--- !u!114 &7842492579454285924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401155980800128621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6146ae558e1355f79b2128ebdc67a86e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitName: Merlin
+  unitClass: 0
+  unitPosition: 0
+  maxHP: 50
+  currentHP: 50
+  attack: 15
+  defense: 5
+  speed: 15
+  maxEnergy: 100
+  currentEnergy: 0
+  mastery: 0
+  equippedWeapon: {fileID: 0}
 --- !u!1 &1832964516616114892
 GameObject:
   m_ObjectHideFlags: 0
@@ -209,6 +234,7 @@ GameObject:
   - component: {fileID: 5506960844011351391}
   - component: {fileID: 34740301740176253}
   - component: {fileID: 8747318501110468466}
+  - component: {fileID: 3648510725215140756}
   m_Layer: 3
   m_Name: Heracles
   m_TagString: Untagged
@@ -360,6 +386,30 @@ CapsuleCollider2D:
   m_Offset: {x: -0.006571108, y: -0.2989481}
   m_Size: {x: 0.7121591, y: 0.38499102}
   m_Direction: 1
+--- !u!114 &3648510725215140756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832964516616114892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6146ae558e1355f79b2128ebdc67a86e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitName: Heracles
+  unitClass: 0
+  unitPosition: 0
+  maxHP: 50
+  currentHP: 50
+  attack: 15
+  defense: 5
+  speed: 5
+  maxEnergy: 100
+  currentEnergy: 0
+  mastery: 0
+  equippedWeapon: {fileID: 0}
 --- !u!1 &3583947105224967161
 GameObject:
   m_ObjectHideFlags: 0
@@ -373,6 +423,7 @@ GameObject:
   - component: {fileID: 2883089204059241589}
   - component: {fileID: 160965359598921125}
   - component: {fileID: 8567868412981817616}
+  - component: {fileID: 1552632958753716227}
   m_Layer: 3
   m_Name: Sieg
   m_TagString: Player
@@ -527,6 +578,30 @@ CapsuleCollider2D:
   m_Offset: {x: -0.0065710675, y: -0.31518567}
   m_Size: {x: 0.7121588, y: 0.3416887}
   m_Direction: 1
+--- !u!114 &1552632958753716227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3583947105224967161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6146ae558e1355f79b2128ebdc67a86e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitName: Sleg
+  unitClass: 0
+  unitPosition: 0
+  maxHP: 50
+  currentHP: 50
+  attack: 15
+  defense: 5
+  speed: 10
+  maxEnergy: 100
+  currentEnergy: 0
+  mastery: 0
+  equippedWeapon: {fileID: 0}
 --- !u!1 &5783101912196704239
 GameObject:
   m_ObjectHideFlags: 0

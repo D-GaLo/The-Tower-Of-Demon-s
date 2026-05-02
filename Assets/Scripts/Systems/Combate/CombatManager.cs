@@ -1,8 +1,9 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq; // Necesario para ordenar listas fácilmente
 
-public enum CombatState { START, PLAYER_TURN, ENEMY_TURN, WON, LOST }
+public enum CombatState { START, WAITING_FOR_INPUT, BUSY, WON, LOST }
 
 public class CombatManager : MonoBehaviour {
     public static CombatManager Instance;
@@ -15,11 +16,15 @@ public class CombatManager : MonoBehaviour {
     public Transform enemyPosition;   
 
     [Header("UI Específica")]
-    [Tooltip("Arrastra aquí el Panel que contiene los botones de Atacar, Defender, etc.")]
     public GameObject panelBotonesAccion; 
 
     private Vector3 enemyOriginalPosition;
     private Dictionary<GameObject, Vector3> heroOriginalPositions = new Dictionary<GameObject, Vector3>();
+    private Dictionary<HeroStats, bool> heroesDefendiendo = new Dictionary<HeroStats, bool>();
+
+    // --- NUEVO: Sistema de Turnos Dinámicos ---
+    private List<GameObject> turnQueue = new List<GameObject>();
+    private GameObject currentActor; // El que está atacando en este momento
 
     void Awake() {
         if (Instance == null) Instance = this;
@@ -30,177 +35,241 @@ public class CombatManager : MonoBehaviour {
         currentEnemy = enemy;
         state = CombatState.START;
         
-        // Escondemos los botones mientras se configura todo
         if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
-        
         StartCoroutine(CombatSequence());
     }
 
     IEnumerator CombatSequence() {
-        Debug.Log("Configurando arena para pelear contra: " + currentEnemy.name);
+        Debug.Log("Teletransportando y preparando arena...");
         
         enemyOriginalPosition = currentEnemy.transform.position; 
         currentEnemy.transform.position = enemyPosition.position; 
 
         HeroStats[] activeHeroes = FindObjectsOfType<HeroStats>(); 
         heroOriginalPositions.Clear(); 
+        heroesDefendiendo.Clear(); 
 
         for (int i = 0; i < activeHeroes.Length && i < heroPositions.Length; i++) {
             GameObject heroObj = activeHeroes[i].gameObject;
             heroOriginalPositions[heroObj] = heroObj.transform.position; 
-            heroObj.transform.position = heroPositions[i].position;      
+            heroObj.transform.position = heroPositions[i].position;
+            heroesDefendiendo[activeHeroes[i]] = false; 
         }
 
         yield return new WaitForSecondsRealtime(1f); 
 
-        state = CombatState.PLAYER_TURN;
-        PlayerTurn();
+        // En lugar de ir directo al jugador, calculamos los turnos
+        CalcularOrdenDeTurnos();
+        AvanzarTurno();
     }
 
-    void PlayerTurn() {
-        Debug.Log("Turno del Jugador. Esperando acción...");
-        // ¡Aquí encendemos los botones para que puedas decidir!
-        if (panelBotonesAccion != null) panelBotonesAccion.SetActive(true);
+    // --- MAGIA: ORDENAR POR VELOCIDAD ---
+    void CalcularOrdenDeTurnos() {
+        turnQueue.Clear();
+        
+        // Agregamos a todos los héroes vivos
+        HeroStats[] heroes = FindObjectsOfType<HeroStats>();
+        foreach(var h in heroes) {
+            if (h.currentHP > 0) turnQueue.Add(h.gameObject);
+        }
+
+        // Agregamos al enemigo (si está vivo)
+        EnemyStats eStats = currentEnemy.GetComponent<EnemyStats>();
+        if (eStats != null && eStats.currentHP > 0) {
+            turnQueue.Add(currentEnemy);
+        }
+
+        // Ordenamos la lista de mayor Velocidad a menor Velocidad
+        turnQueue.Sort((actorA, actorB) => GetSpeed(actorB).CompareTo(GetSpeed(actorA)));
+
+        Debug.Log("--- NUEVA RONDA ---");
+        foreach(var actor in turnQueue) {
+            Debug.Log($"En la fila: {actor.name} (Velocidad: {GetSpeed(actor)})");
+        }
     }
 
+    // Función auxiliar para leer la velocidad sin importar si es héroe o enemigo
+    int GetSpeed(GameObject actor) {
+        HeroStats hs = actor.GetComponent<HeroStats>();
+        if (hs != null) return hs.speed;
+        EnemyStats es = actor.GetComponent<EnemyStats>();
+        if (es != null) return es.speed;
+        return 0;
+    }
+
+    // --- CONTROLADOR DE TURNOS ---
+    void AvanzarTurno() {
+        // 1. Revisar si el combate ya terminó
+        if (RevisarVictoriaODerrota()) return;
+
+        // 2. Si la fila se vació, volvemos a calcular una nueva ronda
+        if (turnQueue.Count == 0) {
+            CalcularOrdenDeTurnos();
+        }
+
+        // 3. Sacamos al primero de la fila
+        currentActor = turnQueue[0];
+        turnQueue.RemoveAt(0);
+
+        // Si por alguna razón el que sigue ya está muerto, saltamos su turno
+        if (EstaMuerto(currentActor)) {
+            AvanzarTurno();
+            return;
+        }
+
+        // 4. ¿De quién es el turno?
+        HeroStats heroActor = currentActor.GetComponent<HeroStats>();
+        if (heroActor != null) {
+            // ES TURNO DE UN HÉROE
+            state = CombatState.WAITING_FOR_INPUT;
+            Debug.Log($"¡Es turno de {heroActor.unitName}! Esperando acción...");
+            if (panelBotonesAccion != null) panelBotonesAccion.SetActive(true);
+        } else {
+            // ES TURNO DEL ENEMIGO
+            state = CombatState.BUSY;
+            if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
+            StartCoroutine(EnemyTurnRoutine());
+        }
+    }
+
+    bool EstaMuerto(GameObject actor) {
+        HeroStats hs = actor.GetComponent<HeroStats>();
+        if (hs != null) return hs.currentHP <= 0;
+        EnemyStats es = actor.GetComponent<EnemyStats>();
+        if (es != null) return es.currentHP <= 0;
+        return true; 
+    }
+
+    bool RevisarVictoriaODerrota() {
+        EnemyStats enemyStats = currentEnemy.GetComponent<EnemyStats>();
+        if (enemyStats == null || enemyStats.currentHP <= 0) {
+            EndCombat(true); // Enemigo muerto = Victoria
+            return true;
+        }
+
+        HeroStats[] heroes = FindObjectsOfType<HeroStats>();
+        bool todosMuertos = true;
+        foreach (HeroStats hero in heroes) {
+            if (hero.currentHP > 0) { todosMuertos = false; break; }
+        }
+        
+        if (todosMuertos) {
+            EndCombat(false); // Todos los héroes muertos = Derrota
+            return true;
+        }
+        return false;
+    }
+
+    // --- ACCIÓN: ATACAR ---
     public void OnPlayerAttackButton() {
-        if (state != CombatState.PLAYER_TURN) return;
-
-        // ¡Apagamos los botones en cuanto atacas para que no hagas doble clic!
+        if (state != CombatState.WAITING_FOR_INPUT) return;
         if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
+        state = CombatState.BUSY;
 
-        Debug.Log("Iniciando secuencia de ataque del jugador...");
         StartCoroutine(PlayerAttackRoutine());
     }
 
+    // --- ACCIÓN: DEFENDER ---
     public void OnPlayerDefendButton() {
-        if (state != CombatState.PLAYER_TURN) return;
-
-        // Apagamos TODO el panel de botones
+        if (state != CombatState.WAITING_FOR_INPUT) return;
         if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
+        state = CombatState.BUSY;
 
-        Debug.Log("El jugador se defiende. Pasa el turno al enemigo.");
+        HeroStats hero = currentActor.GetComponent<HeroStats>();
+        if (hero != null) {
+            heroesDefendiendo[hero] = true; 
+            Debug.Log($"¡{hero.unitName} adopta una postura defensiva!");
+        }
         
-        // Aquí luego le pondremos una "bandera" al héroe para que reciba la mitad de daño
-        // Por ahora, solo pasa el turno al enemigo
-        StartCoroutine(EnemyTurnRoutine());
+        AvanzarTurno(); // Termina su turno al instante
     }
 
     public void OnPlayerFleeButton() {
-        if (state != CombatState.PLAYER_TURN) return;
-
-        // Apagamos los botones
+        if (state != CombatState.WAITING_FOR_INPUT) return;
         if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
-
-        Debug.Log("¡El jugador usó la retirada táctica! Terminando combate...");
-
-        // 1. Devolvemos a los héroes a donde estaban caminando en el mapa
-        foreach (var hero in heroOriginalPositions) {
-             if(hero.Key != null) hero.Key.transform.position = hero.Value;
-        }
-
-        // 2. Le avisamos al GameFlowController que haga la transición de regreso
-        if (GameFlowController.Instance != null) {
-            GameFlowController.Instance.TerminarCombate();
-        }
+        Debug.Log("¡Retirada táctica!");
+        RestaurarPosiciones();
+        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate();
     }
 
-    // --- NUEVA LÓGICA DE ATAQUE DEL JUGADOR ---
+    // --- CÁLCULO DE DAÑO JUGADOR ---
     IEnumerator PlayerAttackRoutine() {
-        // Obtenemos los stats
-        EnemyStats enemyStats = currentEnemy.GetComponent<EnemyStats>();
-        HeroStats[] heroes = FindObjectsOfType<HeroStats>();
+        HeroStats attacker = currentActor.GetComponent<HeroStats>();
+        EnemyStats target = currentEnemy.GetComponent<EnemyStats>();
 
-        // Simulamos que el primer héroe (Sieg) ataca. (Más adelante puedes hacer que ataquen los 3).
-        if (heroes.Length > 0 && enemyStats != null) {
-            int damage = heroes[0].GetTotalAttack() - enemyStats.defense; // Fórmula básica de daño
-            if (damage < 1) damage = 1; // Mínimo hacemos 1 de daño
+        // Si ataca, deja de estar en postura defensiva
+        heroesDefendiendo[attacker] = false;
 
-            Debug.Log($"¡{heroes[0].unitName} ataca! Hizo {damage} de daño.");
-            enemyStats.TakeDamage(damage);
-        }
+        int damage = attacker.GetTotalAttack() - target.defense; 
+        if (damage < 1) damage = 1; 
+
+        Debug.Log($"¡{attacker.unitName} ataca al enemigo! Hizo {damage} de daño. (HP Enemigo: {target.currentHP} -> {target.currentHP - damage})");
+        target.TakeDamage(damage);
 
         yield return new WaitForSecondsRealtime(1f); 
-
-        // Verificamos si ganamos
-        if (enemyStats != null && enemyStats.currentHP <= 0) {
-            EndCombat(true); // ¡Ganamos!
-        } else {
-            StartCoroutine(EnemyTurnRoutine()); // Si sobrevive, le toca al enemigo
-        }
+        AvanzarTurno(); // Pasamos al siguiente en la fila
     }
 
-    // --- NUEVA LÓGICA DE ATAQUE DEL ENEMIGO ---
+    // --- CÁLCULO DE DAÑO ENEMIGO ---
     IEnumerator EnemyTurnRoutine() {
-        state = CombatState.ENEMY_TURN;
         Debug.Log("Turno del enemigo...");
         yield return new WaitForSecondsRealtime(1f); 
 
-        EnemyStats enemyStats = currentEnemy.GetComponent<EnemyStats>();
+        EnemyStats enemyAttacker = currentActor.GetComponent<EnemyStats>();
         HeroStats[] heroes = FindObjectsOfType<HeroStats>();
 
-        // El enemigo ataca a un héroe al azar
-        if (heroes.Length > 0 && enemyStats != null) {
-            int randomTarget = Random.Range(0, heroes.Length);
-            HeroStats targetHero = heroes[randomTarget];
+        // El enemigo escoge a un héroe VIVO al azar
+        List<HeroStats> heroesVivos = new List<HeroStats>();
+        foreach (var hero in heroes) {
+            if (hero.currentHP > 0) heroesVivos.Add(hero);
+        }
 
-            int damage = enemyStats.attack - targetHero.defense;
+        if (heroesVivos.Count > 0 && enemyAttacker != null) {
+            int randomTarget = Random.Range(0, heroesVivos.Count);
+            HeroStats targetHero = heroesVivos[randomTarget];
+
+            int damage = enemyAttacker.attack - targetHero.defense;
             if (damage < 1) damage = 1;
 
-            Debug.Log($"¡El enemigo ataca a {targetHero.unitName} y hace {damage} de daño!");
+            if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
+                damage = damage / 2; 
+                if (damage < 1) damage = 1;
+                Debug.Log($"¡El enemigo ataca a {targetHero.unitName}, pero SE DEFIENDE! Recibe: {damage}.");
+            } else {
+                Debug.Log($"¡El enemigo ataca a {targetHero.unitName}! Recibe: {damage}.");
+            }
+
             targetHero.TakeDamage(damage);
         }
 
         yield return new WaitForSecondsRealtime(1f);
-
-        // Verificamos si todos los héroes murieron (Game Over)
-        bool todosMuertos = true;
-        foreach (HeroStats hero in heroes) {
-            if (hero.currentHP > 0) {
-                todosMuertos = false; // Alguien sigue vivo
-                break;
-            }
-        }
-
-        if (todosMuertos) {
-            EndCombat(false); // Perdimos
-        } else {
-            state = CombatState.PLAYER_TURN;
-            PlayerTurn(); // Regresamos el turno al jugador
-        }
+        AvanzarTurno(); // Termina el turno del enemigo, pasamos al siguiente
     }
 
     void EndCombat(bool playerWon) {
         if (playerWon) {
             state = CombatState.WON;
-            Debug.Log("¡Victoria! Has ganado el combate.");
-
-            if (currentEnemy != null) {
-                EnemyStats enemyStats = currentEnemy.GetComponent<EnemyStats>();
-                if (enemyStats != null) {
-                    WeaponData droppedWeapon = enemyStats.TryGetDrop(); 
-                    if (droppedWeapon != null) {
-                        Debug.Log($"¡BOOYAH! El enemigo soltó un arma: {droppedWeapon.weaponName}!");
-                        HeroStats[] heroes = FindObjectsOfType<HeroStats>();
-                        foreach(HeroStats hero in heroes) {
-                            hero.TryEquipWeapon(droppedWeapon); 
-                        }
-                    }
+            Debug.Log("¡Termina el combate: VICTORIA!");
+            EnemyStats enemyStats = currentEnemy.GetComponent<EnemyStats>();
+            if (enemyStats != null) {
+                WeaponData droppedWeapon = enemyStats.TryGetDrop(); 
+                if (droppedWeapon != null) {
+                    Debug.Log($"¡Objeto obtenido: {droppedWeapon.weaponName}!");
+                    foreach(HeroStats hero in FindObjectsOfType<HeroStats>()) hero.TryEquipWeapon(droppedWeapon); 
                 }
             }
         } else {
             state = CombatState.LOST;
-            Debug.Log("Game Over...");
-            // Aquí llamarías a tu pantalla de reinicio
+            Debug.Log("¡Termina el combate: DERROTA! Game Over...");
         }
 
-        // Devolver a los héroes a donde estaban caminando
+        RestaurarPosiciones();
+        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate();
+    }
+
+    void RestaurarPosiciones() {
         foreach (var hero in heroOriginalPositions) {
              if(hero.Key != null) hero.Key.transform.position = hero.Value;
-        }
-
-        if (GameFlowController.Instance != null) {
-            GameFlowController.Instance.TerminarCombate();
         }
     }
 }

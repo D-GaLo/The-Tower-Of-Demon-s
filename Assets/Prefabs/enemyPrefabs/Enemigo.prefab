@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3382088979852692270}
   - component: {fileID: 694863559041356474}
   - component: {fileID: 7420704789014671162}
+  - component: {fileID: 4764047897283023403}
   m_Layer: 0
   m_Name: Enemigo
   m_TagString: Enemy
@@ -136,3 +137,25 @@ MonoBehaviour:
   player: {fileID: 0}
   detectionRange: 3
   speed: 2
+--- !u!114 &4764047897283023403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7931088695150446534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 201bd494ab7c49719a3a4becf0f49033, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitName: Slime
+  unitClass: 0
+  unitPosition: 0
+  maxHP: 30
+  currentHP: 30
+  attack: 10
+  defense: 5
+  speed: 10
+  weaponDrop: {fileID: 0}
+  dropChance: 20

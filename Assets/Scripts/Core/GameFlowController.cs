@@ -46,6 +46,11 @@ public class GameFlowController : MonoBehaviour {
         if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(true, posicionArenaCombate);
         if (uiCombate != null) uiCombate.SetActive(true);
 
+        // Le avisamos al CombatManager que ya llegamos a la arena y puede empezar
+        if (CombatManager.Instance != null) {
+            CombatManager.Instance.StartCombat(enemigoActual);
+        }
+
         // 4. Quitar la pantalla de transición
         if (pantallaTransicion != null) pantallaTransicion.SetActive(false);
     }

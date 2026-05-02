@@ -5,6 +5,9 @@ public class EnemyAI : MonoBehaviour {
     public float detectionRange = 5f; 
     public float speed = 2f;
 
+    // --- El candado anti-spam de clones ---
+    private bool combateIniciado = false;
+
     void Start() {
         if (player == null) {
             GameObject p = GameObject.FindGameObjectWithTag("Player");
@@ -25,9 +28,13 @@ public class EnemyAI : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D other) {
         if (other.CompareTag("Player")) {
-            // Regla del GDD: Al entrar en contacto con el enemigo, iniciar combate
-            if (GameFlowController.Instance != null) {
-                GameFlowController.Instance.IniciarCombate(gameObject);
+            // Solo iniciamos si NO se ha iniciado ya y si el juego no está pausado
+            if (!combateIniciado && Time.timeScale != 0) {
+                combateIniciado = true; // Bloqueamos la puerta para que no se hagan clones
+                
+                if (GameFlowController.Instance != null) {
+                    GameFlowController.Instance.IniciarCombate(gameObject);
+                }
             }
         }
     }

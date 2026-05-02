@@ -1,9 +1,21 @@
 using UnityEngine;
 
 public class EnemyAI : MonoBehaviour {
+    private Rigidbody2D rb;
     public Transform player;
     public float detectionRange = 5f; 
     public float speed = 2f;
+
+
+    [Header("Puntos de patrulla")]
+    public Vector3 pointA;
+    public Vector3 pointB;
+    public Vector3 currentTarget;
+
+    void Awake()
+    {
+        rb=GetComponent<Rigidbody2D>();
+    }
 
     void Start() {
         if (player == null) {
@@ -20,6 +32,8 @@ public class EnemyAI : MonoBehaviour {
 
         if (distance < detectionRange) {
             transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
+        }else {
+            Move();
         }
     }
 
@@ -31,4 +45,43 @@ public class EnemyAI : MonoBehaviour {
             }
         }
     }
+
+    public void ConfigurarPatrulla(Vector3 pA, Vector3 pB) {
+        pointA = pA;
+        pointB = pB;
+        currentTarget = pointB; 
+
+        Debug.Log($"{gameObject.name} configurado en: {pointA} y {pointB}");
+    }
+
+    void Move(){
+        if (currentTarget == null || currentTarget == Vector3.zero) return;
+
+        float direction= Mathf.Sign(currentTarget.x- transform.position.x);
+        rb.velocity=new Vector2(direction *speed, rb.velocity.y);
+
+        if(Mathf.Abs(transform.position.x - currentTarget.x) < 0.1f){
+            SwitchTarget();
+        }
+        Flip(direction);
+    }
+
+
+    void Flip(float direction){
+        if(direction==0)return;
+
+        Vector3 scale= transform.localScale;
+        scale.x= Mathf.Sign(direction) *Mathf.Abs(scale.x);
+        transform.localScale=scale;
+    }
+
+    void SwitchTarget(){
+        if(currentTarget==pointA){
+            currentTarget=pointB;
+        }else{
+            currentTarget=pointA;
+        }
+    }
+
+
 }

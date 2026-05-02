@@ -8663,9 +8663,9 @@ MonoBehaviour:
   unitName: Sleg
   unitClass: 0
   unitPosition: 0
-  maxHP: 100
-  currentHP: 0
-  attack: 10
+  maxHP: 50
+  currentHP: 50
+  attack: 15
   defense: 5
   speed: 10
   maxEnergy: 100

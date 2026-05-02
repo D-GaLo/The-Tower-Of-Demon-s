@@ -52,14 +52,6 @@ public class EnemySpawner : MonoBehaviour {
                         Vector3 posGlobalB = new Vector3(transform.position.x + offsetX_B, spawnPos.y, 0);
 
                         scriptEnemigo.ConfigurarPatrulla(posGlobalA, posGlobalB);
-                        /*int randomX_A = (int) Random.Range(-areaSize.x / 2, areaSize.x / 2);
-                        int randomX_B = (int) Random.Range(-areaSize.x / 2, areaSize.x / 2);
-                        int randomX_C = (int) Random.Range(-areaSize.y / 2, areaSize.y / 2);
-                        int randomX_D = (int) Random.Range(-areaSize.y / 2, areaSize.y / 2);
-
-                        Vector3 posGlobalA = transform.position + new Vector3(randomX_A, randomX_C, 0);
-                        Vector3 posGlobalB = transform.position + new Vector3(randomX_B, randomX_D, 0);
-                        scriptEnemigo.ConfigurarPatrulla(posGlobalA, posGlobalB);*/
                 }
                 spawnados++;
             }

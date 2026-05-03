@@ -13,7 +13,7 @@ public class GameFlowController : MonoBehaviour {
     public GameObject pantallaTransicion; 
     public GameObject bordesNegros; 
     public GameObject uiCombate; 
-
+    public GameObject botonMapa;
     private GameObject enemigoActual;
     private bool enCombate = false;
 
@@ -23,6 +23,9 @@ public class GameFlowController : MonoBehaviour {
     }
 
     public void IniciarCombate(GameObject enemigo) {
+        // --- LA TRAMPA: Esto nos dirá quién activó el combate realmente ---
+        Debug.Log("🚨 ¡ALERTA DE COMBATE! El objeto enviado al administrador fue: " + (enemigo != null ? enemigo.name : "Nulo/Vacío"));
+
         if (enCombate) return; 
         enCombate = true;
         enemigoActual = enemigo;
@@ -43,6 +46,7 @@ public class GameFlowController : MonoBehaviour {
 
         // 3. Apagar bordes, mover cámara y encender UI de combate
         if (bordesNegros != null) bordesNegros.SetActive(false);
+        if (botonMapa != null) botonMapa.SetActive(false);
         if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(true, posicionArenaCombate);
         if (uiCombate != null) uiCombate.SetActive(true);
 
@@ -78,6 +82,7 @@ public class GameFlowController : MonoBehaviour {
         // 3. Restaurar la exploración (El Vector3.zero ya no afecta porque la cámara lo calcula sola)
         if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(false, Vector3.zero);
         if (bordesNegros != null) bordesNegros.SetActive(true);
+        if (botonMapa != null) botonMapa.SetActive(true); //
         
         Time.timeScale = 1f; 
         enCombate = false;

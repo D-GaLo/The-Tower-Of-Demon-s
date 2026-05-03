@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 694863559041356474}
   - component: {fileID: 7420704789014671162}
   - component: {fileID: 4764047897283023403}
+  - component: {fileID: -3678460507777434516}
   m_Layer: 0
   m_Name: Enemigo
   m_TagString: Enemy
@@ -137,6 +138,9 @@ MonoBehaviour:
   player: {fileID: 0}
   detectionRange: 3
   speed: 2
+  pointA: {x: 0, y: 0, z: 0}
+  pointB: {x: 0, y: 0, z: 0}
+  currentTarget: {x: 0, y: 0, z: 0}
 --- !u!114 &4764047897283023403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,3 +163,30 @@ MonoBehaviour:
   speed: 10
   weaponDrop: {fileID: 0}
   dropChance: 20
+--- !u!50 &-3678460507777434516
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7931088695150446534}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4

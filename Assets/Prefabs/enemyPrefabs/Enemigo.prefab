@@ -156,11 +156,11 @@ MonoBehaviour:
   unitName: Slime
   unitClass: 0
   unitPosition: 0
-  maxHP: 30
-  currentHP: 30
-  attack: 10
+  maxHP: 50
+  currentHP: 50
+  attack: 20
   defense: 5
-  speed: 10
+  speed: 15
   weaponDrop: {fileID: 0}
   dropChance: 20
 --- !u!50 &-3678460507777434516

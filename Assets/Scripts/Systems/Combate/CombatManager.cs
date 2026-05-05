@@ -15,8 +15,15 @@ public class CombatManager : MonoBehaviour {
     public Transform[] heroPositions; 
     public Transform enemyPosition;   
 
-    [Header("UI Específica")]
+    [Header("UI Menús Flotantes")]
     public GameObject panelBotonesAccion; 
+
+    public GameObject menuPrincipal;
+    public GameObject menuTipoAtaque;
+    public GameObject menuEspeciales;
+    public Vector3 menuOffset = new Vector3(0, 1.5f, 0);
+
+    public HeroUI[] heroesUI;
 
     private Vector3 enemyOriginalPosition;
     private Dictionary<GameObject, Vector3> heroOriginalPositions = new Dictionary<GameObject, Vector3>();
@@ -54,6 +61,10 @@ public class CombatManager : MonoBehaviour {
             heroOriginalPositions[heroObj] = heroObj.transform.position; 
             heroObj.transform.position = heroPositions[i].position;
             heroesDefendiendo[activeHeroes[i]] = false; 
+
+            if (i < heroesUI.Length && heroesUI[i] != null) {
+                heroesUI[i].ConfigurarUI(activeHeroes[i]);
+            }
         }
 
         yield return new WaitForSecondsRealtime(1f); 
@@ -123,7 +134,11 @@ public class CombatManager : MonoBehaviour {
             // ES TURNO DE UN HÉROE
             state = CombatState.WAITING_FOR_INPUT;
             Debug.Log($"¡Es turno de {heroActor.unitName}! Esperando acción...");
-            if (panelBotonesAccion != null) panelBotonesAccion.SetActive(true);
+            if (panelBotonesAccion != null){ 
+                panelBotonesAccion.SetActive(true);
+                MostrarMenu(menuPrincipal);
+                PosicionarMenuSobreHeroe(currentActor); 
+            }
         } else {
             // ES TURNO DEL ENEMIGO
             state = CombatState.BUSY;
@@ -160,15 +175,28 @@ public class CombatManager : MonoBehaviour {
         return false;
     }
 
-    // --- ACCIÓN: ATACAR ---
-    public void OnPlayerAttackButton() {
-        if (state != CombatState.WAITING_FOR_INPUT) return;
-        if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
-        state = CombatState.BUSY;
-
-        StartCoroutine(PlayerAttackRoutine());
+    void PosicionarMenuSobreHeroe(GameObject heroe) {
+        if (Camera.main == null || panelBotonesAccion == null) return;
+        
+        // Convertimos la posición 3D del héroe (+ altura) a coordenadas 2D de la pantalla
+        Vector3 posicionPantalla = Camera.main.WorldToScreenPoint(heroe.transform.position + menuOffset);
+        
+        // Movemos el panel a esa posición
+        panelBotonesAccion.transform.position = posicionPantalla;
     }
 
+
+    public void ActualizarPantallaVida() {
+        if (heroesUI == null) return;
+        foreach (HeroUI ui in heroesUI) {
+            if (ui != null){ 
+                ui.ActualizarVida();
+                ui.ActualizarEnergia();
+            }
+        }
+    }
+
+    
     // --- ACCIÓN: DEFENDER ---
     public void OnPlayerDefendButton() {
         if (state != CombatState.WAITING_FOR_INPUT) return;
@@ -193,20 +221,23 @@ public class CombatManager : MonoBehaviour {
     }
 
     // --- CÁLCULO DE DAÑO JUGADOR ---
-    IEnumerator PlayerAttackRoutine() {
+    IEnumerator PlayerAttackRoutine(int costoEnergia, float multiplicadorDano) {
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
         EnemyStats target = currentEnemy.GetComponent<EnemyStats>();
 
         // Si ataca, deja de estar en postura defensiva
         heroesDefendiendo[attacker] = false;
 
-        int damage = attacker.GetTotalAttack() - target.defense; 
+        // Calculamos daño con el multiplicador del ataque especial
+        float baseDamage = attacker.GetTotalAttack() * multiplicadorDano;
+        int damage = Mathf.RoundToInt(baseDamage) - target.defense; 
         if (damage < 1) damage = 1; 
 
         Debug.Log($"¡{attacker.unitName} ataca al enemigo! Hizo {damage} de daño. (HP Enemigo: {target.currentHP} -> {target.currentHP - damage})");
         target.TakeDamage(damage);
 
         yield return new WaitForSecondsRealtime(1f); 
+        ActualizarPantallaVida();
         AvanzarTurno(); // Pasamos al siguiente en la fila
     }
 
@@ -240,6 +271,8 @@ public class CombatManager : MonoBehaviour {
             }
 
             targetHero.TakeDamage(damage);
+
+            ActualizarPantallaVida();
         }
 
         yield return new WaitForSecondsRealtime(1f);
@@ -272,4 +305,67 @@ public class CombatManager : MonoBehaviour {
              if(hero.Key != null) hero.Key.transform.position = hero.Value;
         }
     }
+
+    // --- NUEVO: SISTEMA DE SUB-MENÚS ---
+    public void MostrarMenu(GameObject menuAMostrar) {
+        if (menuPrincipal != null) menuPrincipal.SetActive(false);
+        if (menuTipoAtaque != null) menuTipoAtaque.SetActive(false);
+        if (menuEspeciales != null) menuEspeciales.SetActive(false);
+
+        if (menuAMostrar != null) menuAMostrar.SetActive(true);
+    }
+
+    // Botón "Atacar" del menú principal
+    public void OnBotonMenuAtacar() {
+        MostrarMenu(menuTipoAtaque);
+    }
+
+    // Botón "Atq. Especial"
+    public void OnBotonMenuEspeciales() {
+        MostrarMenu(menuEspeciales);
+    }
+
+    // Botón "Atras" (sirve para cualquier menú)
+    public void OnBotonAtras() {
+        MostrarMenu(menuPrincipal);
+    }
+
+    // --- ACCIÓN: ATACAR ---
+    public void OnAtaqueNormal() {
+        if (state != CombatState.WAITING_FOR_INPUT) return;
+        panelBotonesAccion.SetActive(false);
+        state = CombatState.BUSY;
+        StartCoroutine(PlayerAttackRoutine(0, 1f)); // 0 costo, x1 daño
+    }
+
+    // --- BOTONES DE CORTES ESPECIALES ---
+    public void OnCorteChido() {
+        EjecutarAtaqueEspecial(10, 1.5f); // Gasta 10, hace x1.5 daño
+    }
+
+    public void OnCortePro() {
+        EjecutarAtaqueEspecial(20, 2.0f); // Gasta 20, hace x2.0 daño
+    }
+
+    public void OnCorteLoko() {
+        EjecutarAtaqueEspecial(50, 3.5f); // Gasta 50, hace x3.5 daño
+    }
+
+    void EjecutarAtaqueEspecial(int costoEnergia, float multiplicadorDano) {
+        if (state != CombatState.WAITING_FOR_INPUT) return;
+
+        HeroStats attacker = currentActor.GetComponent<HeroStats>();
+        
+        // Verificamos si tiene suficiente energía
+        if (attacker.UseEnergy(costoEnergia)) {
+            panelBotonesAccion.SetActive(false);
+            state = CombatState.BUSY;
+            ActualizarPantallaVida(); // Refrescamos la barra amarilla
+            StartCoroutine(PlayerAttackRoutine(costoEnergia, multiplicadorDano));
+        } else {
+            Debug.Log("¡No tienes suficiente energía para este corte!");
+            // Opcional: Podrías hacer que el botón vibre o suene un error
+        }
+    }
+
 }

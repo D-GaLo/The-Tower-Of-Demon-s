@@ -12,7 +12,7 @@ public class EquipSlotUI : MonoBehaviour, IDropHandler, IPointerClickHandler
 
     public void Refrescar()
     {
-        /*if (equipo == null) return;
+        if (equipo == null) return;
         if (nombreTexto == null) return;
         Item item = equipo.slots[slotIndex];
         if (item == Item.None){
@@ -30,17 +30,9 @@ public class EquipSlotUI : MonoBehaviour, IDropHandler, IPointerClickHandler
             nombreTexto.text = item.ToString();
         }
 
-        iconoImagen.enabled = item != Item.None;*/
-
-        if (equipo == null) { Debug.Log($"Slot {slotIndex}: equipo es NULL"); return; }
-        if (nombreTexto == null) { Debug.Log($"Slot {slotIndex}: nombreTexto es NULL"); return; }
-
-        Item item = equipo.slots[slotIndex];
-        Debug.Log($"Slot {slotIndex}: item = {item}");
-        
-        nombreTexto.text = item == Item.None ? (slotIndex == 0 ? "Arma" : "Item") : item.ToString();
         if (iconoImagen != null)
             iconoImagen.enabled = item != Item.None;
+            
     }
 
     public void OnDrop(PointerEventData e)

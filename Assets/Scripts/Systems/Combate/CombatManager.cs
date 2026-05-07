@@ -340,18 +340,19 @@ public class CombatManager : MonoBehaviour {
 
     // --- BOTONES DE CORTES ESPECIALES ---
     public void OnCorteChido() {
-        EjecutarAtaqueEspecial(10, 1.5f); // Gasta 10, hace x1.5 daño
+        // Agregamos un 3er parámetro: la cantidad de teclas que van a salir (ej. 3 letras)
+        EjecutarAtaqueEspecial(10, 1.5f, 3); 
     }
 
     public void OnCortePro() {
-        EjecutarAtaqueEspecial(20, 2.0f); // Gasta 20, hace x2.0 daño
+        EjecutarAtaqueEspecial(20, 2.0f, 4); // Secuencia de 4 letras
     }
 
     public void OnCorteLoko() {
-        EjecutarAtaqueEspecial(50, 3.5f); // Gasta 50, hace x3.5 daño
+        EjecutarAtaqueEspecial(50, 3.5f, 6); // Secuencia de 6 letras, más difícil
     }
 
-    void EjecutarAtaqueEspecial(int costoEnergia, float multiplicadorDano) {
+    void EjecutarAtaqueEspecial(int costoEnergia, float multiplicadorDanoBase, int longitudSecuencia) {
         if (state != CombatState.WAITING_FOR_INPUT) return;
 
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
@@ -360,12 +361,21 @@ public class CombatManager : MonoBehaviour {
         if (attacker.UseEnergy(costoEnergia)) {
             panelBotonesAccion.SetActive(false);
             state = CombatState.BUSY;
-            ActualizarPantallaVida(); // Refrescamos la barra amarilla
-            StartCoroutine(PlayerAttackRoutine(costoEnergia, multiplicadorDano));
+            ActualizarPantallaVida(); // Refrescamos la barra amarilla de la interfaz
+            
+            Debug.Log("¡Iniciando secuencia QTE!");
+
+            
+            // Llamamos al QTEManager. Cuando el jugador termine (falle o acierte), 
+            // el QTEManager nos va a devolver un 'multiplicadorQTE' (ej. 1.5 si fue Perfecto, 0.5 si falló)
+            QTEManager.Instance.IniciarQTE(longitudSecuencia, (multiplicadorQTE) => {     
+                Debug.Log($"QTE Terminado con multiplicador: {multiplicadorQTE}"); 
+                float multiplicadorFinal = multiplicadorDanoBase * multiplicadorQTE;
+                StartCoroutine(PlayerAttackRoutine(costoEnergia, multiplicadorFinal));
+            });
+
         } else {
             Debug.Log("¡No tienes suficiente energía para este corte!");
-            // Opcional: Podrías hacer que el botón vibre o suene un error
         }
     }
-
 }

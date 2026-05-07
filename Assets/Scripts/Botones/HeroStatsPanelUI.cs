@@ -19,6 +19,9 @@ public class HeroStatsPanelUI : MonoBehaviour
     [Header("Paneles de Contenido (uno por héroe)")]
     public GameObject[] contentPanels = new GameObject[3];
 
+    [Header("3 slots para cada personaje")]
+    public EquipSlotUI[] equipSlots = new EquipSlotUI[9];
+
     [Header("Campos de Texto — Héroe 1")]
     public TextMeshProUGUI hero1_Name;
     public TextMeshProUGUI hero1_Class;
@@ -66,13 +69,16 @@ public class HeroStatsPanelUI : MonoBehaviour
             tabButtons[i].onClick.AddListener(() => SwitchTab(index));
         }
 
-        PopulateAllHeroes();
+        //PopulateAllHeroes();
         SwitchTab(0);
     }
 
     public void TogglePanel()
     {
         statsPanel.SetActive(!statsPanel.activeSelf);
+        if (statsPanel.activeSelf){
+            SwitchTab(currentTab);
+        }
     }
 
 
@@ -84,29 +90,37 @@ public class HeroStatsPanelUI : MonoBehaviour
         {
             contentPanels[i].SetActive(i == tabIndex);
             var colors = tabButtons[i].colors;
-            colors.normalColor = (i == tabIndex) ? activeTabColor : inactiveTabColor;
+            if (i == tabIndex){
+                colors.normalColor = activeTabColor;
+            }
+            else{
+                colors.normalColor = inactiveTabColor;
+            }
             tabButtons[i].colors = colors;
         }
-    }
+        HeroEquipment equipo = heroes[tabIndex].GetComponent<HeroEquipment>();
+        int inicio = tabIndex * 3;
 
-    void PopulateAllHeroes()
-    {
-        if (heroes.Length < 3) return;
+        switch (tabIndex)
+        {
+            case 0:
+                PopulateHero(heroes[0], hero1_Name, hero1_Class, hero1_HP, hero1_Energy,
+                    hero1_Attack, hero1_Defense, hero1_Speed, hero1_Mastery, hero1_Weapon,
+                    equipSlots[0], equipSlots[1], equipSlots[2]);
+                break;
+            case 1:
+                PopulateHero(heroes[1], hero2_Name, hero2_Class, hero2_HP, hero2_Energy,
+                    hero2_Attack, hero2_Defense, hero2_Speed, hero2_Mastery, hero2_Weapon,
+                    equipSlots[3], equipSlots[4], equipSlots[5]);
+                break;
+            case 2:
+                PopulateHero(heroes[2], hero3_Name, hero3_Class, hero3_HP, hero3_Energy,
+                    hero3_Attack, hero3_Defense, hero3_Speed, hero3_Mastery, hero3_Weapon,
+                    equipSlots[6], equipSlots[7], equipSlots[8]);
+                break;
+        }
 
-        PopulateHero(heroes[0],
-            hero1_Name, hero1_Class, hero1_HP, hero1_Energy,
-            hero1_Attack, hero1_Defense, hero1_Speed,
-            hero1_Mastery, hero1_Weapon);
-
-        PopulateHero(heroes[1],
-            hero2_Name, hero2_Class, hero2_HP, hero2_Energy,
-            hero2_Attack, hero2_Defense, hero2_Speed,
-            hero2_Mastery, hero2_Weapon);
-
-        PopulateHero(heroes[2],
-            hero3_Name, hero3_Class, hero3_HP, hero3_Energy,
-            hero3_Attack, hero3_Defense, hero3_Speed,
-            hero3_Mastery, hero3_Weapon);
+        
     }
 
     void PopulateHero(
@@ -114,7 +128,7 @@ public class HeroStatsPanelUI : MonoBehaviour
         TextMeshProUGUI nameT, TextMeshProUGUI classT,
         TextMeshProUGUI hpT, TextMeshProUGUI energyT,
         TextMeshProUGUI atkT, TextMeshProUGUI defT, TextMeshProUGUI spdT,
-        TextMeshProUGUI mastT, TextMeshProUGUI weapT)
+        TextMeshProUGUI mastT, TextMeshProUGUI weapT, EquipSlotUI slot0, EquipSlotUI slot1, EquipSlotUI slot2)
     {
         if (h == null) return;
 
@@ -127,5 +141,11 @@ public class HeroStatsPanelUI : MonoBehaviour
         spdT.text     = h.speed.ToString();
         mastT.text    = $"Nivel {h.mastery}";
         weapT.text    = h.equippedWeapon != null ? h.equippedWeapon.weaponName : "Sin arma";
+
+        HeroEquipment equipo = h.GetComponent<HeroEquipment>();
+        slot0.equipo = equipo; slot0.Refrescar();
+        slot1.equipo = equipo; slot1.Refrescar();
+        slot2.equipo = equipo; slot2.Refrescar();
+
     }
 }

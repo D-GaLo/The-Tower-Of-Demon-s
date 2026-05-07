@@ -1,0 +1,72 @@
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using TMPro;
+
+public class EquipSlotUI : MonoBehaviour, IDropHandler, IPointerClickHandler
+{
+    public int slotIndex;        
+    public HeroEquipment equipo;  
+    public Image iconoImagen;
+    public TextMeshProUGUI nombreTexto;
+
+    public void Refrescar()
+    {
+        /*if (equipo == null) return;
+        if (nombreTexto == null) return;
+        Item item = equipo.slots[slotIndex];
+        if (item == Item.None){
+            if (slotIndex == 0)
+            {
+                nombreTexto.text = "Arma";
+            }
+            else
+            {
+                nombreTexto.text = "Item";
+            }
+        }
+        else
+        {
+            nombreTexto.text = item.ToString();
+        }
+
+        iconoImagen.enabled = item != Item.None;*/
+
+        if (equipo == null) { Debug.Log($"Slot {slotIndex}: equipo es NULL"); return; }
+        if (nombreTexto == null) { Debug.Log($"Slot {slotIndex}: nombreTexto es NULL"); return; }
+
+        Item item = equipo.slots[slotIndex];
+        Debug.Log($"Slot {slotIndex}: item = {item}");
+        
+        nombreTexto.text = item == Item.None ? (slotIndex == 0 ? "Arma" : "Item") : item.ToString();
+        if (iconoImagen != null)
+            iconoImagen.enabled = item != Item.None;
+    }
+
+    public void OnDrop(PointerEventData e)
+    {
+        if (InventarioSlotUI.itemArrastrado == Item.None || equipo == null) return;
+
+        bool paEquipar = equipo.Equipar(slotIndex, InventarioSlotUI.itemArrastrado);
+        if (paEquipar){
+            Refrescar();
+           if (InventarioSlotUI.slotOrigen != null){
+                InventarioSlotUI.slotOrigen.Setup(
+                    InventarioSlotUI.slotOrigen.item,
+                    InventarioSlotUI.slotOrigen.iconoImagen.sprite
+                );
+            }
+        }
+        else{
+            Debug.Log("Item no válido para este slot");
+        }
+    }
+
+    public void OnPointerClick(PointerEventData e)
+    {
+        if (e.button == PointerEventData.InputButton.Right && equipo != null){
+            equipo.Desequipar(slotIndex);
+            Refrescar();
+        }
+    }
+}

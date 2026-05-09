@@ -4,6 +4,10 @@ public class EnemyAI : MonoBehaviour {
     private Rigidbody2D rb;
     private Transform player; 
 
+    [Header("Configuración Especial")]
+    [Tooltip("Si se activa, el Spawner no podrá cambiar sus puntos de patrulla.")]
+    public bool esEnemigoEspecial = false; 
+
     [Header("Persecución")]
     public float detectionRange = 5f; 
     public float speed = 2f;
@@ -24,9 +28,22 @@ public class EnemyAI : MonoBehaviour {
         if (p != null) {
             player = p.transform;
         }
+
+        // LÓGICA PARA ENEMIGOS MANUALES (SALA 6, 10, ETC.)
+        // Si pusiste los puntos en el Inspector, inicializamos el objetivo
+        if (currentTarget == Vector3.zero) {
+            if (pointA != Vector3.zero || pointB != Vector3.zero) {
+                currentTarget = pointB;
+                Debug.Log($"[EnemyAI] {gameObject.name} iniciando patrulla manual entre {pointA} y {pointB}");
+            }
+        }
     }
 
+    // El Spawner llama a esta función automáticamente
     public void ConfigurarPatrulla(Vector3 pA, Vector3 pB) {
+        // Si marcamos el enemigo como especial, ignoramos lo que diga el Spawner
+        if (esEnemigoEspecial) return; 
+
         pointA = pA;
         pointB = pB;
         currentTarget = pointB; 
@@ -45,7 +62,7 @@ public class EnemyAI : MonoBehaviour {
             isReturning = true; 
             Perseguir();
         } else if (isReturning) {
-            // ESTADO 2: REGRESAR A LA PATRULLA
+            // ESTADO 2: REGRESAR A LA RUTA
             RegresarAPatrulla();
         } else {
             // ESTADO 3: PATRULLA NORMAL
@@ -60,32 +77,27 @@ public class EnemyAI : MonoBehaviour {
     }
 
     void RegresarAPatrulla() {
-        if (currentTarget == null || currentTarget == Vector3.zero) return;
+        if (currentTarget == Vector3.zero) return;
 
         Vector2 direction = (currentTarget - transform.position).normalized;
         rb.velocity = direction * speed;
         Flip(direction.x);
 
-        // Si ya está lo suficientemente cerca de su punto de retorno
         if (Vector2.Distance(transform.position, currentTarget) < 0.1f) {
-            // FIX: Lo "encajamos" exactamente en la coordenada para evitar desvíos milimétricos
             transform.position = currentTarget;
-            rb.velocity = Vector2.zero; // FIX: Matamos la inercia por completo
+            rb.velocity = Vector2.zero;
             isReturning = false;
             SwitchTarget(); 
         }
     }
 
     void Patrullar() {
-        if (currentTarget == null || currentTarget == Vector3.zero) return;
+        if (currentTarget == Vector3.zero) return;
 
         float directionX = Mathf.Sign(currentTarget.x - transform.position.x);
-        
-        // FIX: Forzamos la velocidad Y a 0 para que deje de patinar hacia arriba o abajo
         rb.velocity = new Vector2(directionX * speed, 0f);
 
         if (Mathf.Abs(transform.position.x - currentTarget.x) < 0.1f) {
-            // FIX: Lo mantenemos firme en su carril X
             transform.position = new Vector3(currentTarget.x, transform.position.y, transform.position.z);
             SwitchTarget();
         }

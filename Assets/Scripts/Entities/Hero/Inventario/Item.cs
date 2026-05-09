@@ -3,7 +3,6 @@ public enum Item{
     Espada,
     Baculo,
     Escudo,
-    orbeTierra,
-    orbeVolar,
-    orbeDebajo
+    Llave,
+    Tijeras
 }

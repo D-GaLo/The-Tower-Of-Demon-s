@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq; // Necesario para ordenar listas fácilmente
+using TMPro;
 
 public enum CombatState { START, WAITING_FOR_INPUT, BUSY, WON, LOST }
 
@@ -33,6 +34,11 @@ public class CombatManager : MonoBehaviour {
     private List<GameObject> turnQueue = new List<GameObject>();
     private GameObject currentActor; // El que está atacando en este momento
 
+    [Header("Sistema de Formación")]
+    public GameObject panelFormacion;
+    public TextMeshProUGUI[] textosFormacion; // Arrastra aquí los 3 "Texto_Nombre" de tus slots
+    public List<HeroStats> listaParty = new List<HeroStats>();
+
     void Awake() {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
@@ -43,7 +49,18 @@ public class CombatManager : MonoBehaviour {
         state = CombatState.START;
         
         if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
-        StartCoroutine(CombatSequence());
+        
+        if (listaParty.Count == 0) {
+            listaParty = FindObjectsOfType<HeroStats>().ToList();
+        }
+
+        // Mostramos el menú de formación y actualizamos los nombres
+        if (panelFormacion != null) {
+            ActualizarTextosFormacion();
+            panelFormacion.SetActive(true);
+        } else {
+            StartCoroutine(CombatSequence());
+        }
     }
 
     IEnumerator CombatSequence() {
@@ -72,6 +89,41 @@ public class CombatManager : MonoBehaviour {
         // En lugar de ir directo al jugador, calculamos los turnos
         CalcularOrdenDeTurnos();
         AvanzarTurno();
+    }
+
+    // --- NUEVAS FUNCIONES PARA LOS BOTONES QUE ORDENAN LOS HERÓES ---
+    public void ActualizarTextosFormacion() {
+        // Recorre los slots y les pone el nombre del héroe que está en esa posición de la lista
+        for (int i = 0; i < textosFormacion.Length; i++) {
+            if (i < listaParty.Count && textosFormacion[i] != null) {
+                textosFormacion[i].text = listaParty[i].unitName;
+            }
+        }
+    }
+
+    public void MoverHeroeArriba(int index) {
+        if (index <= 0 || index >= listaParty.Count) return; // No puede subir más si ya está arriba
+        
+        HeroStats temp = listaParty[index];
+        listaParty[index] = listaParty[index - 1];
+        listaParty[index - 1] = temp;
+        
+        ActualizarTextosFormacion();
+    }
+
+    public void MoverHeroeAbajo(int index) {
+        if (index < 0 || index >= listaParty.Count - 1) return; // No puede bajar más si ya está abajo
+        
+        HeroStats temp = listaParty[index];
+        listaParty[index] = listaParty[index + 1];
+        listaParty[index + 1] = temp;
+        
+        ActualizarTextosFormacion();
+    }
+
+    public void ConfirmarFormacion() {
+        if (panelFormacion != null) panelFormacion.SetActive(false);
+        StartCoroutine(CombatSequence()); // ¡Ahora sí, a pelear!
     }
 
     // --- MAGIA: ORDENAR POR VELOCIDAD ---

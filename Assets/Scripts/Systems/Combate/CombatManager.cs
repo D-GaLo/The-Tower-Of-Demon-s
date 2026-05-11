@@ -64,29 +64,29 @@ public class CombatManager : MonoBehaviour {
     }
 
     IEnumerator CombatSequence() {
-        Debug.Log("Teletransportando y preparando arena...");
+        Debug.Log("Teletransportando según formación elegida...");
         
         enemyOriginalPosition = currentEnemy.transform.position; 
         currentEnemy.transform.position = enemyPosition.position; 
 
-        HeroStats[] activeHeroes = FindObjectsOfType<HeroStats>(); 
         heroOriginalPositions.Clear(); 
         heroesDefendiendo.Clear(); 
 
-        for (int i = 0; i < activeHeroes.Length && i < heroPositions.Length; i++) {
-            GameObject heroObj = activeHeroes[i].gameObject;
+        // AHORA USAMOS listaParty PARA TELETRANSPORTARLOS
+        for (int i = 0; i < listaParty.Count && i < heroPositions.Length; i++) {
+            GameObject heroObj = listaParty[i].gameObject;
+            
             heroOriginalPositions[heroObj] = heroObj.transform.position; 
             heroObj.transform.position = heroPositions[i].position;
-            heroesDefendiendo[activeHeroes[i]] = false; 
+            heroesDefendiendo[listaParty[i]] = false; 
 
             if (i < heroesUI.Length && heroesUI[i] != null) {
-                heroesUI[i].ConfigurarUI(activeHeroes[i]);
+                heroesUI[i].ConfigurarUI(listaParty[i]);
             }
         }
 
         yield return new WaitForSecondsRealtime(1f); 
 
-        // En lugar de ir directo al jugador, calculamos los turnos
         CalcularOrdenDeTurnos();
         AvanzarTurno();
     }

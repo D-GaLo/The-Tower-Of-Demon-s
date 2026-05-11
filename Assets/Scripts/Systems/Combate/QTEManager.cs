@@ -8,13 +8,17 @@ public class QTEManager : MonoBehaviour {
 
     [Header("UI Elementos")]
     public GameObject panelQTE;
-    public TextMeshProUGUI[] letrasUI; // Arrastra aquí tus 4 textos
+    public TextMeshProUGUI[] letrasUI;
     public TextMeshProUGUI textoResultado;
 
     [Header("Configuración")]
     public float tiempoParaQTE = 3.0f; // Tienes 3 segundos para completarlo
 
-    private List<KeyCode> teclasPosibles = new List<KeyCode> { KeyCode.A, KeyCode.S, KeyCode.W, KeyCode.D };
+    // Solo para generar ataques aleatorios
+    private List<KeyCode> teclasAtaque = new List<KeyCode> { KeyCode.A, KeyCode.S, KeyCode.W, KeyCode.D };
+
+    // Todas las teclas que el jugador puede presionar para que el script responda
+    private List<KeyCode> todasLasTeclasValidas = new List<KeyCode> { KeyCode.A, KeyCode.S, KeyCode.W, KeyCode.D, KeyCode.E, KeyCode.R, KeyCode.T };
     private List<KeyCode> secuenciaActual = new List<KeyCode>();
     private int indiceActual = 0;
     
@@ -38,7 +42,7 @@ public class QTEManager : MonoBehaviour {
         // Escuchamos si el jugador presiona alguna tecla
         if (Input.anyKeyDown) {
             // Buscamos cuál de las 4 teclas válidas presionó
-            foreach (KeyCode key in teclasPosibles) {
+            foreach (KeyCode key in todasLasTeclasValidas) {
                 if (Input.GetKeyDown(key)) {
                     VerificarTecla(key);
                     break; 
@@ -60,11 +64,26 @@ public class QTEManager : MonoBehaviour {
         StartCoroutine(TemporizadorQTE());
     }
 
+    public void IniciarEsquive(KeyCode teclaAsignada, System.Action<float> callbackResultados) {
+        onQTEComplete = callbackResultados;
+        qteActivo = true;
+        indiceActual = 0;
+        textoResultado.text = "";
+
+        // Limpiamos y preparamos una secuencia de 1 sola tecla
+        secuenciaActual.Clear();
+        secuenciaActual.Add(teclaAsignada);
+        
+        ActualizarPantalla();
+        panelQTE.SetActive(true);
+        StartCoroutine(TemporizadorQTE()); // Usa el mismo tiempo (3 segs) o puedes crear una variable nueva para que esquivar sea más rápido
+    }
+
     void GenerarSecuencia(int longitud) {
         secuenciaActual.Clear();
         // El GDD dice que la secuencia debe ser mostrada  y solo puede tener A, S, W, D.
         for (int i = 0; i < longitud; i++) {
-            KeyCode teclaAleatoria = teclasPosibles[Random.Range(0, teclasPosibles.Count)];
+            KeyCode teclaAleatoria = teclasAtaque[Random.Range(0, teclasAtaque.Count)];
             secuenciaActual.Add(teclaAleatoria);
         }
     }
@@ -126,7 +145,7 @@ public class QTEManager : MonoBehaviour {
             textoResultado.color = Color.green;
             multiplicadorFinal = 1.5f; // Bonus máximo
         } 
-        else if (porcentajeExito >= 0.5f) {
+        else if (porcentajeExito > 0.5f) {
             textoResultado.text = "Great";
             textoResultado.color = new Color(1f, 0.5f, 0f); // Naranja
             multiplicadorFinal = 1.2f; // Bonus medio

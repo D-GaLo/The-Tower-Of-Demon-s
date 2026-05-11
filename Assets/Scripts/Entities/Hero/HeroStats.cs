@@ -6,9 +6,6 @@ public class HeroStats : UnitStats {
     [Header("Estadísticas Exclusivas de Héroes")]
     public int maxEnergy = 100;
     public int currentEnergy;
-    
-    [Tooltip("Reduce teclas o aumenta el tiempo del QTE")]
-    public int mastery = 0; 
 
     [Header("Equipamiento")]
     public WeaponData equippedWeapon;

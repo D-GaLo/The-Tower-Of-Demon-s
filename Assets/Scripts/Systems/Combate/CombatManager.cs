@@ -220,25 +220,48 @@ public class CombatManager : MonoBehaviour {
         if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate();
     }
 
+    // --- LÓGICA DE DEBILIDADES Y MAESTRÍA ---
+    float CalcularMultiplicadorClasePosicion(UnitStats atacante, UnitStats defensor) {
+        float multiplicador = 1.0f;
+
+        // 1. Efectividad de Clase (Ejemplo: Melee vence Rango, Rango vence Tanque, Tanque vence Melee)
+        // Ajusta esto según el triángulo exacto de tu GDD
+        if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) multiplicador += 0.5f;
+        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) multiplicador += 0.5f;
+        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) multiplicador += 0.5f;
+
+        // 2. Efectividad de Posición (Ejemplo: Volando recibe menos daño de Tierra)
+        if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) multiplicador -= 0.3f;
+        
+        // 3. El stat de Maestría aumenta directamente el multiplicador (Ej: 10 de maestría = +10% de daño)
+        float bonoMaestria = atacante.mastery * 0.01f;
+        multiplicador += bonoMaestria;
+
+        return Mathf.Max(0.1f, multiplicador); // Para asegurar que no cure al enemigo por error xdd
+    }
+
     // --- CÁLCULO DE DAÑO JUGADOR ---
+
     IEnumerator PlayerAttackRoutine(int costoEnergia, float multiplicadorDano) {
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
         EnemyStats target = currentEnemy.GetComponent<EnemyStats>();
 
-        // Si ataca, deja de estar en postura defensiva
         heroesDefendiendo[attacker] = false;
 
-        // Calculamos daño con el multiplicador del ataque especial
-        float baseDamage = attacker.GetTotalAttack() * multiplicadorDano;
+        // Calculamos debilidades y maestría
+        float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target);
+        
+        // Daño Total = (Ataque * Multiplicador Ataque Especial * Multiplicador Clase) - Defensa
+        float baseDamage = attacker.GetTotalAttack() * multiplicadorDano * multiplicadorClase;
         int damage = Mathf.RoundToInt(baseDamage) - target.defense; 
         if (damage < 1) damage = 1; 
 
-        Debug.Log($"¡{attacker.unitName} ataca al enemigo! Hizo {damage} de daño. (HP Enemigo: {target.currentHP} -> {target.currentHP - damage})");
+        Debug.Log($"¡{attacker.unitName} ataca! (Bono Debilidad/Maestría: x{multiplicadorClase}). Hizo {damage} de daño.");
         target.TakeDamage(damage);
 
         yield return new WaitForSecondsRealtime(1f); 
         ActualizarPantallaVida();
-        AvanzarTurno(); // Pasamos al siguiente en la fila
+        AvanzarTurno(); 
     }
 
     // --- CÁLCULO DE DAÑO ENEMIGO ---
@@ -249,34 +272,51 @@ public class CombatManager : MonoBehaviour {
         EnemyStats enemyAttacker = currentActor.GetComponent<EnemyStats>();
         HeroStats[] heroes = FindObjectsOfType<HeroStats>();
 
-        // El enemigo escoge a un héroe VIVO al azar
         List<HeroStats> heroesVivos = new List<HeroStats>();
         foreach (var hero in heroes) {
             if (hero.currentHP > 0) heroesVivos.Add(hero);
         }
 
         if (heroesVivos.Count > 0 && enemyAttacker != null) {
-            int randomTarget = Random.Range(0, heroesVivos.Count);
-            HeroStats targetHero = heroesVivos[randomTarget];
+            HeroStats targetHero = heroesVivos[Random.Range(0, heroesVivos.Count)];
 
-            int damage = enemyAttacker.attack - targetHero.defense;
-            if (damage < 1) damage = 1;
+            // Asignar tecla de esquive según el GDD
+            KeyCode teclaEsquive = KeyCode.Space;
+            if (targetHero.unitName.Contains("Sieg")) teclaEsquive = KeyCode.E;
+            else if (targetHero.unitName.Contains("Merlin")) teclaEsquive = KeyCode.R;
+            else if (targetHero.unitName.Contains("Heracles")) teclaEsquive = KeyCode.T;
 
-            if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
-                damage = damage / 2; 
+            Debug.Log($"¡El enemigo va a atacar a {targetHero.unitName}! Presiona {teclaEsquive} para esquivar.");
+
+            bool terminoEsquive = false;
+
+            // Lanzamos el QTE de defensa
+            QTEManager.Instance.IniciarEsquive(teclaEsquive, (multiplicadorEsquive) => {
+                // Si multiplicadorEsquive es 1.5f (Perfect), esquivó. Si es 0.5f (Failure), se lo comió.
+                int damage = enemyAttacker.attack - targetHero.defense;
                 if (damage < 1) damage = 1;
-                Debug.Log($"¡El enemigo ataca a {targetHero.unitName}, pero SE DEFIENDE! Recibe: {damage}.");
-            } else {
-                Debug.Log($"¡El enemigo ataca a {targetHero.unitName}! Recibe: {damage}.");
-            }
 
-            targetHero.TakeDamage(damage);
+                if (multiplicadorEsquive >= 1.5f) {
+                    Debug.Log($"¡{targetHero.unitName} ESQUIVÓ EL ATAQUE PERFECTAMENTE!");
+                    damage = 0; 
+                } else if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
+                    damage = damage / 2;
+                    Debug.Log($"¡{targetHero.unitName} no esquivó, pero ESTÁ DEFENDIENDO! Recibe: {damage}.");
+                } else {
+                    Debug.Log($"¡{targetHero.unitName} se comió el ataque! Recibe: {damage}.");
+                }
 
-            ActualizarPantallaVida();
+                targetHero.TakeDamage(damage);
+                ActualizarPantallaVida();
+                terminoEsquive = true;
+            });
+
+            // Esperamos a que el jugador termine el QTE antes de avanzar de turno
+            yield return new WaitUntil(() => terminoEsquive);
         }
 
         yield return new WaitForSecondsRealtime(1f);
-        AvanzarTurno(); // Termina el turno del enemigo, pasamos al siguiente
+        AvanzarTurno(); 
     }
 
     void EndCombat(bool playerWon) {

@@ -8,7 +8,7 @@ public class EnemyStats : UnitStats {
 
     [Tooltip("Probabilidad de soltar el arma (0 a 100%).")]
     [Range(0, 100)]
-    public int dropChance = 20; // Aquí está tu 20% de probabilidad de soltar el arma modificable desde el Inspector
+    public int dropChance = 20; 
 
     void Start() {
         currentHP = maxHP;

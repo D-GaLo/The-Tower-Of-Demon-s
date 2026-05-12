@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq; // Necesario para ordenar listas fácilmente
+using System.Linq;
 using TMPro;
 
 public enum CombatState { START, WAITING_FOR_INPUT, BUSY, WON, LOST }
@@ -30,14 +30,16 @@ public class CombatManager : MonoBehaviour {
     private Dictionary<GameObject, Vector3> heroOriginalPositions = new Dictionary<GameObject, Vector3>();
     private Dictionary<HeroStats, bool> heroesDefendiendo = new Dictionary<HeroStats, bool>();
 
-    // --- NUEVO: Sistema de Turnos Dinámicos ---
     private List<GameObject> turnQueue = new List<GameObject>();
-    private GameObject currentActor; // El que está atacando en este momento
+    private GameObject currentActor; 
 
     [Header("Sistema de Formación")]
     public GameObject panelFormacion;
-    public TextMeshProUGUI[] textosFormacion; // Arrastra aquí los 3 "Texto_Nombre" de tus slots
+    public TextMeshProUGUI[] textosFormacion; 
     public List<HeroStats> listaParty = new List<HeroStats>();
+
+    [Header("Guía de Fortalezas")]
+    public GameObject panelGuiaFortalezas;
 
     void Awake() {
         if (Instance == null) Instance = this;
@@ -54,7 +56,6 @@ public class CombatManager : MonoBehaviour {
             listaParty = FindObjectsOfType<HeroStats>().ToList();
         }
 
-        // Mostramos el menú de formación y actualizamos los nombres
         if (panelFormacion != null) {
             ActualizarTextosFormacion();
             panelFormacion.SetActive(true);
@@ -72,7 +73,6 @@ public class CombatManager : MonoBehaviour {
         heroOriginalPositions.Clear(); 
         heroesDefendiendo.Clear(); 
 
-        // AHORA USAMOS listaParty PARA TELETRANSPORTARLOS
         for (int i = 0; i < listaParty.Count && i < heroPositions.Length; i++) {
             GameObject heroObj = listaParty[i].gameObject;
             
@@ -91,9 +91,7 @@ public class CombatManager : MonoBehaviour {
         AvanzarTurno();
     }
 
-    // --- NUEVAS FUNCIONES PARA LOS BOTONES QUE ORDENAN LOS HERÓES ---
     public void ActualizarTextosFormacion() {
-        // Recorre los slots y les pone el nombre del héroe que está en esa posición de la lista
         for (int i = 0; i < textosFormacion.Length; i++) {
             if (i < listaParty.Count && textosFormacion[i] != null) {
                 textosFormacion[i].text = listaParty[i].unitName;
@@ -123,10 +121,9 @@ public class CombatManager : MonoBehaviour {
 
     public void ConfirmarFormacion() {
         if (panelFormacion != null) panelFormacion.SetActive(false);
-        StartCoroutine(CombatSequence()); // ¡Ahora sí, a pelear!
+        StartCoroutine(CombatSequence()); 
     }
 
-    // --- MAGIA: ORDENAR POR VELOCIDAD ---
     void CalcularOrdenDeTurnos() {
         turnQueue.Clear();
         
@@ -136,7 +133,6 @@ public class CombatManager : MonoBehaviour {
             if (h.currentHP > 0) turnQueue.Add(h.gameObject);
         }
 
-        // Agregamos al enemigo (si está vivo)
         EnemyStats eStats = currentEnemy.GetComponent<EnemyStats>();
         if (eStats != null && eStats.currentHP > 0) {
             turnQueue.Add(currentEnemy);
@@ -151,7 +147,7 @@ public class CombatManager : MonoBehaviour {
         }
     }
 
-    // Función auxiliar para leer la velocidad sin importar si es héroe o enemigo
+    // Función auxiliar para leer la velocidad 
     int GetSpeed(GameObject actor) {
         HeroStats hs = actor.GetComponent<HeroStats>();
         if (hs != null) return hs.speed;
@@ -160,30 +156,22 @@ public class CombatManager : MonoBehaviour {
         return 0;
     }
 
-    // --- CONTROLADOR DE TURNOS ---
     void AvanzarTurno() {
-        // 1. Revisar si el combate ya terminó
         if (RevisarVictoriaODerrota()) return;
-
-        // 2. Si la fila se vació, volvemos a calcular una nueva ronda
         if (turnQueue.Count == 0) {
             CalcularOrdenDeTurnos();
         }
 
-        // 3. Sacamos al primero de la fila
         currentActor = turnQueue[0];
         turnQueue.RemoveAt(0);
 
-        // Si por alguna razón el que sigue ya está muerto, saltamos su turno
         if (EstaMuerto(currentActor)) {
             AvanzarTurno();
             return;
         }
 
-        // 4. ¿De quién es el turno?
         HeroStats heroActor = currentActor.GetComponent<HeroStats>();
         if (heroActor != null) {
-            // ES TURNO DE UN HÉROE
             state = CombatState.WAITING_FOR_INPUT;
             Debug.Log($"¡Es turno de {heroActor.unitName}! Esperando acción...");
             if (panelBotonesAccion != null){ 
@@ -192,7 +180,6 @@ public class CombatManager : MonoBehaviour {
                 PosicionarMenuSobreHeroe(currentActor); 
             }
         } else {
-            // ES TURNO DEL ENEMIGO
             state = CombatState.BUSY;
             if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
             StartCoroutine(EnemyTurnRoutine());
@@ -210,7 +197,7 @@ public class CombatManager : MonoBehaviour {
     bool RevisarVictoriaODerrota() {
         EnemyStats enemyStats = currentEnemy.GetComponent<EnemyStats>();
         if (enemyStats == null || enemyStats.currentHP <= 0) {
-            EndCombat(true); // Enemigo muerto = Victoria
+            EndCombat(true); 
             return true;
         }
 
@@ -221,7 +208,7 @@ public class CombatManager : MonoBehaviour {
         }
         
         if (todosMuertos) {
-            EndCombat(false); // Todos los héroes muertos = Derrota
+            EndCombat(false); 
             return true;
         }
         return false;
@@ -230,10 +217,8 @@ public class CombatManager : MonoBehaviour {
     void PosicionarMenuSobreHeroe(GameObject heroe) {
         if (Camera.main == null || panelBotonesAccion == null) return;
         
-        // Convertimos la posición 3D del héroe (+ altura) a coordenadas 2D de la pantalla
         Vector3 posicionPantalla = Camera.main.WorldToScreenPoint(heroe.transform.position + menuOffset);
         
-        // Movemos el panel a esa posición
         panelBotonesAccion.transform.position = posicionPantalla;
     }
 
@@ -249,7 +234,6 @@ public class CombatManager : MonoBehaviour {
     }
 
     
-    // --- ACCIÓN: DEFENDER ---
     public void OnPlayerDefendButton() {
         if (state != CombatState.WAITING_FOR_INPUT) return;
         if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
@@ -261,7 +245,7 @@ public class CombatManager : MonoBehaviour {
             Debug.Log($"¡{hero.unitName} adopta una postura defensiva!");
         }
         
-        AvanzarTurno(); // Termina su turno al instante
+        AvanzarTurno(); 
     }
 
     public void OnPlayerFleeButton() {
@@ -468,6 +452,12 @@ public class CombatManager : MonoBehaviour {
 
         } else {
             Debug.Log("¡No tienes suficiente energía para este corte!");
+        }
+    }
+
+    public void ToggleGuiaFortalezas() {
+        if (panelGuiaFortalezas != null) {
+            panelGuiaFortalezas.SetActive(!panelGuiaFortalezas.activeSelf);
         }
     }
 }

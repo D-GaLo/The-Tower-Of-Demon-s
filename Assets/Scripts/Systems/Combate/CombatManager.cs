@@ -45,7 +45,6 @@ public class CombatManager : MonoBehaviour {
     }
 
     public void StartCombat(GameObject enemy) {
-        Time.timeScale = 1f;
         currentEnemy = enemy;
         state = CombatState.START;
         
@@ -65,7 +64,6 @@ public class CombatManager : MonoBehaviour {
     }
 
     IEnumerator CombatSequence() {
-        yield return null;
         Debug.Log("Teletransportando según formación elegida...");
         
         enemyOriginalPosition = currentEnemy.transform.position; 
@@ -87,7 +85,7 @@ public class CombatManager : MonoBehaviour {
             }
         }
 
-        yield return new WaitForSeconds(1f); 
+        yield return new WaitForSecondsRealtime(1f); 
 
         CalcularOrdenDeTurnos();
         AvanzarTurno();
@@ -313,7 +311,7 @@ public class CombatManager : MonoBehaviour {
         Debug.Log($"¡{attacker.unitName} ataca! (Bono Debilidad/Maestría: x{multiplicadorClase}). Hizo {damage} de daño.");
         target.TakeDamage(damage);
 
-        yield return new WaitForSeconds(1f); 
+        yield return new WaitForSecondsRealtime(1f); 
         ActualizarPantallaVida();
         AvanzarTurno(); 
     }
@@ -321,7 +319,7 @@ public class CombatManager : MonoBehaviour {
     // --- CÁLCULO DE DAÑO ENEMIGO ---
     IEnumerator EnemyTurnRoutine() {
         Debug.Log("Turno del enemigo...");
-        yield return new WaitForSeconds(1f); 
+        yield return new WaitForSecondsRealtime(1f); 
 
         EnemyStats enemyAttacker = currentActor.GetComponent<EnemyStats>();
         HeroStats[] heroes = FindObjectsOfType<HeroStats>();

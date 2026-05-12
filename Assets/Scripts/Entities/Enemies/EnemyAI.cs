@@ -54,7 +54,11 @@ public class EnemyAI : MonoBehaviour {
             rb.velocity = Vector2.zero; 
             return;
         }
-        
+
+        if (GameFlowController.Instance != null && GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf) {
+            rb.velocity = Vector2.zero;
+            return;
+        }
 
         float distance = Vector2.Distance(transform.position, player.position);
 

@@ -16,7 +16,12 @@ public class PartyFollower : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        if (targetToFollow == null) return;
+        
+        if (targetToFollow == null || Time.timeScale == 0) return;
+        
+        if (GameFlowController.Instance != null && GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf) {
+            return;
+        }
 
         historialPosiciones.Add(targetToFollow.position);
 

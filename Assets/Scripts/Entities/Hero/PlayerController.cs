@@ -46,8 +46,13 @@ public class PlayerController : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        if (Time.timeScale == 0) {
-            rb.velocity = Vector2.zero; // Detiene resbalones si se pausa
+       if (Time.timeScale == 0) {
+            rb.velocity = Vector2.zero; 
+            return;
+        }
+
+        if (GameFlowController.Instance != null && GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf) {
+            rb.velocity = Vector2.zero;
             return;
         }
         rb.velocity = inputMovimiento.normalized * speed;

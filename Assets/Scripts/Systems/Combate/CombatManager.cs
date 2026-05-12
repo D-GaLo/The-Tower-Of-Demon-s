@@ -10,11 +10,11 @@ public class CombatManager : MonoBehaviour {
     public static CombatManager Instance;
 
     public CombatState state;
-    private GameObject currentEnemy;
+    public List<GameObject> activeEnemies = new List<GameObject>();
 
     [Header("Marcadores de Arena")]
     public Transform[] heroPositions; 
-    public Transform enemyPosition;   
+    public Transform[] enemyPositions;   
 
     [Header("UI Menús Flotantes")]
     public GameObject panelBotonesAccion; 
@@ -41,14 +41,25 @@ public class CombatManager : MonoBehaviour {
     [Header("Guía de Fortalezas")]
     public GameObject panelGuiaFortalezas;
 
+    [Header("Menú Selección Enemigo")]
+    public GameObject menuSeleccionEnemigo;
+    public UnityEngine.UI.Button[] botonesSeleccionEnemigo; 
+    public TextMeshProUGUI[] textosBotonesEnemigo; 
+
+    // Variables para "guardar" el ataque mientras el jugador elige a la víctima
+    private int ataquePendienteCosto;
+    private float ataquePendienteMultiplicador;
+    private int ataquePendienteSecuencia;
+    private bool ataquePendienteEsEspecial;
+
     void Awake() {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
 
     public void StartCombat(GameObject enemy) {
-        currentEnemy = enemy;
-        state = CombatState.START;
+        activeEnemies.Clear();
+        activeEnemies.Add(enemy);
         
         if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
         
@@ -67,14 +78,20 @@ public class CombatManager : MonoBehaviour {
     IEnumerator CombatSequence() {
         Debug.Log("Teletransportando según formación elegida...");
         
-        enemyOriginalPosition = currentEnemy.transform.position; 
-        currentEnemy.transform.position = enemyPosition.position; 
-        
-        EnemyStats statsEnemigo = currentEnemy.GetComponent<EnemyStats>();
-        if (statsEnemigo != null) {
-            statsEnemigo.ActivarUICombate();
+        enemyOriginalPosition = activeEnemies[0].transform.position;
+        int enemigosExtra = Random.Range(0, 3); // Spawnea de 1 a 3
+        for(int i = 0; i < enemigosExtra; i++) {
+            GameObject clon = Instantiate(activeEnemies[0]);
+            clon.name = activeEnemies[0].name + " " + (i + 2); 
+            clon.GetComponent<EnemyStats>().unitName = clon.name;
+            activeEnemies.Add(clon);
         }
 
+        for(int i = 0; i < activeEnemies.Count && i < enemyPositions.Length; i++) {
+            activeEnemies[i].transform.position = enemyPositions[i].position;
+            EnemyStats statsEnemigo = activeEnemies[i].GetComponent<EnemyStats>();
+            if (statsEnemigo != null) statsEnemigo.ActivarUICombate();
+        }
 
         heroOriginalPositions.Clear(); 
         heroesDefendiendo.Clear(); 
@@ -139,9 +156,9 @@ public class CombatManager : MonoBehaviour {
             if (h.currentHP > 0) turnQueue.Add(h.gameObject);
         }
 
-        EnemyStats eStats = currentEnemy.GetComponent<EnemyStats>();
-        if (eStats != null && eStats.currentHP > 0) {
-            turnQueue.Add(currentEnemy);
+        foreach(var enemyObj in activeEnemies) {
+            EnemyStats eStats = enemyObj.GetComponent<EnemyStats>();
+            if (eStats != null && eStats.currentHP > 0) turnQueue.Add(enemyObj);
         }
 
         // Ordenamos la lista de mayor Velocidad a menor Velocidad
@@ -201,8 +218,16 @@ public class CombatManager : MonoBehaviour {
     }
 
     bool RevisarVictoriaODerrota() {
-        EnemyStats enemyStats = currentEnemy.GetComponent<EnemyStats>();
-        if (enemyStats == null || enemyStats.currentHP <= 0) {
+        bool todosEnemigosMuertos = true;
+        foreach(var enemyObj in activeEnemies) {
+            EnemyStats eStats = enemyObj.GetComponent<EnemyStats>();
+            if (eStats != null && eStats.currentHP > 0) {
+                todosEnemigosMuertos = false;
+                break;
+            }
+        }
+
+        if (todosEnemigosMuertos) {
             EndCombat(true); 
             return true;
         }
@@ -284,21 +309,19 @@ public class CombatManager : MonoBehaviour {
 
     // --- CÁLCULO DE DAÑO JUGADOR ---
 
-    IEnumerator PlayerAttackRoutine(int costoEnergia, float multiplicadorDano) {
+    IEnumerator PlayerAttackRoutine(GameObject targetEnemyObj, float multiplicadorDano) {
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
-        EnemyStats target = currentEnemy.GetComponent<EnemyStats>();
+        EnemyStats target = targetEnemyObj.GetComponent<EnemyStats>();
 
         heroesDefendiendo[attacker] = false;
 
-        // Calculamos debilidades y maestría
         float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target);
         
-        // Daño Total = (Ataque * Multiplicador Ataque Especial * Multiplicador Clase) - Defensa
         float baseDamage = attacker.GetTotalAttack() * multiplicadorDano * multiplicadorClase;
         int damage = Mathf.RoundToInt(baseDamage) - target.defense; 
         if (damage < 1) damage = 1; 
 
-        Debug.Log($"¡{attacker.unitName} ataca! (Bono Debilidad/Maestría: x{multiplicadorClase}). Hizo {damage} de daño.");
+        Debug.Log($"¡{attacker.unitName} ataca a {target.unitName}! (Bono x{multiplicadorClase}). Hizo {damage} de daño.");
         target.TakeDamage(damage);
 
         yield return new WaitForSecondsRealtime(1f); 
@@ -365,7 +388,7 @@ public class CombatManager : MonoBehaviour {
         if (playerWon) {
             state = CombatState.WON;
             Debug.Log("¡Termina el combate: VICTORIA!");
-            EnemyStats enemyStats = currentEnemy.GetComponent<EnemyStats>();
+            EnemyStats enemyStats = activeEnemies[0].GetComponent<EnemyStats>();
             if (enemyStats != null) {
                 WeaponData droppedWeapon = enemyStats.TryGetDrop(); 
                 if (droppedWeapon != null) {
@@ -393,6 +416,7 @@ public class CombatManager : MonoBehaviour {
         if (menuPrincipal != null) menuPrincipal.SetActive(false);
         if (menuTipoAtaque != null) menuTipoAtaque.SetActive(false);
         if (menuEspeciales != null) menuEspeciales.SetActive(false);
+        if (menuSeleccionEnemigo != null) menuSeleccionEnemigo.SetActive(false);
 
         if (menuAMostrar != null) menuAMostrar.SetActive(true);
     }
@@ -413,51 +437,71 @@ public class CombatManager : MonoBehaviour {
     }
 
     // --- ACCIÓN: ATACAR ---
+    
     public void OnAtaqueNormal() {
-        if (state != CombatState.WAITING_FOR_INPUT) return;
-        panelBotonesAccion.SetActive(false);
-        state = CombatState.BUSY;
-        StartCoroutine(PlayerAttackRoutine(0, 1f)); // 0 costo, x1 daño
+        PrepararAtaque(0, 1f, 0, false); // Normal no gasta energía ni usa QTE
     }
 
-    // --- BOTONES DE CORTES ESPECIALES ---
-    public void OnCorteChido() {
-        // Agregamos un 3er parámetro: la cantidad de teclas que van a salir (ej. 3 letras)
-        EjecutarAtaqueEspecial(10, 1.5f, 3); 
-    }
+    public void OnCorteChido() { PrepararAtaque(10, 1.5f, 3, true); }
+    public void OnCortePro() { PrepararAtaque(20, 2.0f, 4, true); }
+    public void OnCorteLoko() { PrepararAtaque(50, 3.5f, 6, true); }
 
-    public void OnCortePro() {
-        EjecutarAtaqueEspecial(20, 2.0f, 4); // Secuencia de 4 letras
-    }
-
-    public void OnCorteLoko() {
-        EjecutarAtaqueEspecial(50, 3.5f, 6); // Secuencia de 6 letras, más difícil
-    }
-
-    void EjecutarAtaqueEspecial(int costoEnergia, float multiplicadorDanoBase, int longitudSecuencia) {
+    void PrepararAtaque(int costo, float mult, int seqLen, bool esEspecial) {
         if (state != CombatState.WAITING_FOR_INPUT) return;
 
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
         
-        // Verificamos si tiene suficiente energía
-        if (attacker.UseEnergy(costoEnergia)) {
-            panelBotonesAccion.SetActive(false);
-            state = CombatState.BUSY;
-            ActualizarPantallaVida(); // Refrescamos la barra amarilla de la interfaz
-            
-            Debug.Log("¡Iniciando secuencia QTE!");
-
-            
-            // Llamamos al QTEManager. Cuando el jugador termine (falle o acierte), 
-            // el QTEManager nos va a devolver un 'multiplicadorQTE' (ej. 1.5 si fue Perfecto, 0.5 si falló)
-            QTEManager.Instance.IniciarQTE(longitudSecuencia, (multiplicadorQTE) => {     
-                Debug.Log($"QTE Terminado con multiplicador: {multiplicadorQTE}"); 
-                float multiplicadorFinal = multiplicadorDanoBase * multiplicadorQTE;
-                StartCoroutine(PlayerAttackRoutine(costoEnergia, multiplicadorFinal));
-            });
-
-        } else {
+        // Revisamos si tiene energía ANTES de abrir el menú de selección
+        if (esEspecial && attacker.currentEnergy < costo) {
             Debug.Log("¡No tienes suficiente energía para este corte!");
+            return;
+        }
+
+        // Guardamos los datos del ataque en la memoria
+        ataquePendienteCosto = costo;
+        ataquePendienteMultiplicador = mult;
+        ataquePendienteSecuencia = seqLen;
+        ataquePendienteEsEspecial = esEspecial;
+
+        // Actualizamos los botones para que solo muestren enemigos vivos
+        for (int i = 0; i < botonesSeleccionEnemigo.Length; i++) {
+            if (i < activeEnemies.Count && activeEnemies[i] != null && activeEnemies[i].GetComponent<EnemyStats>().currentHP > 0) {
+                botonesSeleccionEnemigo[i].gameObject.SetActive(true);
+                textosBotonesEnemigo[i].text = activeEnemies[i].GetComponent<EnemyStats>().unitName;
+            } else {
+                botonesSeleccionEnemigo[i].gameObject.SetActive(false); // Apagamos el botón si no hay enemigo o está muerto
+            }
+        }
+
+        MostrarMenu(menuSeleccionEnemigo);
+    }
+
+    // --- ACCIÓN: CONFIRMAR EL OBJETIVO Y ATACAR ---
+    public void ConfirmarAtaqueAEnemigo(int enemyIndex) {
+        if (state != CombatState.WAITING_FOR_INPUT) return;
+
+        // Seleccionamos al enemigo de la lista según el botón que presionó
+        GameObject targetEnemyObj = activeEnemies[enemyIndex];
+        HeroStats attacker = currentActor.GetComponent<HeroStats>();
+
+        // Ahora sí, descontamos la energía
+        if (ataquePendienteEsEspecial) {
+            attacker.UseEnergy(ataquePendienteCosto);
+            ActualizarPantallaVida();
+        }
+
+        panelBotonesAccion.SetActive(false);
+        state = CombatState.BUSY;
+
+        if (ataquePendienteEsEspecial) {
+            Debug.Log("¡Iniciando secuencia QTE!");
+            QTEManager.Instance.IniciarQTE(ataquePendienteSecuencia, (multiplicadorQTE) => {     
+                float multiplicadorFinal = ataquePendienteMultiplicador * multiplicadorQTE;
+                StartCoroutine(PlayerAttackRoutine(targetEnemyObj, multiplicadorFinal));
+            });
+        } else {
+            // Ataque normal directo
+            StartCoroutine(PlayerAttackRoutine(targetEnemyObj, 1f));
         }
     }
 

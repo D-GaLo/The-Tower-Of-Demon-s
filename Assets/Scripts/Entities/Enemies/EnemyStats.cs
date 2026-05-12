@@ -13,36 +13,33 @@ public class EnemyStats : UnitStats {
     public Image circuloClase;
     public Image circuloPosicion;
 
+    void Awake() {
+        if (canvasUI != null) canvasUI.SetActive(false);
+    }
+
     void Start() {
         currentHP = maxHP;
         if (string.IsNullOrEmpty(unitName)) {
             unitName = gameObject.name;
         }
-        
-        // APAGAMOS EL CANVAS AL INICIAR PARA QUE NO SE VEA EN EL MAPA
-        if (canvasUI != null) canvasUI.SetActive(false);
+        // (Ya quitamos el código de apagar el Canvas de aquí)
     }
 
-    // Esta función la llamará el CombatManager cuando los clone en la arena
     public void ActivarUICombate() {
         if (canvasUI != null) canvasUI.SetActive(true);
         ActualizarVisuales();
     }
 
-    // Sobreescribimos la función de daño para que la barra se mueva
     public override void TakeDamage(int damage) {
         base.TakeDamage(damage); 
         ActualizarVisuales();    
     }
 
     public void ActualizarVisuales() {
-        // Actualizar barra de vida
         if (barraVida != null && maxHP > 0) {
-            // Aseguramos que la división use decimales con (float)
             barraVida.fillAmount = (float)currentHP / (float)maxHP;
         }
 
-        // Colorear Círculos
         if (circuloClase != null) {
             if (unitClass == UnitClass.Melee) circuloClase.color = Color.red;
             else if (unitClass == UnitClass.Rango) circuloClase.color = Color.green;

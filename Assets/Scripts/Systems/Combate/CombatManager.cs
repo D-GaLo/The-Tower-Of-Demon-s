@@ -69,6 +69,12 @@ public class CombatManager : MonoBehaviour {
         
         enemyOriginalPosition = currentEnemy.transform.position; 
         currentEnemy.transform.position = enemyPosition.position; 
+        
+        EnemyStats statsEnemigo = currentEnemy.GetComponent<EnemyStats>();
+        if (statsEnemigo != null) {
+            statsEnemigo.ActivarUICombate();
+        }
+
 
         heroOriginalPositions.Clear(); 
         heroesDefendiendo.Clear(); 

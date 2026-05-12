@@ -26,10 +26,9 @@ public class PlayerController : MonoBehaviour {
 
         if (Time.timeScale == 0) return;
 
-        if (CombatManager.Instance.state != CombatState.WON && 
-        CombatManager.Instance.state != CombatState.LOST && 
-        CombatManager.Instance.state != CombatState.START) 
-        {
+        // Si el panel de combate está prendido, Sieg ignora el teclado por completo
+        if (GameFlowController.Instance != null && GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf) {
+            inputMovimiento = Vector2.zero; // Reseteamos a cero para que no se quede patinando
             return; 
         }
 

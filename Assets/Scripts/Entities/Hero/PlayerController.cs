@@ -23,8 +23,15 @@ public class PlayerController : MonoBehaviour {
     }
 
     void Update() {
-        // No permitimos inputs si el juego está en pausa (combate)
+
         if (Time.timeScale == 0) return;
+
+        if (CombatManager.Instance.state != CombatState.WON && 
+        CombatManager.Instance.state != CombatState.LOST && 
+        CombatManager.Instance.state != CombatState.START) 
+        {
+            return; 
+        }
 
         inputMovimiento.x = Input.GetAxisRaw("Horizontal");
         inputMovimiento.y = Input.GetAxisRaw("Vertical");

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class InventarioEnum : MonoBehaviour
 {
-    // Forma correcta y segura de hacer un Singleton en C#
+
     public static InventarioEnum Instance { get; private set; }
 
     private int[] cantidades;

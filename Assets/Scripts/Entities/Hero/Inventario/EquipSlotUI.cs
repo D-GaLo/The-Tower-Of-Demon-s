@@ -56,7 +56,11 @@ public class EquipSlotUI : MonoBehaviour, IDropHandler, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData e)
     {
-        if (e.button == PointerEventData.InputButton.Right && equipo != null){
+        if (e.button == PointerEventData.InputButton.Left){
+            InventarioPanelUI.Instance.AbrirParaSlot(this);
+        }
+
+        else if (e.button == PointerEventData.InputButton.Right && equipo != null){
             equipo.Desequipar(slotIndex);
             Refrescar();
         }

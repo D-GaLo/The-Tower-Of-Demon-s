@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class InventarioSlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class InventarioSlotUI : MonoBehaviour, IPointerClickHandler
 {
     public Item item;
     public Image iconoImagen;
@@ -23,32 +23,12 @@ public class InventarioSlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, 
         cantidadTexto.text = cantidad > 0 ? cantidad.ToString() : "";
     }
 
-    public void OnBeginDrag(PointerEventData e)
-    {
-        if (InventarioEnum.Instance.GetCantidad(item) <= 0) return;
-
-        itemArrastrado = item;
-        slotOrigen = this;
-
-        fantasma = new GameObject("Fantasma");
-        fantasma.transform.SetParent(transform.root, false); 
-        var img = fantasma.AddComponent<Image>();
-        img.sprite = iconoImagen.sprite;
-        img.raycastTarget = false;
-        var rect = fantasma.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(48, 48);
+    public void OnPointerClick(PointerEventData e){
+        if (InventarioEnum.Instance.GetCantidad(item) > 0)
+        {
+            Debug.Log("Clic en item: " + item);
+            InventarioPanelUI.Instance.SeleccionarItem(item);
+        }
     }
 
-    public void OnDrag(PointerEventData e)
-    {
-        if (fantasma == null) return;
-        fantasma.transform.position = e.position;
-    }
-
-    public void OnEndDrag(PointerEventData e)
-    {
-        if (fantasma != null) Destroy(fantasma);
-        itemArrastrado = Item.None;
-        slotOrigen = null;
-    }
 }

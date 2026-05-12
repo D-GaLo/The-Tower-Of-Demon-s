@@ -54,6 +54,7 @@ public class EnemyAI : MonoBehaviour {
             rb.velocity = Vector2.zero; 
             return;
         }
+        
 
         float distance = Vector2.Distance(transform.position, player.position);
 

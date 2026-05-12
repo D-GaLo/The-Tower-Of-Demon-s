@@ -1,6 +1,5 @@
 using UnityEngine;
 
-// Hereda de UnitStats, así que ya tiene HP, Ataque, Velocidad, etc.
 public class HeroStats : UnitStats {
     
     [Header("Estadísticas Exclusivas de Héroes")]
@@ -11,7 +10,6 @@ public class HeroStats : UnitStats {
     public WeaponData equippedWeapon;
 
     void Start() {
-        // Inicializamos los valores al tope cuando empieza el juego
         currentHP = maxHP;
         currentEnergy = maxEnergy;
     }
@@ -24,7 +22,6 @@ public class HeroStats : UnitStats {
         return false;
     }
 
-    // Calcula el ataque sumando la estadística base más el arma
     public int GetTotalAttack() {
         int total = attack;
         if (equippedWeapon != null) {
@@ -33,7 +30,6 @@ public class HeroStats : UnitStats {
         return total;
     }
 
-    // Intenta ponerse el arma si la clase coincide
     public void TryEquipWeapon(WeaponData newWeapon) {
         if (newWeapon.requiredClass == this.unitClass) {
             equippedWeapon = newWeapon;

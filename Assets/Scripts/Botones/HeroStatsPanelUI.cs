@@ -83,7 +83,10 @@ public class HeroStatsPanelUI : MonoBehaviour
 
 
     public void SwitchTab(int tabIndex)
-    {
+    {   
+        if (InventarioPanelUI.Instance != null && InventarioPanelUI.Instance.panelVisual != null){
+            InventarioPanelUI.Instance.panelVisual.SetActive(false);
+        }
         currentTab = tabIndex;
 
         for (int i = 0; i < contentPanels.Length; i++)

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Menu : MonoBehaviour
 {
+    public GameObject panelCombate;
     public GameObject panelAMostrar; 
 
     void Start()
@@ -28,5 +29,14 @@ public class Menu : MonoBehaviour
             panelAMostrar.SetActive(false);
             Time.timeScale = 1f; 
         }
+    }
+
+    public void SalirJuego()
+    {
+        Debug.Log("Saliendo del juego...");
+        Application.Quit();
+        #if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+        #endif
     }
 }

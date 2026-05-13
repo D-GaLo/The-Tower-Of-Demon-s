@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour {
     private SpriteRenderer spriteSieg;
     private Vector2 direccionMirada = Vector2.right;
     private Vector2 inputMovimiento;
-    private float escalaFija = 0.7f;
+    private float escalaFija = 1f;
 
     void Start() {
         rb = GetComponent<Rigidbody2D>();

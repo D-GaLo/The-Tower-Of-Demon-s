@@ -8,7 +8,7 @@ public class PartyFollower : MonoBehaviour {
 
     private SpriteRenderer spriteHeroe;
     private List<Vector3> historialPosiciones = new List<Vector3>();
-    private float escalaFija = 0.7f;
+    private float escalaFija = 1f;
 
     void Start() {
         spriteHeroe = GetComponent<SpriteRenderer>();

@@ -12,6 +12,7 @@ public class CombatManager : MonoBehaviour {
     public CombatState state;
     public List<GameObject> activeEnemies = new List<GameObject>();
 
+
     [Header("Marcadores de Arena")]
     public Transform[] heroPositions; 
     public Transform[] enemyPositions;   
@@ -284,7 +285,9 @@ public class CombatManager : MonoBehaviour {
         if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
         Debug.Log("¡Retirada táctica!");
         RestaurarPosiciones();
-        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate();
+
+        // Le enviamos 'false' porque huir no cuenta como victoria
+        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate(false);
     }
 
     // --- LÓGICA DE DEBILIDADES Y MAESTRÍA ---
@@ -329,7 +332,7 @@ public class CombatManager : MonoBehaviour {
         AvanzarTurno(); 
     }
 
-    // --- CÁLCULO DE DAÑO ENEMIGO ---
+// --- CÁLCULO DE DAÑO ENEMIGO ---
     IEnumerator EnemyTurnRoutine() {
         Debug.Log("Turno del enemigo...");
         yield return new WaitForSecondsRealtime(1f); 
@@ -345,39 +348,61 @@ public class CombatManager : MonoBehaviour {
         if (heroesVivos.Count > 0 && enemyAttacker != null) {
             HeroStats targetHero = heroesVivos[Random.Range(0, heroesVivos.Count)];
 
-            // Asignar tecla de esquive según el GDD
-            KeyCode teclaEsquive = KeyCode.Space;
-            if (targetHero.unitName.Contains("Sieg")) teclaEsquive = KeyCode.E;
-            else if (targetHero.unitName.Contains("Merlin")) teclaEsquive = KeyCode.R;
-            else if (targetHero.unitName.Contains("Heracles")) teclaEsquive = KeyCode.T;
-
-            Debug.Log($"¡El enemigo va a atacar a {targetHero.unitName}! Presiona {teclaEsquive} para esquivar.");
-
-            bool terminoEsquive = false;
-
-            // Lanzamos el QTE de defensa
-            QTEManager.Instance.IniciarEsquive(teclaEsquive, (multiplicadorEsquive) => {
-                // Si multiplicadorEsquive es 1.5f (Perfect), esquivó. Si es 0.5f (Failure), se lo comió.
+            // --- FASE 5: REVISIÓN DE NIVEL PARA ESQUIVAR ---
+            if (enemyAttacker.level > targetHero.level) {
+                // El enemigo tiene más nivel: Ataque Ineludible (No hay QTE)
+                Debug.Log($"<color=red>¡PELIGRO!</color> ¡{enemyAttacker.unitName} (Lv.{enemyAttacker.level}) es superior a {targetHero.unitName} (Lv.{targetHero.level})! El ataque es ineludible.");
+                
                 int damage = enemyAttacker.attack - targetHero.defense;
                 if (damage < 1) damage = 1;
 
-                if (multiplicadorEsquive >= 1.5f) {
-                    Debug.Log($"¡{targetHero.unitName} ESQUIVÓ EL ATAQUE PERFECTAMENTE!");
-                    damage = 0; 
-                } else if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
+                // Revisamos si al menos el jugador tuvo la inteligencia de ponerse en Guardia en su turno
+                if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
                     damage = damage / 2;
-                    Debug.Log($"¡{targetHero.unitName} no esquivó, pero ESTÁ DEFENDIENDO! Recibe: {damage}.");
+                    Debug.Log($"¡{targetHero.unitName} no pudo esquivar, pero al menos ESTÁ DEFENDIENDO! Recibe: {damage}.");
                 } else {
-                    Debug.Log($"¡{targetHero.unitName} se comió el ataque! Recibe: {damage}.");
+                    Debug.Log($"¡{targetHero.unitName} recibe el impacto de lleno! Recibe: {damage}.");
                 }
 
                 targetHero.TakeDamage(damage);
                 ActualizarPantallaVida();
-                terminoEsquive = true;
-            });
+                
+                // Pausa para que el jugador lea qué pasó antes de cambiar de turno
+                yield return new WaitForSecondsRealtime(2f); 
+            } 
+            else {
+                // El enemigo es de nivel igual o menor: Lógica normal de esquive con QTE
+                KeyCode teclaEsquive = KeyCode.Space;
+                if (targetHero.unitName.Contains("Sieg")) teclaEsquive = KeyCode.E;
+                else if (targetHero.unitName.Contains("Merlin")) teclaEsquive = KeyCode.R;
+                else if (targetHero.unitName.Contains("Heracles")) teclaEsquive = KeyCode.T;
 
-            // Esperamos a que el jugador termine el QTE antes de avanzar de turno
-            yield return new WaitUntil(() => terminoEsquive);
+                Debug.Log($"¡El enemigo va a atacar a {targetHero.unitName}! Presiona {teclaEsquive} para esquivar.");
+
+                bool terminoEsquive = false;
+
+                QTEManager.Instance.IniciarEsquive(teclaEsquive, (multiplicadorEsquive) => {
+                    int damage = enemyAttacker.attack - targetHero.defense;
+                    if (damage < 1) damage = 1;
+
+                    if (multiplicadorEsquive >= 1.5f) {
+                        Debug.Log($"¡{targetHero.unitName} ESQUIVÓ EL ATAQUE PERFECTAMENTE!");
+                        damage = 0; 
+                    } else if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
+                        damage = damage / 2;
+                        Debug.Log($"¡{targetHero.unitName} no esquivó, pero ESTÁ DEFENDIENDO! Recibe: {damage}.");
+                    } else {
+                        Debug.Log($"¡{targetHero.unitName} se comió el ataque! Recibe: {damage}.");
+                    }
+
+                    targetHero.TakeDamage(damage);
+                    ActualizarPantallaVida();
+                    terminoEsquive = true;
+                });
+
+                // Esperamos a que el jugador termine el QTE
+                yield return new WaitUntil(() => terminoEsquive);
+            }
         }
 
         yield return new WaitForSecondsRealtime(1f);
@@ -388,6 +413,32 @@ public class CombatManager : MonoBehaviour {
         if (playerWon) {
             state = CombatState.WON;
             Debug.Log("¡Termina el combate: VICTORIA!");
+
+            // --- NUEVO: CALCULAR Y REPARTIR XP ---
+            int xpDeEstaPelea = 0;
+            // Sumamos la XP de todos los enemigos que enfrentaste en esta arena
+            foreach (GameObject enemyObj in activeEnemies) {
+                if (enemyObj != null) {
+                    EnemyStats eStats = enemyObj.GetComponent<EnemyStats>();
+                    if (eStats != null) {
+                        // Fórmula: Nivel del enemigo * 20 + 30 puntos fijos
+                        xpDeEstaPelea += (eStats.level * 20) + 30;
+                    }
+                }
+            }
+
+            Debug.Log($"<color=yellow>[Fin del Combate]</color> Repartiendo {xpDeEstaPelea} XP al grupo.");
+            foreach (HeroStats heroe in listaParty) {
+                if (heroe != null && heroe.currentHP > 0) { // Solo si sigue vivo
+                    heroe.GanarExperiencia(xpDeEstaPelea);
+                    
+                    // Forzamos a la UI a actualizar la barra de progreso
+                    HeroUI ui = heroe.GetComponent<HeroUI>();
+                    if (ui != null) ui.ActualizarNivelYXP();
+                }
+            }
+            // -------------------------------------
+
             EnemyStats enemyStats = activeEnemies[0].GetComponent<EnemyStats>();
             if (enemyStats != null) {
                 WeaponData droppedWeapon = enemyStats.TryGetDrop(); 
@@ -402,7 +453,9 @@ public class CombatManager : MonoBehaviour {
         }
 
         RestaurarPosiciones();
-        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate();
+
+        // Le avisamos al GameFlow si ganamos (true) o perdimos (false)
+        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate(playerWon);
     }
 
     void RestaurarPosiciones() {

@@ -66,9 +66,11 @@ public class GameFlowController : MonoBehaviour {
         if (pantallaTransicion != null) pantallaTransicion.SetActive(false);
     }
 
-    public void TerminarCombate() {
-        // --- NUEVO: SUMAMOS 1 AL CONTADOR ---
-        combatesCompletados++;
+    public void TerminarCombate(bool victoria) {
+        // Solo sumamos al contador de la fuente de agua si realmente ganamos el combate
+        if (victoria) {
+            combatesCompletados++;
+        }
         StartCoroutine(TransicionAExploracion());
     }
 

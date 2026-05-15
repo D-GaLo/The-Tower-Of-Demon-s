@@ -3,18 +3,32 @@ using UnityEngine.UI;
 using TMPro;
 
 public class HeroUI : MonoBehaviour {
-    [Header("Textos")]
+    [Header("Textos y Barras")]
     public TextMeshProUGUI nombreText;
     public TextMeshProUGUI hpText;
     public TextMeshProUGUI energiaText; 
-
-    [Header("Barras (Imágenes en modo Filled)")]
     public Image barraHP;
     public Image barraEnergia; 
 
-    [Header("Círculos de Información")]
+    // --- NUEVO: UI DE NIVEL Y XP ---
+    [Header("Progreso y Nivel")]
+    public TextMeshProUGUI nivelText;
+    public TextMeshProUGUI xpText; // Muestra "50 / 100"
+    public Image barraXP;
+
+    [Header("Imágenes en la UI (Los círculos)")]
     public Image iconoClase;
     public Image iconoPosicion;
+
+    [Header("Sprites de Clase")]
+    public Sprite spriteMelee;
+    public Sprite spriteRango;
+    public Sprite spriteTanque;
+
+    [Header("Sprites de Posición")]
+    public Sprite spriteTierra;
+    public Sprite spriteBajoTierra;
+    public Sprite spriteVolando;
 
     private HeroStats miHeroe;
 
@@ -22,21 +36,61 @@ public class HeroUI : MonoBehaviour {
         miHeroe = heroe;
         if (nombreText != null) nombreText.text = miHeroe.unitName;
         
-        // --- COLOREAR CLASE Y POSICIÓN EN LA UI ---
+        ActualizarVida();
+        ActualizarEnergia(); 
+        ActualizarNivelYXP(); // <-- NUEVO: Llamamos a la función de progreso
+        
+        AsignarIconos();
+    }
+
+    // --- NUEVO: CÁLCULO DE LA BARRA DE EXPERIENCIA ---
+    public void ActualizarNivelYXP() {
+        if (miHeroe != null) {
+            // Actualizar texto del nivel
+            if (nivelText != null) nivelText.text = "Lv. " + miHeroe.level;
+
+            // Si llegó al nivel máximo
+            if (miHeroe.level >= miHeroe.maxLevel) {
+                if (barraXP != null) barraXP.fillAmount = 1f;
+                if (xpText != null) xpText.text = "MAX";
+            } 
+            else {
+                // Matemáticas para calcular el progreso del nivel ACTUAL
+                int xpBaseDeEsteNivel = miHeroe.xpParaNivel[miHeroe.level - 1]; 
+                int xpParaSiguienteNivel = miHeroe.xpParaNivel[miHeroe.level];
+                
+                int xpConseguidaEnEsteNivel = miHeroe.currentXP - xpBaseDeEsteNivel;
+                int xpRequeridaEnEsteNivel = xpParaSiguienteNivel - xpBaseDeEsteNivel;
+
+                if (barraXP != null) {
+                    barraXP.fillAmount = (float)xpConseguidaEnEsteNivel / (float)xpRequeridaEnEsteNivel;
+                }
+
+                if (xpText != null) {
+                    xpText.text = $"{xpConseguidaEnEsteNivel} / {xpRequeridaEnEsteNivel}";
+                }
+            }
+        }
+    }
+
+    void AsignarIconos() {
         if (iconoClase != null) {
-            if (heroe.unitClass == UnitClass.Melee) iconoClase.color = Color.red;
-            else if (heroe.unitClass == UnitClass.Rango) iconoClase.color = Color.green;
-            else if (heroe.unitClass == UnitClass.Tanque) iconoClase.color = Color.blue;
+            switch (miHeroe.unitClass) {
+                case UnitClass.Melee: iconoClase.sprite = spriteMelee; break;
+                case UnitClass.Rango: iconoClase.sprite = spriteRango; break;
+                case UnitClass.Tanque: iconoClase.sprite = spriteTanque; break;
+            }
+            iconoClase.color = Color.white; 
         }
 
         if (iconoPosicion != null) {
-            if (heroe.unitPosition == UnitPosition.Tierra) iconoPosicion.color = new Color(0.6f, 0.3f, 0f); // Café
-            else if (heroe.unitPosition == UnitPosition.Volando) iconoPosicion.color = Color.cyan;
-            else if (heroe.unitPosition == UnitPosition.BajoTierra) iconoPosicion.color = Color.black;
+            switch (miHeroe.unitPosition) {
+                case UnitPosition.Tierra: iconoPosicion.sprite = spriteTierra; break;
+                case UnitPosition.BajoTierra: iconoPosicion.sprite = spriteBajoTierra; break;
+                case UnitPosition.Volando: iconoPosicion.sprite = spriteVolando; break;
+            }
+            iconoPosicion.color = Color.white; 
         }
-
-        ActualizarVida();
-        ActualizarEnergia(); 
     }
 
     public void ActualizarVida() {

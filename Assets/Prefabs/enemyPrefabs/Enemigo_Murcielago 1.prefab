@@ -22,7 +22,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4136168587686990940, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 60
+      value: 70
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: canvasUI
@@ -41,17 +41,41 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: spriteMelee
+      value: 
+      objectReference: {fileID: 21300000, guid: 12ac23be05122414aa218909128a04e0, type: 3}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: spriteRango
+      value: 
+      objectReference: {fileID: 21300000, guid: b2512865badc5cd41b7c3978ab937ce6, type: 3}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: circuloClase
       value: 
       objectReference: {fileID: 6158741577248552209}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: spriteTanque
+      value: 
+      objectReference: {fileID: 21300000, guid: bd300d1b574730a4e9b7b9321d310f53, type: 3}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: spriteTierra
+      value: 
+      objectReference: {fileID: 21300000, guid: 0a1dc97128119b04f8f038615eb4effd, type: 3}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: unitPosition
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: spriteVolando
+      value: 
+      objectReference: {fileID: 21300000, guid: c15fa3fe0b2f76b489ba5d677f40a9b1, type: 3}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: circuloPosicion
       value: 
       objectReference: {fileID: 3881277888770276178}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: spriteBajoTierra
+      value: 
+      objectReference: {fileID: 21300000, guid: 29861dae79069924091a09bc9670aa3e, type: 3}
     - target: {fileID: 6775870944302813709, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

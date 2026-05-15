@@ -11,9 +11,19 @@ public class GameFlowController : MonoBehaviour {
 
     [Header("UI (Interfaces)")]
     public GameObject pantallaTransicion; 
-    public GameObject bordesNegros; 
     public GameObject uiCombate; 
+    
+    [Header("Botones de Exploración (Ocultos en combate)")]
     public GameObject botonMapa;
+    public GameObject botonEstadisticas;
+    public GameObject botonEspada;
+    public GameObject botonInteraccion;
+    public GameObject visualEspada; 
+
+    // --- NUEVO: CONTADOR DE COMBATES ---
+    [Header("Estadísticas Globales")]
+    public int combatesCompletados = 0;
+
     private GameObject enemigoActual;
     private bool enCombate = false;
 
@@ -23,9 +33,6 @@ public class GameFlowController : MonoBehaviour {
     }
 
     public void IniciarCombate(GameObject enemigo) {
-        // --- LA TRAMPA: Esto nos dirá quién activó el combate realmente ---
-        Debug.Log("🚨 ¡ALERTA DE COMBATE! El objeto enviado al administrador fue: " + (enemigo != null ? enemigo.name : "Nulo/Vacío"));
-
         if (enCombate) return; 
         enCombate = true;
         enemigoActual = enemigo;
@@ -33,61 +40,59 @@ public class GameFlowController : MonoBehaviour {
     }
 
     IEnumerator TransicionACombate() {
-        // 1. Cubrir pantalla (Forzando que se dibuje por encima de TODO)
         if (pantallaTransicion != null) {
             pantallaTransicion.transform.SetAsLastSibling();
             pantallaTransicion.SetActive(true);
         }
 
-        // 2. Pausar el nivel
         Time.timeScale = 0f;
-
         yield return new WaitForSecondsRealtime(0.5f);
 
-        // 3. Apagar bordes, mover cámara y encender UI de combate
-        if (bordesNegros != null) bordesNegros.SetActive(false);
+        if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(true, posicionArenaCombate);;
+        
         if (botonMapa != null) botonMapa.SetActive(false);
-        if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(true, posicionArenaCombate);
+        if (botonEstadisticas != null) botonEstadisticas.SetActive(false);
+        if (botonEspada != null) botonEspada.SetActive(false);
+        if (botonInteraccion != null) botonInteraccion.SetActive(false);
+        if (visualEspada != null) visualEspada.SetActive(false); 
+
+        Time.timeScale = 1f;
         if (uiCombate != null) uiCombate.SetActive(true);
 
-        // Le avisamos al CombatManager que ya llegamos a la arena y puede empezar
         if (CombatManager.Instance != null) {
             CombatManager.Instance.StartCombat(enemigoActual);
         }
 
-        // 4. Quitar la pantalla de transición
         if (pantallaTransicion != null) pantallaTransicion.SetActive(false);
     }
 
     public void TerminarCombate() {
+        // --- NUEVO: SUMAMOS 1 AL CONTADOR ---
+        combatesCompletados++;
         StartCoroutine(TransicionAExploracion());
     }
 
     IEnumerator TransicionAExploracion() {
-        // 1. Cubrir pantalla de nuevo (al frente de todo)
         if (pantallaTransicion != null) {
             pantallaTransicion.transform.SetAsLastSibling();
             pantallaTransicion.SetActive(true);
         }
         
         if (uiCombate != null) uiCombate.SetActive(false);
-
         yield return new WaitForSecondsRealtime(0.5f);
 
-        // 2. Destruir al enemigo con el que chocamos
         if (enemigoActual != null) {
             Destroy(enemigoActual);
         }
 
-        // 3. Restaurar la exploración (El Vector3.zero ya no afecta porque la cámara lo calcula sola)
         if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(false, Vector3.zero);
-        if (bordesNegros != null) bordesNegros.SetActive(true);
-        if (botonMapa != null) botonMapa.SetActive(true); //
         
-        Time.timeScale = 1f; 
-        enCombate = false;
+        if (botonMapa != null) botonMapa.SetActive(true);
+        if (botonEstadisticas != null) botonEstadisticas.SetActive(true);
+        if (botonEspada != null) botonEspada.SetActive(true);
+        if (botonInteraccion != null) botonInteraccion.SetActive(true);
 
-        // 4. Quitar transición
         if (pantallaTransicion != null) pantallaTransicion.SetActive(false);
+        enCombate = false;
     }
 }

@@ -10,13 +10,16 @@ public class UnitStats : MonoBehaviour {
     public UnitClass unitClass;
     public UnitPosition unitPosition;
 
+    [Header("Nivel")]
+    public int level = 1; // Añadido para Héroes (y futuros enemigos)
+
     [Header("Estadísticas Base")]
     public int maxHP = 100;
     public int currentHP;
     public int attack = 10;
     public int defense = 5;
-    public int speed = 10; // Vital para decidir quién ataca primero
-    public int mastery = 0; // Nueva estadística para el sistema de maestrías
+    public int speed = 10; 
+    public int mastery = 0; 
 
     // El método virtual permite que los hijos (Hero o Enemy) lo modifiquen si quieren
     public virtual void TakeDamage(int damage) {

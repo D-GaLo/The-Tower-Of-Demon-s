@@ -8,19 +8,21 @@ public class GameFlowController : MonoBehaviour {
     [Header("Cámara y Posiciones")]
     public RoomCamera camaraPrincipal;
     public Vector3 posicionArenaCombate = new Vector3(1000f, 1000f, -10f);
+    
+    [Tooltip("Arrastra aquí un GameObject vacío para usarlo como punto exacto de reaparición.")]
+    public Transform puntoReaparicion;
 
     [Header("UI (Interfaces)")]
     public GameObject pantallaTransicion; 
     public GameObject uiCombate; 
     
-    [Header("Botones de Exploración (Ocultos en combate)")]
+    [Header("Botones de Exploración")]
     public GameObject botonMapa;
     public GameObject botonEstadisticas;
     public GameObject botonEspada;
     public GameObject botonInteraccion;
     public GameObject visualEspada; 
 
-    // --- NUEVO: CONTADOR DE COMBATES ---
     [Header("Estadísticas Globales")]
     public int combatesCompletados = 0;
 
@@ -32,14 +34,14 @@ public class GameFlowController : MonoBehaviour {
         else Destroy(gameObject);
     }
 
-    public void IniciarCombate(GameObject enemigo) {
+    public void IniciarCombate(GameObject enemigo, bool ventajaJugador = false) {
         if (enCombate) return; 
         enCombate = true;
         enemigoActual = enemigo;
-        StartCoroutine(TransicionACombate());
+        StartCoroutine(TransicionACombate(ventajaJugador));
     }
 
-    IEnumerator TransicionACombate() {
+    IEnumerator TransicionACombate(bool ventajaJugador) {
         if (pantallaTransicion != null) {
             pantallaTransicion.transform.SetAsLastSibling();
             pantallaTransicion.SetActive(true);
@@ -48,7 +50,7 @@ public class GameFlowController : MonoBehaviour {
         Time.timeScale = 0f;
         yield return new WaitForSecondsRealtime(0.5f);
 
-        if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(true, posicionArenaCombate);;
+        if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(true, posicionArenaCombate);
         
         if (botonMapa != null) botonMapa.SetActive(false);
         if (botonEstadisticas != null) botonEstadisticas.SetActive(false);
@@ -60,21 +62,21 @@ public class GameFlowController : MonoBehaviour {
         if (uiCombate != null) uiCombate.SetActive(true);
 
         if (CombatManager.Instance != null) {
-            CombatManager.Instance.StartCombat(enemigoActual);
+            CombatManager.Instance.StartCombat(enemigoActual, ventajaJugador);
         }
 
         if (pantallaTransicion != null) pantallaTransicion.SetActive(false);
     }
 
-    public void TerminarCombate(bool victoria) {
-        // Solo sumamos al contador de la fuente de agua si realmente ganamos el combate
+    // --- MODIFICADO: AHORA RECIBE SI EL JUGADOR HUYÓ ---
+    public void TerminarCombate(bool victoria, bool huyo = false) {
         if (victoria) {
             combatesCompletados++;
         }
-        StartCoroutine(TransicionAExploracion());
+        StartCoroutine(TransicionAExploracion(victoria, huyo));
     }
 
-    IEnumerator TransicionAExploracion() {
+    IEnumerator TransicionAExploracion(bool victoria, bool huyo) {
         if (pantallaTransicion != null) {
             pantallaTransicion.transform.SetAsLastSibling();
             pantallaTransicion.SetActive(true);
@@ -83,8 +85,29 @@ public class GameFlowController : MonoBehaviour {
         if (uiCombate != null) uiCombate.SetActive(false);
         yield return new WaitForSecondsRealtime(0.5f);
 
-        if (enemigoActual != null) {
+        // --- REGLA: EL ENEMIGO SOLO DESAPARECE SI GANAS ---
+        if (victoria && enemigoActual != null) {
             Destroy(enemigoActual);
+        }
+
+        // --- REGLA: CASTIGO POR DERROTA (No aplica si huyes) ---
+        if (!victoria && !huyo) {
+            PlayerController player = FindObjectOfType<PlayerController>();
+            if (player != null) {
+                // Obtenemos la posición del punto (o la de respaldo)
+                Vector3 destino = puntoReaparicion != null ? puntoReaparicion.position : new Vector3(20.9f, -2.5f, 0f);
+                
+                // --- CORRECCIÓN: Evitar que el jugador desaparezca en la profundidad (Eje Z) ---
+                destino.z = player.transform.position.z; 
+                
+                player.TeletransportarAlSpawn(destino);
+            }
+
+            HeroStats[] heroes = FindObjectsOfType<HeroStats>();
+            foreach (HeroStats h in heroes) {
+                h.currentHP = Mathf.Max(1, Mathf.RoundToInt(h.maxHP * 0.25f));
+                h.currentEnergy = 0;
+            }
         }
 
         if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(false, Vector3.zero);

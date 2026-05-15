@@ -87,12 +87,32 @@ public class PlayerController : MonoBehaviour {
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(transform.position, attackRange);
         foreach(Collider2D enemy in hitEnemies) {
             if(enemy.CompareTag("Enemy")) {
-                // Llamamos al GameFlowController en lugar de cargar escena
-                if (GameFlowController.Instance != null) {
-                    GameFlowController.Instance.IniciarCombate(enemy.gameObject);
+                // Buscamos el componente en el padre por si golpeamos un collider hijo
+                EnemyStats stats = enemy.GetComponentInParent<EnemyStats>();
+                
+                if (stats != null && GameFlowController.Instance != null) {
+                    // Le enviamos "true" para indicar que el jugador dio el primer golpe
+                    GameFlowController.Instance.IniciarCombate(stats.gameObject, true);
                 }
                 break; // Solo atacamos a un enemigo a la vez para iniciar la pelea
             }
+        }
+    }
+
+    public void TeletransportarAlSpawn(Vector3 posicion) {
+        if (transform.parent != null) {
+            Rigidbody2D parentRb = transform.parent.GetComponent<Rigidbody2D>();
+            if (parentRb != null) {
+                parentRb.velocity = Vector2.zero; 
+                parentRb.position = posicion;    
+            }
+            transform.parent.position = posicion;
+        } else {
+            if (rb != null) {
+                rb.velocity = Vector2.zero;
+                rb.position = posicion;
+            }
+            transform.position = posicion;
         }
     }
 }

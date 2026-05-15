@@ -1,11 +1,20 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class EnemyStats : UnitStats {
     
-    [Header("Configuración de Nivel")]
+    [Header("Configuración de Nivel y Jefe")]
     [Tooltip("Activa esto en Jefes o enemigos fijos para que el Spawner no cambie su nivel. Pon el nivel manualmente arriba.")]
     public bool nivelManual = false; 
+    public bool esJefe = false;
+
+    [Header("Compañeros de Combate")]
+    [Tooltip("Enemigos que pueden aparecer junto a este enemigo en combates normales.")]
+    public GameObject[] posiblesCompaneros;
+    [Tooltip("Enemigos que el Jefe invocará cuando su vida baje al 50%.")]
+    public GameObject[] enemigosAInvocar;
+    [HideInInspector] public bool yaInvoco = false;
 
     [Header("Recompensas (Drop)")]
     public WeaponData weaponDrop;
@@ -16,6 +25,7 @@ public class EnemyStats : UnitStats {
     public Image barraVida;
     public Image circuloClase;
     public Image circuloPosicion;
+    public TextMeshProUGUI textoNivel;
 
     [Header("Sprites de Clase")]
     public Sprite spriteMelee;
@@ -51,10 +61,10 @@ public class EnemyStats : UnitStats {
             int nivelesExtra = level - 1;
             
             // Fórmula genérica de crecimiento (Puedes cambiar estos números si quieres enemigos más duros)
-            maxHP += (nivelesExtra * 25);
-            attack += (nivelesExtra * 8);
-            defense += (nivelesExtra * 6);
-            speed += (nivelesExtra * 4);
+            maxHP += (nivelesExtra * 50);
+            attack += (nivelesExtra * 25);
+            defense += (nivelesExtra * 25);
+            speed += (nivelesExtra * 20);
         }
         
         // Lo curamos al tope de su nueva vida máxima
@@ -75,6 +85,8 @@ public class EnemyStats : UnitStats {
         if (barraVida != null && maxHP > 0) {
             barraVida.fillAmount = (float)currentHP / (float)maxHP;
         }
+
+        if (textoNivel != null) textoNivel.text = "Lv. " + level;
 
         if (circuloClase != null) {
             if (unitClass == UnitClass.Melee) circuloClase.sprite = spriteMelee;

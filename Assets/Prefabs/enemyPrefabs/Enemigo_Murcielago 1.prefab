@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 138455073839732953, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -50.1
+      objectReference: {fileID: 0}
     - target: {fileID: 3382088979852692270, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: m_FlipX
       value: 1
@@ -18,11 +22,11 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: a3ac3ffc03599ae4ba44c2ab79b29aaa, type: 3}
     - target: {fileID: 4136168587686990940, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -21.915
+      value: -21.4
       objectReference: {fileID: 0}
     - target: {fileID: 4136168587686990940, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 70
+      value: 77
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: canvasUI
@@ -76,6 +80,10 @@ PrefabInstance:
       propertyPath: spriteBajoTierra
       value: 
       objectReference: {fileID: 21300000, guid: 29861dae79069924091a09bc9670aa3e, type: 3}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: posiblesCompaneros.Array.data[0]
+      value: 
+      objectReference: {fileID: 7931088695150446534, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
     - target: {fileID: 6775870944302813709, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -115,6 +123,14 @@ PrefabInstance:
     - target: {fileID: 6775870944302813709, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7841298275461971768, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 39.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7841298275461971768, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 77
       objectReference: {fileID: 0}
     - target: {fileID: 7931088695150446534, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: m_Name

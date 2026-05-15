@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI; 
 using System.Collections;
 using System.Collections.Generic;
 
@@ -8,27 +9,35 @@ public class QTEManager : MonoBehaviour {
 
     [Header("UI Elementos")]
     public GameObject panelQTE;
-    public TextMeshProUGUI[] letrasUI;
+    public GameObject[] contenedoresTeclas; 
+    public Image[] imagenesTeclas;          
     public TextMeshProUGUI textoResultado;
+    public TextMeshProUGUI textoPresiona;
+    public Image barraTiempo;               
+
+    [Header("Sprites de tus Teclas (¡Asígnalos!)")]
+    public Sprite sprite_A;
+    public Sprite sprite_S;
+    public Sprite sprite_W;
+    public Sprite sprite_D;
+    public Sprite sprite_E;
+    public Sprite sprite_R;
+    public Sprite sprite_T;
 
     [Header("Configuración")]
-    public float tiempoParaQTE = 3.0f; // Tienes 3 segundos para completarlo
+    public float tiempoParaQTE = 3.0f;
 
-    // Solo para generar ataques aleatorios
     private List<KeyCode> teclasAtaque = new List<KeyCode> { KeyCode.A, KeyCode.S, KeyCode.W, KeyCode.D };
-
-    // Todas las teclas que el jugador puede presionar para que el script responda
     private List<KeyCode> todasLasTeclasValidas = new List<KeyCode> { KeyCode.A, KeyCode.S, KeyCode.W, KeyCode.D, KeyCode.E, KeyCode.R, KeyCode.T };
     private List<KeyCode> secuenciaActual = new List<KeyCode>();
     private int indiceActual = 0;
     
     private bool qteActivo = false;
+    private float tiempoRestante; 
 
-    // Colores para el feedback visual
     private Color colorDefault = Color.white;
-    private Color colorAcierto = Color.yellow; 
+    private Color colorAcierto = Color.green; 
 
-    // Callback para decirle al CombatManager cómo nos fue
     private System.Action<float> onQTEComplete; 
 
     void Awake() {
@@ -36,150 +45,140 @@ public class QTEManager : MonoBehaviour {
         else Destroy(gameObject);
     }
 
+    public void IniciarQTE(int longitud, System.Action<float> callback) {
+        onQTEComplete = callback;
+        secuenciaActual.Clear();
+        indiceActual = 0;
+        tiempoRestante = tiempoParaQTE; 
+
+        for (int i = 0; i < longitud; i++) {
+            secuenciaActual.Add(teclasAtaque[Random.Range(0, teclasAtaque.Count)]);
+        }
+
+        ConfigurarVisuales();
+    }
+
+    public void IniciarEsquive(KeyCode tecla, System.Action<float> callback) {
+        onQTEComplete = callback;
+        secuenciaActual.Clear();
+        secuenciaActual.Add(tecla);
+        indiceActual = 0;
+        tiempoRestante = tiempoParaQTE / 2f; 
+
+        ConfigurarVisuales();
+    }
+
+    Sprite ObtenerSprite(KeyCode tecla) {
+        switch (tecla) {
+            case KeyCode.A: return sprite_A;
+            case KeyCode.S: return sprite_S;
+            case KeyCode.W: return sprite_W;
+            case KeyCode.D: return sprite_D;
+            case KeyCode.E: return sprite_E;
+            case KeyCode.R: return sprite_R;
+            case KeyCode.T: return sprite_T;
+            default: return null;
+        }
+    }
+
+    void ConfigurarVisuales() {
+        qteActivo = true;
+        panelQTE.SetActive(true);
+        
+        // --- CONTROL DE TEXTOS AL INICIO ---
+        if (textoResultado != null) textoResultado.gameObject.SetActive(false); // Ocultamos el resultado
+        
+        if (textoPresiona != null) {
+            textoPresiona.gameObject.SetActive(true); // Mostramos el "Presiona"
+            textoPresiona.text = "¡Presiona!";
+            textoPresiona.color = Color.white;
+        }
+
+        if (barraTiempo != null) barraTiempo.fillAmount = 1f;
+
+        for (int i = 0; i < imagenesTeclas.Length; i++) {
+            if (i < secuenciaActual.Count) {
+                if (contenedoresTeclas.Length > i && contenedoresTeclas[i] != null) contenedoresTeclas[i].SetActive(true);
+                imagenesTeclas[i].sprite = ObtenerSprite(secuenciaActual[i]);
+                imagenesTeclas[i].color = colorDefault;
+            } else {
+                if (contenedoresTeclas.Length > i && contenedoresTeclas[i] != null) contenedoresTeclas[i].SetActive(false);
+            }
+        }
+    }
+
     void Update() {
         if (!qteActivo) return;
 
-        // Escuchamos si el jugador presiona alguna tecla
+        tiempoRestante -= Time.unscaledDeltaTime;
+        if (barraTiempo != null) barraTiempo.fillAmount = tiempoRestante / tiempoParaQTE;
+
+        if (tiempoRestante <= 0) {
+            TerminarQTE(0f); 
+            return;
+        }
+
         if (Input.anyKeyDown) {
-            // Buscamos cuál de las 4 teclas válidas presionó
-            foreach (KeyCode key in todasLasTeclasValidas) {
-                if (Input.GetKeyDown(key)) {
-                    VerificarTecla(key);
-                    break; 
+            KeyCode teclaPresionada = DetectarTeclaValida();
+
+            if (teclaPresionada != KeyCode.None) {
+                if (teclaPresionada == secuenciaActual[indiceActual]) {
+                    imagenesTeclas[indiceActual].color = colorAcierto;
+                    indiceActual++;
+
+                    if (indiceActual >= secuenciaActual.Count) {
+                        TerminarQTE(1f); 
+                    }
+                } else {
+                    float porcentaje = (float)indiceActual / secuenciaActual.Count;
+                    TerminarQTE(porcentaje); 
                 }
             }
         }
     }
 
-    public void IniciarQTE(int longitudSecuencia, System.Action<float> callbackResultados) {
-        onQTEComplete = callbackResultados;
-        qteActivo = true;
-        indiceActual = 0;
-        textoResultado.text = "";
-
-        GenerarSecuencia(longitudSecuencia);
-        ActualizarPantalla();
-
-        panelQTE.SetActive(true);
-        StartCoroutine(TemporizadorQTE());
-    }
-
-    public void IniciarEsquive(KeyCode teclaAsignada, System.Action<float> callbackResultados) {
-        onQTEComplete = callbackResultados;
-        qteActivo = true;
-        indiceActual = 0;
-        textoResultado.text = "";
-
-        // Limpiamos y preparamos una secuencia de 1 sola tecla
-        secuenciaActual.Clear();
-        secuenciaActual.Add(teclaAsignada);
-        
-        ActualizarPantalla();
-        panelQTE.SetActive(true);
-        StartCoroutine(TemporizadorQTE()); // Usa el mismo tiempo (3 segs) o puedes crear una variable nueva para que esquivar sea más rápido
-    }
-
-    void GenerarSecuencia(int longitud) {
-        secuenciaActual.Clear();
-        // El GDD dice que la secuencia debe ser mostrada  y solo puede tener A, S, W, D.
-        for (int i = 0; i < longitud; i++) {
-            KeyCode teclaAleatoria = teclasAtaque[Random.Range(0, teclasAtaque.Count)];
-            secuenciaActual.Add(teclaAleatoria);
+    KeyCode DetectarTeclaValida() {
+        foreach (KeyCode key in todasLasTeclasValidas) {
+            if (Input.GetKeyDown(key)) return key;
         }
+        return KeyCode.None;
     }
-
-    void ActualizarPantalla() {
-        for (int i = 0; i < letrasUI.Length; i++) {
-            if (i < secuenciaActual.Count) {
-                letrasUI[i].gameObject.SetActive(true);
-                letrasUI[i].text = secuenciaActual[i].ToString();
-                
-                // Si ya la pasamos, la pintamos de amarillo 
-                letrasUI[i].color = (i < indiceActual) ? colorAcierto : colorDefault;
-            } else {
-                letrasUI[i].gameObject.SetActive(false); // Ocultamos textos que sobren
-            }
-        }
-    }
-
-    void VerificarTecla(KeyCode teclaPresionada) {
-        if (teclaPresionada == secuenciaActual[indiceActual]) {
-            // ¡Acierto! Avanzamos
-            indiceActual++;
-            ActualizarPantalla();
-
-            if (indiceActual >= secuenciaActual.Count) {
-                TerminarQTE(true); // Terminó toda la secuencia
-            }
-        } else {
-            // ¡Fallo! Se equivocó de tecla
-            TerminarQTE(false);
-        }
-    }
-
-    IEnumerator TemporizadorQTE() {
-        float tiempoRestante = tiempoParaQTE;
-        while (tiempoRestante > 0 && qteActivo) {
-            // unscaledDeltaTime ignora si el juego está pausado
-            tiempoRestante -= Time.unscaledDeltaTime; 
-            yield return null;
-        }
-
-        // Si se acaba el tiempo y seguía activo, cuenta como fallo
-        if (qteActivo) {
-            TerminarQTE(false);
-        }
-    }
-
-    void TerminarQTE(bool completadoPorTiempoOBoton) {
+    void TerminarQTE(float porcentajeExito) {
         qteActivo = false;
         
-        float porcentajeExito = (float)indiceActual / secuenciaActual.Count;
-        float multiplicadorFinal = 1.0f; // Si fallas muy feo, haces daño normal (x1)
-        
-        // Apagamos las letras para que no se encimen con el resultado
-        foreach(var letra in letrasUI) letra.gameObject.SetActive(false);
-        
-        if (porcentajeExito == 1.0f) {
-            textoResultado.text = "Perfect";
-            textoResultado.color = Color.green;
-            multiplicadorFinal = 1.5f; // Bonus máximo
+        // El multiplicador que enviaremos al CombatManager
+        float multiplicadorFinal = 1.0f;
+
+        // --- CONTROL DE TEXTOS AL FINALIZAR ---
+        if (textoPresiona != null) textoPresiona.gameObject.SetActive(false); 
+        if (textoResultado != null) textoResultado.gameObject.SetActive(true); 
+
+        // 1. Regla: Secuencia correcta al 100% -> Daño no alterado (1.0x)
+        if (porcentajeExito >= 1.0f) {
+            if (textoResultado != null) { textoResultado.text = "Perfect"; textoResultado.color = Color.green; }
+            multiplicadorFinal = 1.0f; 
         } 
-        else if (porcentajeExito > 0.5f) {
-            textoResultado.text = "Great";
-            textoResultado.color = new Color(1f, 0.5f, 0f); // Naranja
-            multiplicadorFinal = 1.2f; // Bonus medio
+        // 2. Regla: Falla menos de la mitad (Es decir, acierta el 50% o más) -> Mitad de daño (0.5x)
+        else if (porcentajeExito >= 0.5f) {
+            if (textoResultado != null) { textoResultado.text = "Great"; textoResultado.color = new Color(1f, 0.5f, 0f); } // Naranja
+            multiplicadorFinal = 0.5f; 
         } 
+        // 3 y 4. Regla: Falla más de la mitad o se acaba el tiempo (0.0f) -> Falla el ataque (0.0x)
         else {
-            textoResultado.text = "Failure";
-            textoResultado.color = new Color(0.5f, 0f, 0.5f); // Morado
-            multiplicadorFinal = 0.5f; // Castigo por fallar
+            if (textoResultado != null) { textoResultado.text = "Failure"; textoResultado.color = Color.red; }
+            multiplicadorFinal = 0f; 
         }
 
-        // Verificamos si el objeto Controlador_QTE sigue encendido en la jerarquía
         if (gameObject.activeInHierarchy) {
             StartCoroutine(OcultarPanelYDano(multiplicadorFinal));
         } else {
-            // Si por alguna razón el objeto se apagó, forzamos el final para que no se trabe el juego
-            Debug.LogWarning("El QTEManager se apagó inesperadamente. Forzando ataque.");
-            if (onQTEComplete != null) {
-                onQTEComplete.Invoke(multiplicadorFinal);
-            }
+            if (onQTEComplete != null) onQTEComplete.Invoke(multiplicadorFinal);
         }
     }
 
     IEnumerator OcultarPanelYDano(float mult) {
-        // Usamos Realtime para que no se congele si el juego está pausado
         yield return new WaitForSecondsRealtime(1.0f); 
-        
-        // PRIMERO: Le avisamos al CombatManager que ya terminamos.
-        if (onQTEComplete != null) {
-            onQTEComplete.Invoke(mult);
-        } else {
-            Debug.LogError("Error: onQTEComplete es nulo.");
-        }
-
-        // SEGUNDO: Apagamos el panel.
         panelQTE.SetActive(false);
+        if (onQTEComplete != null) onQTEComplete.Invoke(mult);
     }
 }

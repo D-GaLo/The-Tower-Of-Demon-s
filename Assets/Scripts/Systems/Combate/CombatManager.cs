@@ -10,6 +10,7 @@ public class CombatManager : MonoBehaviour {
     public static CombatManager Instance;
 
     public CombatState state;
+    private bool enCombateActivo = false; 
     public List<GameObject> activeEnemies = new List<GameObject>();
 
 
@@ -24,6 +25,17 @@ public class CombatManager : MonoBehaviour {
     public GameObject menuTipoAtaque;
     public GameObject menuEspeciales;
     public Vector3 menuOffset = new Vector3(0, 1.5f, 0);
+
+    [Header("UI - Textos Ataques Especiales")]
+    public TextMeshProUGUI textoEspecial1;
+    public TextMeshProUGUI textoEspecial2;
+    public TextMeshProUGUI textoEspecial3;
+
+    // --- NUEVO: Control de Área y UI de Posiciones ---
+    private bool ataquePendienteEsAoE = false;
+    
+    // (Opcional) Si quieres colorear los botones de las posiciones desde código en el futuro, 
+    // puedes declarar arreglos de Image aquí, pero la lógica base funcionará directo.
 
     public HeroUI[] heroesUI;
 
@@ -47,7 +59,15 @@ public class CombatManager : MonoBehaviour {
     public UnityEngine.UI.Button[] botonesSeleccionEnemigo; 
     public TextMeshProUGUI[] textosBotonesEnemigo; 
 
-    // Variables para "guardar" el ataque mientras el jugador elige a la víctima
+    [Header("Paneles de Fin de Combate")]
+    public GameObject panelVictoria;
+    public TextMeshProUGUI textoVictoriaXP;
+    public TextMeshProUGUI textoVictoriaNivel;
+    public TextMeshProUGUI textoVictoriaObjeto;
+
+    public GameObject panelDerrota;
+
+
     private int ataquePendienteCosto;
     private float ataquePendienteMultiplicador;
     private int ataquePendienteSecuencia;
@@ -57,8 +77,10 @@ public class CombatManager : MonoBehaviour {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
-
-    public void StartCombat(GameObject enemy) {
+    public void StartCombat(GameObject enemy, bool ventajaJugador = false) {
+        if (enCombateActivo) return; // Si ya estamos peleando, ignoramos otros choques
+        enCombateActivo = true;
+        
         activeEnemies.Clear();
         activeEnemies.Add(enemy);
         
@@ -68,30 +90,171 @@ public class CombatManager : MonoBehaviour {
             listaParty = FindObjectsOfType<HeroStats>().ToList();
         }
 
-        if (panelFormacion != null) {
-            ActualizarTextosFormacion();
-            panelFormacion.SetActive(true);
-        } else {
-            StartCoroutine(CombatSequence());
-        }
+        listaParty = listaParty.OrderBy(h => 
+            h.unitName == "Sieg" ? 0 : 
+            h.unitName == "Merlin" ? 1 : 2
+        ).ToList();
+
+        StartCoroutine(PrepararArenaYMostrarFormacion(ventajaJugador));
     }
 
-    IEnumerator CombatSequence() {
-        Debug.Log("Teletransportando según formación elegida...");
+    void EndCombat(bool playerWon) {
+        enCombateActivo = false; 
         
+        if (playerWon) {
+            state = CombatState.WON;
+            Debug.Log("¡Termina el combate: VICTORIA!");
+
+            int xpDeEstaPelea = 0;
+            foreach (GameObject enemyObj in activeEnemies) {
+                if (enemyObj != null) {
+                    EnemyStats eStats = enemyObj.GetComponent<EnemyStats>();
+                    if (eStats != null) xpDeEstaPelea += (eStats.level * 20) + 30;
+                }
+            }
+
+            // Configuramos los textos
+            if (textoVictoriaXP != null) textoVictoriaXP.text = $"XP Obtenida: {xpDeEstaPelea}";
+            string recuentoNiveles = "";
+
+            foreach (HeroStats heroe in listaParty) {
+                if (heroe != null && heroe.currentHP > 0) { 
+                    
+                    // Guardamos los stats viejos para compararlos
+                    int nivelViejo = heroe.level;
+                    int hpViejo = heroe.maxHP;
+                    int atqViejo = heroe.attack;
+                    int defViejo = heroe.defense;
+
+                    heroe.GanarExperiencia(xpDeEstaPelea);
+                    
+                    // Si el nivel cambió, agregamos el texto chulo de mejora de stats
+                    if (heroe.level > nivelViejo) {
+                        recuentoNiveles += $"<color=yellow>¡{heroe.unitName} alcanzó el Nivel {heroe.level}!</color>\n";
+                        recuentoNiveles += $"HP: {hpViejo} -> {heroe.maxHP} | Atq: {atqViejo} -> {heroe.attack} | Def: {defViejo} -> {heroe.defense}\n\n";
+                    }
+
+                    HeroUI ui = heroe.GetComponent<HeroUI>();
+                    if (ui != null) ui.ActualizarNivelYXP();
+                }
+            }
+
+            if (textoVictoriaNivel != null) {
+                textoVictoriaNivel.text = string.IsNullOrEmpty(recuentoNiveles) ? "Los héroes ganaron experiencia." : recuentoNiveles;
+            }
+
+            EnemyStats enemyStats = activeEnemies[0].GetComponent<EnemyStats>();
+            if (enemyStats != null) {
+                WeaponData droppedWeapon = enemyStats.TryGetDrop(); 
+                if (droppedWeapon != null && textoVictoriaObjeto != null) {
+                    textoVictoriaObjeto.text = $"¡Objeto obtenido: {droppedWeapon.weaponName}!";
+                    foreach(HeroStats hero in FindObjectsOfType<HeroStats>()) hero.TryEquipWeapon(droppedWeapon); 
+                } else if (textoVictoriaObjeto != null) {
+                    textoVictoriaObjeto.text = "Ningún objeto obtenido.";
+                }
+            }
+
+            if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
+            if (panelVictoria != null) panelVictoria.SetActive(true); // Abrimos el panel y ESPERAMOS al clic
+
+        } else {
+            state = CombatState.LOST;
+            Debug.Log("¡Termina el combate: DERROTA! Game Over...");
+            
+            if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
+            if (panelDerrota != null) panelDerrota.SetActive(true); // Abrimos el panel de derrota
+        }
+
+        RestaurarPosiciones();
+    }
+
+    IEnumerator PrepararArenaYMostrarFormacion(bool ventajaJugador) {
+        Debug.Log("Spawneando enemigos para que el jugador los analice...");
+        
+        EnemyStats statsEnemigoPrincipal = activeEnemies[0].GetComponent<EnemyStats>();
         enemyOriginalPosition = activeEnemies[0].transform.position;
-        int enemigosExtra = Random.Range(0, 3); // Spawnea de 1 a 3
-        for(int i = 0; i < enemigosExtra; i++) {
-            GameObject clon = Instantiate(activeEnemies[0]);
-            clon.name = activeEnemies[0].name + " " + (i + 2); 
-            clon.GetComponent<EnemyStats>().unitName = clon.name;
-            activeEnemies.Add(clon);
+        
+        activeEnemies[0].name = activeEnemies[0].name.Replace("(Clone)", "").Trim();
+        
+        // --- CORRECCIÓN DE NOMBRE: Solo usamos el nombre del GameObject si no pusiste uno personalizado ---
+        if (string.IsNullOrEmpty(statsEnemigoPrincipal.unitName)) {
+            statsEnemigoPrincipal.unitName = activeEnemies[0].name;
+        }
+
+        DesactivarAILocal(activeEnemies[0]);
+
+        if (!statsEnemigoPrincipal.esJefe) {
+            int enemigosExtra = Random.Range(0, 3); 
+            
+            int limiteRestante = enemyPositions.Length - activeEnemies.Count;
+            if (enemigosExtra > limiteRestante) enemigosExtra = limiteRestante;
+
+            for(int i = 0; i < enemigosExtra; i++) {
+                GameObject prefabAInstanciar = activeEnemies[0]; 
+
+                if (statsEnemigoPrincipal.posiblesCompaneros != null && statsEnemigoPrincipal.posiblesCompaneros.Length > 0) {
+                    int randomIndex = Random.Range(0, statsEnemigoPrincipal.posiblesCompaneros.Length);
+                    prefabAInstanciar = statsEnemigoPrincipal.posiblesCompaneros[randomIndex];
+                }
+
+                GameObject clon = Instantiate(prefabAInstanciar);
+                clon.name = prefabAInstanciar.name.Replace("(Clone)", "").Trim(); 
+                
+                DesactivarAILocal(clon); 
+                
+                EnemyStats statsClon = clon.GetComponent<EnemyStats>();
+                
+                // --- CORRECCIÓN DE NOMBRE PARA CLONES ---
+                if (string.IsNullOrEmpty(statsClon.unitName)) {
+                    statsClon.unitName = clon.name;
+                }
+                
+                statsClon.level = statsEnemigoPrincipal.level;
+                statsClon.nivelManual = false; 
+                statsClon.esJefe = false; 
+                statsClon.EscalarEstadisticas();
+
+                activeEnemies.Add(clon);
+            }
         }
 
         for(int i = 0; i < activeEnemies.Count && i < enemyPositions.Length; i++) {
             activeEnemies[i].transform.position = enemyPositions[i].position;
+            
+            Vector3 escalaLocal = activeEnemies[i].transform.localScale;
+            activeEnemies[i].transform.localScale = new Vector3(-Mathf.Abs(escalaLocal.x), escalaLocal.y, escalaLocal.z);
+
             EnemyStats statsEnemigo = activeEnemies[i].GetComponent<EnemyStats>();
-            if (statsEnemigo != null) statsEnemigo.ActivarUICombate();
+            if (statsEnemigo != null) {
+                statsEnemigo.ActivarUICombate();
+                if (statsEnemigo.canvasUI != null) {
+                    Vector3 escalaCanvas = statsEnemigo.canvasUI.transform.localScale;
+                    statsEnemigo.canvasUI.transform.localScale = new Vector3(-Mathf.Abs(escalaCanvas.x), escalaCanvas.y, escalaCanvas.z);
+                }
+            }
+        }
+
+        if (ventajaJugador) {
+            Debug.Log("<color=green>¡ATAQUE SORPRESA!</color> Los enemigos inician con menos vida.");
+            foreach(GameObject obj in activeEnemies) {
+                EnemyStats eStats = obj.GetComponent<EnemyStats>();
+                if (eStats != null) {
+                    float porcentaje = eStats.esJefe ? 0.10f : 0.20f;
+                    int damage = Mathf.RoundToInt(eStats.maxHP * porcentaje);
+                    eStats.currentHP -= damage;
+                    if (eStats.currentHP < 1) eStats.currentHP = 1; 
+                    eStats.ActualizarVisuales();
+                }
+            }
+        } else {
+            Debug.Log("<color=red>¡EMBOSCADA!</color> Los héroes inician con -20% de vida.");
+            foreach(HeroStats hStats in listaParty) {
+                if (hStats != null && hStats.currentHP > 0) {
+                    int damage = Mathf.RoundToInt(hStats.maxHP * 0.20f);
+                    hStats.currentHP -= damage;
+                    if (hStats.currentHP < 1) hStats.currentHP = 1;
+                }
+            }
         }
 
         heroOriginalPositions.Clear(); 
@@ -104,48 +267,104 @@ public class CombatManager : MonoBehaviour {
             heroObj.transform.position = heroPositions[i].position;
             heroesDefendiendo[listaParty[i]] = false; 
 
-            if (i < heroesUI.Length && heroesUI[i] != null) {
-                heroesUI[i].ConfigurarUI(listaParty[i]);
-            }
+            if (i < heroesUI.Length && heroesUI[i] != null) heroesUI[i].ConfigurarUI(listaParty[i]);
         }
 
-        yield return new WaitForSecondsRealtime(1f); 
+        ActualizarPantallaVida(); 
 
-        CalcularOrdenDeTurnos();
-        AvanzarTurno();
+        yield return new WaitForSecondsRealtime(0.5f); 
+
+        if (panelFormacion != null) panelFormacion.SetActive(true);
+        else ConfirmarFormacion(); 
     }
 
-    public void ActualizarTextosFormacion() {
-        for (int i = 0; i < textosFormacion.Length; i++) {
-            if (i < listaParty.Count && textosFormacion[i] != null) {
-                textosFormacion[i].text = listaParty[i].unitName;
+    IEnumerator RevisarInvocacionJefe(EnemyStats jefe) {
+        if (jefe.esJefe && !jefe.yaInvoco && jefe.currentHP > 0 && jefe.currentHP <= (jefe.maxHP / 2)) {
+            jefe.yaInvoco = true;
+            Debug.Log($"<color=red>¡ALERTA!</color> ¡{jefe.unitName} se ha enfurecido e invoca refuerzos!");
+            
+            if (jefe.enemigosAInvocar != null && jefe.enemigosAInvocar.Length > 0) {
+                
+                List<int> huecosLibres = new List<int>();
+                for (int i = 0; i < enemyPositions.Length; i++) {
+                    bool ocupado = false;
+                    foreach (var enemy in activeEnemies) {
+                        if (enemy.activeSelf && Vector3.Distance(enemy.transform.position, enemyPositions[i].position) < 0.5f) {
+                            ocupado = true;
+                            break;
+                        }
+                    }
+                    if (!ocupado) huecosLibres.Add(i);
+                }
+
+                int cantidadAInvocar = Mathf.Min(huecosLibres.Count, jefe.enemigosAInvocar.Length);
+
+                for (int i = 0; i < cantidadAInvocar; i++) {
+                    GameObject prefab = jefe.enemigosAInvocar[i];
+                    GameObject clon = Instantiate(prefab);
+                    clon.name = prefab.name; 
+                    
+                    DesactivarAILocal(clon); 
+                    
+                    EnemyStats statsClon = clon.GetComponent<EnemyStats>();
+                    
+                    // --- CORRECCIÓN DE NOMBRE PARA INVOCACIONES ---
+                    if (string.IsNullOrEmpty(statsClon.unitName)) {
+                        statsClon.unitName = clon.name;
+                    }
+                    
+                    statsClon.level = jefe.level; 
+                    statsClon.nivelManual = false;
+                    statsClon.esJefe = false; 
+                    statsClon.EscalarEstadisticas();
+
+                    activeEnemies.Add(clon);
+                    turnQueue.Add(clon); 
+
+                    int posIndex = huecosLibres[i];
+                    clon.transform.position = enemyPositions[posIndex].position;
+
+                    Vector3 escalaLocal = clon.transform.localScale;
+                    clon.transform.localScale = new Vector3(-Mathf.Abs(escalaLocal.x), escalaLocal.y, escalaLocal.z);
+
+                    statsClon.ActivarUICombate();
+                    if (statsClon.canvasUI != null) {
+                        Vector3 escalaCanvas = statsClon.canvasUI.transform.localScale;
+                        statsClon.canvasUI.transform.localScale = new Vector3(-Mathf.Abs(escalaCanvas.x), escalaCanvas.y, escalaCanvas.z);
+                    }
+                }
+                
+                if (cantidadAInvocar > 0) yield return new WaitForSecondsRealtime(1.5f);
             }
         }
     }
 
-    public void MoverHeroeArriba(int index) {
-        if (index <= 0 || index >= listaParty.Count) return; // No puede subir más si ya está arriba
-        
-        HeroStats temp = listaParty[index];
-        listaParty[index] = listaParty[index - 1];
-        listaParty[index - 1] = temp;
-        
-        ActualizarTextosFormacion();
-    }
 
-    public void MoverHeroeAbajo(int index) {
-        if (index < 0 || index >= listaParty.Count - 1) return; // No puede bajar más si ya está abajo
-        
-        HeroStats temp = listaParty[index];
-        listaParty[index] = listaParty[index + 1];
-        listaParty[index + 1] = temp;
-        
-        ActualizarTextosFormacion();
+
+    // --- NUEVA LÓGICA DE SELECTOR DE POSICIONES ---
+    // Esta función la pondrás en los nuevos botones de Símbolos en tu UI
+    public void SeleccionarPosicion(string nombreHeroe_Y_Posicion) {
+        // Ej: El botón de Sieg Volando envía "Sieg_Volando"
+        string[] datos = nombreHeroe_Y_Posicion.Split('_');
+        string heroeObjetivo = datos[0];
+        string posElegida = datos[1];
+
+        HeroStats heroe = listaParty.Find(h => h.unitName == heroeObjetivo);
+        if (heroe != null) {
+            if (posElegida == "Tierra") heroe.unitPosition = UnitPosition.Tierra;
+            else if (posElegida == "BajoTierra") heroe.unitPosition = UnitPosition.BajoTierra;
+            else if (posElegida == "Volando") heroe.unitPosition = UnitPosition.Volando;
+            
+            // Actualizamos su UI para que el icono del círculo cambie de inmediato
+            HeroUI ui = System.Array.Find(heroesUI, u => u.nombreText.text == heroe.unitName);
+            if (ui != null) ui.ConfigurarUI(heroe);
+        }
     }
 
     public void ConfirmarFormacion() {
         if (panelFormacion != null) panelFormacion.SetActive(false);
-        StartCoroutine(CombatSequence()); 
+        CalcularOrdenDeTurnos();
+        AvanzarTurno();
     }
 
     void CalcularOrdenDeTurnos() {
@@ -284,48 +503,123 @@ public class CombatManager : MonoBehaviour {
         if (state != CombatState.WAITING_FOR_INPUT) return;
         if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
         Debug.Log("¡Retirada táctica!");
+        
+        enCombateActivo = false; 
+        
         RestaurarPosiciones();
 
-        // Le enviamos 'false' porque huir no cuenta como victoria
-        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate(false);
+        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate(false, true);
     }
 
     // --- LÓGICA DE DEBILIDADES Y MAESTRÍA ---
     float CalcularMultiplicadorClasePosicion(UnitStats atacante, UnitStats defensor) {
         float multiplicador = 1.0f;
 
-        // 1. Efectividad de Clase (Ejemplo: Melee vence Rango, Rango vence Tanque, Tanque vence Melee)
-        // Ajusta esto según el triángulo exacto de tu GDD
-        if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) multiplicador += 0.5f;
-        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) multiplicador += 0.5f;
-        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) multiplicador += 0.5f;
+        // --- 1. TRIÁNGULO DE CLASES (+/- 25%) ---
+        // Ventajas
+        if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) multiplicador += 0.30f;
+        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) multiplicador += 0.30f;
+        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) multiplicador += 0.30f;
+        // Desventajas
+        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Melee) multiplicador -= 0.30f;
+        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Rango) multiplicador -= 0.30f;
+        else if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Tanque) multiplicador -= 0.30f;
 
-        // 2. Efectividad de Posición (Ejemplo: Volando recibe menos daño de Tierra)
-        if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) multiplicador -= 0.3f;
-        
-        // 3. El stat de Maestría aumenta directamente el multiplicador (Ej: 10 de maestría = +10% de daño)
+        // --- 2. TRIÁNGULO DE POSICIONES (+/- 25%) ---
+        // Asumiendo triángulo: Volando > Tierra > BajoTierra > Volando
+        // Ventajas
+        if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.Tierra) multiplicador += 0.30f;
+        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.BajoTierra) multiplicador += 0.30f;
+        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Volando) multiplicador += 0.30f;
+        // Desventajas
+        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) multiplicador -= 0.30f;
+        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Tierra) multiplicador -= 0.30f;
+        else if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.BajoTierra) multiplicador -= 0.30f;
+
+        // Maestría
         float bonoMaestria = atacante.mastery * 0.01f;
         multiplicador += bonoMaestria;
 
-        return Mathf.Max(0.1f, multiplicador); // Para asegurar que no cure al enemigo por error xdd
+        return Mathf.Max(0.0f, multiplicador); 
     }
 
     // --- CÁLCULO DE DAÑO JUGADOR ---
-
-    IEnumerator PlayerAttackRoutine(GameObject targetEnemyObj, float multiplicadorDano) {
+    // --- CÁLCULO DE DAÑO DEL JUGADOR ---
+    IEnumerator PlayerAttackRoutine(GameObject targetEnemyObj, float multiplicadorQTE) {
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
         EnemyStats target = targetEnemyObj.GetComponent<EnemyStats>();
 
         heroesDefendiendo[attacker] = false;
 
-        float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target);
-        
-        float baseDamage = attacker.GetTotalAttack() * multiplicadorDano * multiplicadorClase;
-        int damage = Mathf.RoundToInt(baseDamage) - target.defense; 
-        if (damage < 1) damage = 1; 
+        if (multiplicadorQTE <= 0f) {
+            Debug.Log($"¡{attacker.unitName} falló el ataque por completo!");
+        } 
+        else {
+            float poderAtaque = attacker.GetTotalAttack() * ataquePendienteMultiplicador;
+            float danoBase = poderAtaque - target.defense;
+            if (danoBase < 1) danoBase = 1;
 
-        Debug.Log($"¡{attacker.unitName} ataca a {target.unitName}! (Bono x{multiplicadorClase}). Hizo {damage} de daño.");
-        target.TakeDamage(damage);
+            float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target);
+            int damage = Mathf.RoundToInt(danoBase * multiplicadorQTE * multiplicadorClase);
+            if (damage < 1) damage = 1;
+
+            Debug.Log($"¡{attacker.unitName} ataca a {target.unitName}! Hizo {damage} de daño.");
+            target.TakeDamage(damage);
+
+            if (target.currentHP <= 0) {
+                Debug.Log($"{target.unitName} ha sido derrotado y desaparece.");
+                target.gameObject.SetActive(false); 
+            } else {
+                // Revisamos si el objetivo es un Jefe que debe invocar
+                yield return StartCoroutine(RevisarInvocacionJefe(target));
+            }
+        }
+
+        yield return new WaitForSecondsRealtime(1f); 
+        ActualizarPantallaVida();
+        AvanzarTurno(); 
+    }
+
+    // --- CÁLCULO DE ÁREA ---
+    IEnumerator PlayerAoEAttackRoutine(float multiplicadorQTE) {
+        HeroStats attacker = currentActor.GetComponent<HeroStats>();
+        heroesDefendiendo[attacker] = false;
+
+        if (multiplicadorQTE <= 0f) {
+            Debug.Log($"¡{attacker.unitName} falló el ataque en ÁREA por completo!");
+        } 
+        else {
+            Debug.Log($"¡{attacker.unitName} lanza un ataque en ÁREA a todos los enemigos!");
+
+            List<EnemyStats> jefesHeridos = new List<EnemyStats>();
+
+            foreach (var enemy in activeEnemies) {
+                EnemyStats target = enemy.GetComponent<EnemyStats>();
+                if (target != null && target.currentHP > 0) {
+                    
+                    float poderAtaque = attacker.GetTotalAttack() * ataquePendienteMultiplicador;
+                    float danoBase = poderAtaque - target.defense;
+                    if (danoBase < 1) danoBase = 1;
+
+                    float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target);
+                    int damage = Mathf.RoundToInt(danoBase * multiplicadorQTE * multiplicadorClase);
+                    if (damage < 1) damage = 1;
+
+                    target.TakeDamage(damage);
+
+                    if (target.currentHP <= 0) {
+                        target.gameObject.SetActive(false); 
+                    } else if (target.esJefe && !target.yaInvoco && target.currentHP <= (target.maxHP / 2)) {
+                        jefesHeridos.Add(target); // Guardamos al jefe para que invoque después de recibir el daño
+                    }
+                }
+            }
+
+            // Hacemos que los jefes invoquen
+            foreach (var jefe in jefesHeridos) {
+                yield return StartCoroutine(RevisarInvocacionJefe(jefe));
+            }
+        }
 
         yield return new WaitForSecondsRealtime(1f); 
         ActualizarPantallaVida();
@@ -333,6 +627,7 @@ public class CombatManager : MonoBehaviour {
     }
 
 // --- CÁLCULO DE DAÑO ENEMIGO ---
+    // --- CÁLCULO CORREGIDO DE DAÑO ENEMIGO ---
     IEnumerator EnemyTurnRoutine() {
         Debug.Log("Turno del enemigo...");
         yield return new WaitForSecondsRealtime(1f); 
@@ -348,59 +643,63 @@ public class CombatManager : MonoBehaviour {
         if (heroesVivos.Count > 0 && enemyAttacker != null) {
             HeroStats targetHero = heroesVivos[Random.Range(0, heroesVivos.Count)];
 
-            // --- FASE 5: REVISIÓN DE NIVEL PARA ESQUIVAR ---
-            if (enemyAttacker.level > targetHero.level) {
-                // El enemigo tiene más nivel: Ataque Ineludible (No hay QTE)
-                Debug.Log($"<color=red>¡PELIGRO!</color> ¡{enemyAttacker.unitName} (Lv.{enemyAttacker.level}) es superior a {targetHero.unitName} (Lv.{targetHero.level})! El ataque es ineludible.");
-                
-                int damage = enemyAttacker.attack - targetHero.defense;
-                if (damage < 1) damage = 1;
+            // 1. Poder Bruto Menos Defensa
+            float danoBase = enemyAttacker.attack - targetHero.defense;
+            if (danoBase < 1) danoBase = 1;
 
-                // Revisamos si al menos el jugador tuvo la inteligencia de ponerse en Guardia en su turno
+            // 2. Multiplicador de clase al final
+            float multClase = CalcularMultiplicadorClasePosicion(enemyAttacker, targetHero);
+            int damage = Mathf.RoundToInt(danoBase * multClase);
+            if (damage < 1) damage = 1;
+
+            if (enemyAttacker.level > targetHero.level) {
+                Debug.Log($"<color=red>¡PELIGRO!</color> ¡Ataque ineludible de {enemyAttacker.unitName}!");
+                
                 if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
                     damage = damage / 2;
-                    Debug.Log($"¡{targetHero.unitName} no pudo esquivar, pero al menos ESTÁ DEFENDIENDO! Recibe: {damage}.");
-                } else {
-                    Debug.Log($"¡{targetHero.unitName} recibe el impacto de lleno! Recibe: {damage}.");
+                    Debug.Log($"¡{targetHero.unitName} ESTÁ DEFENDIENDO! Recibe: {damage}.");
                 }
-
                 targetHero.TakeDamage(damage);
                 ActualizarPantallaVida();
-                
-                // Pausa para que el jugador lea qué pasó antes de cambiar de turno
                 yield return new WaitForSecondsRealtime(2f); 
             } 
             else {
-                // El enemigo es de nivel igual o menor: Lógica normal de esquive con QTE
                 KeyCode teclaEsquive = KeyCode.Space;
                 if (targetHero.unitName.Contains("Sieg")) teclaEsquive = KeyCode.E;
                 else if (targetHero.unitName.Contains("Merlin")) teclaEsquive = KeyCode.R;
                 else if (targetHero.unitName.Contains("Heracles")) teclaEsquive = KeyCode.T;
 
-                Debug.Log($"¡El enemigo va a atacar a {targetHero.unitName}! Presiona {teclaEsquive} para esquivar.");
+                Debug.Log($"¡El enemigo ataca a {targetHero.unitName}! Presiona {teclaEsquive} para esquivar.");
 
                 bool terminoEsquive = false;
 
                 QTEManager.Instance.IniciarEsquive(teclaEsquive, (multiplicadorEsquive) => {
-                    int damage = enemyAttacker.attack - targetHero.defense;
-                    if (damage < 1) damage = 1;
-
-                    if (multiplicadorEsquive >= 1.5f) {
-                        Debug.Log($"¡{targetHero.unitName} ESQUIVÓ EL ATAQUE PERFECTAMENTE!");
+                    
+                    if (multiplicadorEsquive == 1.0f) { 
+                        Debug.Log($"¡{targetHero.unitName} ESQUIVÓ EL ATAQUE PERFECTAMENTE! (Daño 0)");
                         damage = 0; 
-                    } else if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
+                    } 
+                    else if (multiplicadorEsquive == 0.5f) { 
                         damage = damage / 2;
-                        Debug.Log($"¡{targetHero.unitName} no esquivó, pero ESTÁ DEFENDIENDO! Recibe: {damage}.");
-                    } else {
-                        Debug.Log($"¡{targetHero.unitName} se comió el ataque! Recibe: {damage}.");
+                        Debug.Log($"¡{targetHero.unitName} esquivó parcialmente (Great)! Recibe la mitad del daño: {damage}.");
+                    } 
+                    else { 
+                        Debug.Log($"¡{targetHero.unitName} falló al esquivar (Failure)! Recibe el daño completo: {damage}.");
                     }
 
-                    targetHero.TakeDamage(damage);
+                    if (damage > 0 && heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
+                        damage = damage / 2;
+                        Debug.Log($"¡Pero {targetHero.unitName} estaba DEFENDIENDO! El daño se reduce a: {damage}.");
+                    }
+
+                    if (damage > 0) {
+                        targetHero.TakeDamage(damage);
+                    }
+                    
                     ActualizarPantallaVida();
                     terminoEsquive = true;
                 });
 
-                // Esperamos a que el jugador termine el QTE
                 yield return new WaitUntil(() => terminoEsquive);
             }
         }
@@ -409,58 +708,32 @@ public class CombatManager : MonoBehaviour {
         AvanzarTurno(); 
     }
 
-    void EndCombat(bool playerWon) {
-        if (playerWon) {
-            state = CombatState.WON;
-            Debug.Log("¡Termina el combate: VICTORIA!");
-
-            // --- NUEVO: CALCULAR Y REPARTIR XP ---
-            int xpDeEstaPelea = 0;
-            // Sumamos la XP de todos los enemigos que enfrentaste en esta arena
-            foreach (GameObject enemyObj in activeEnemies) {
-                if (enemyObj != null) {
-                    EnemyStats eStats = enemyObj.GetComponent<EnemyStats>();
-                    if (eStats != null) {
-                        // Fórmula: Nivel del enemigo * 20 + 30 puntos fijos
-                        xpDeEstaPelea += (eStats.level * 20) + 30;
-                    }
-                }
-            }
-
-            Debug.Log($"<color=yellow>[Fin del Combate]</color> Repartiendo {xpDeEstaPelea} XP al grupo.");
-            foreach (HeroStats heroe in listaParty) {
-                if (heroe != null && heroe.currentHP > 0) { // Solo si sigue vivo
-                    heroe.GanarExperiencia(xpDeEstaPelea);
-                    
-                    // Forzamos a la UI a actualizar la barra de progreso
-                    HeroUI ui = heroe.GetComponent<HeroUI>();
-                    if (ui != null) ui.ActualizarNivelYXP();
-                }
-            }
-            // -------------------------------------
-
-            EnemyStats enemyStats = activeEnemies[0].GetComponent<EnemyStats>();
-            if (enemyStats != null) {
-                WeaponData droppedWeapon = enemyStats.TryGetDrop(); 
-                if (droppedWeapon != null) {
-                    Debug.Log($"¡Objeto obtenido: {droppedWeapon.weaponName}!");
-                    foreach(HeroStats hero in FindObjectsOfType<HeroStats>()) hero.TryEquipWeapon(droppedWeapon); 
-                }
-            }
-        } else {
-            state = CombatState.LOST;
-            Debug.Log("¡Termina el combate: DERROTA! Game Over...");
-        }
-
-        RestaurarPosiciones();
-
-        // Le avisamos al GameFlow si ganamos (true) o perdimos (false)
-        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate(playerWon);
-    }
 
     void RestaurarPosiciones() {
         foreach (var hero in heroOriginalPositions) {
              if(hero.Key != null) hero.Key.transform.position = hero.Value;
+        }
+
+        if (activeEnemies.Count > 0 && activeEnemies[0] != null) {
+            activeEnemies[0].transform.position = enemyOriginalPosition;
+            
+            MonoBehaviour ai = (MonoBehaviour)activeEnemies[0].GetComponent("EnemyAI");
+            if (ai != null) ai.enabled = true;
+            
+            Rigidbody2D rb = activeEnemies[0].GetComponent<Rigidbody2D>();
+            if (rb != null) rb.isKinematic = false;
+
+            EnemyStats statsPrincipal = activeEnemies[0].GetComponent<EnemyStats>();
+            if (statsPrincipal != null) {
+                statsPrincipal.currentHP = statsPrincipal.maxHP; 
+                if (statsPrincipal.canvasUI != null) {
+                    statsPrincipal.canvasUI.SetActive(false); 
+                }
+            }
+
+            for (int i = 1; i < activeEnemies.Count; i++) {
+                if (activeEnemies[i] != null) Destroy(activeEnemies[i]);
+            }
         }
     }
 
@@ -481,6 +754,25 @@ public class CombatManager : MonoBehaviour {
 
     // Botón "Atq. Especial"
     public void OnBotonMenuEspeciales() {
+        HeroStats attacker = currentActor.GetComponent<HeroStats>();
+        
+        // Personalizamos los textos de los botones
+        if (attacker.unitName == "Sieg") {
+            if (textoEspecial1 != null) textoEspecial1.text = "Corte Veloz (10)";
+            if (textoEspecial2 != null) textoEspecial2.text = "Golpe Heroico (20)";
+            if (textoEspecial3 != null) textoEspecial3.text = "Furia del Dragón (50)";
+        } 
+        else if (attacker.unitName == "Merlin") {
+            if (textoEspecial1 != null) textoEspecial1.text = "Dardo de Hielo (15)";
+            if (textoEspecial2 != null) textoEspecial2.text = "Rayo Arcano (30)";
+            if (textoEspecial3 != null) textoEspecial3.text = "Lluvia de Meteoros (60) [ÁREA]";
+        }
+        else if (attacker.unitName == "Heracles") {
+            if (textoEspecial1 != null) textoEspecial1.text = "Rompe Cráneos (15)";
+            if (textoEspecial2 != null) textoEspecial2.text = "Terremoto (35)";
+            if (textoEspecial3 != null) textoEspecial3.text = "Ejecución Titánica (55)";
+        }
+
         MostrarMenu(menuEspeciales);
     }
 
@@ -492,52 +784,88 @@ public class CombatManager : MonoBehaviour {
     // --- ACCIÓN: ATACAR ---
     
     public void OnAtaqueNormal() {
-        PrepararAtaque(0, 1f, 0, false); // Normal no gasta energía ni usa QTE
+        Debug.Log("<color=cyan>[Combate]</color> Botón de Ataque Normal presionado.");
+        PrepararAtaque(0, 1.4f, 2, true, false); 
+    }
+    public void OnEspecial1() { 
+        Debug.Log("<color=cyan>[Combate]</color> Botón Especial 1 presionado."); 
+        EjecutarAtaqueDinamico(1); 
+    }
+    public void OnEspecial2() { 
+        Debug.Log("<color=cyan>[Combate]</color> Botón Especial 2 presionado."); 
+        EjecutarAtaqueDinamico(2); 
+    }
+    public void OnEspecial3() { 
+        Debug.Log("<color=cyan>[Combate]</color> Botón Especial 3 presionado."); 
+        EjecutarAtaqueDinamico(3); 
     }
 
-    public void OnCorteChido() { PrepararAtaque(10, 1.5f, 3, true); }
-    public void OnCortePro() { PrepararAtaque(20, 2.0f, 4, true); }
-    public void OnCorteLoko() { PrepararAtaque(50, 3.5f, 6, true); }
-
-    void PrepararAtaque(int costo, float mult, int seqLen, bool esEspecial) {
-        if (state != CombatState.WAITING_FOR_INPUT) return;
-
+    void EjecutarAtaqueDinamico(int slotEspecial) {
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
-        
-        // Revisamos si tiene energía ANTES de abrir el menú de selección
-        if (esEspecial && attacker.currentEnergy < costo) {
-            Debug.Log("¡No tienes suficiente energía para este corte!");
-            return;
+        string nombre = attacker.unitName;
+
+        int costo = 10; float mult = 1.5f; int seqLen = 3; bool esAoE = false;
+
+        // --- DICCIONARIO DE ATAQUES ---
+        if (nombre == "Sieg") {
+            if (slotEspecial == 1) { costo = 10; mult = 1.2f; seqLen = 3; }
+            else if (slotEspecial == 2) { costo = 20; mult = 1.8f; seqLen = 4; }
+            else if (slotEspecial == 3) { costo = 50; mult = 3.0f; seqLen = 6; }
+        } 
+        else if (nombre == "Merlin") {
+            if (slotEspecial == 1) { costo = 15; mult = 1.5f; seqLen = 3; }
+            else if (slotEspecial == 2) { costo = 30; mult = 2.2f; seqLen = 4; }
+            else if (slotEspecial == 3) { costo = 60; mult = 1.8f; seqLen = 5; esAoE = true; } 
+        }
+        else if (nombre == "Heracles") {
+            if (slotEspecial == 1) { costo = 15; mult = 1.6f; seqLen = 3; }
+            else if (slotEspecial == 2) { costo = 35; mult = 2.5f; seqLen = 5; }
+            else if (slotEspecial == 3) { costo = 55; mult = 3.5f; seqLen = 6; }
         }
 
-        // Guardamos los datos del ataque en la memoria
+        PrepararAtaque(costo, mult, seqLen, true, esAoE);
+    }
+
+    void PrepararAtaque(int costo, float mult, int seqLen, bool esEspecial, bool esAoE = false) {
+        if (state != CombatState.WAITING_FOR_INPUT) return;
+        HeroStats attacker = currentActor.GetComponent<HeroStats>();
+        
+        // REVISIÓN DE ENERGÍA CON ALERTA
+        if (esEspecial && attacker.currentEnergy < costo) {
+            Debug.LogWarning($"<color=red>¡ERROR!</color> {attacker.unitName} intentó usar un ataque de coste {costo}, pero solo tiene {attacker.currentEnergy} de energía.");
+            return; // Aquí es donde se cancelaba silenciosamente
+        }
+
         ataquePendienteCosto = costo;
         ataquePendienteMultiplicador = mult;
         ataquePendienteSecuencia = seqLen;
         ataquePendienteEsEspecial = esEspecial;
+        ataquePendienteEsAoE = esAoE;
 
-        // Actualizamos los botones para que solo muestren enemigos vivos
-        for (int i = 0; i < botonesSeleccionEnemigo.Length; i++) {
-            if (i < activeEnemies.Count && activeEnemies[i] != null && activeEnemies[i].GetComponent<EnemyStats>().currentHP > 0) {
-                botonesSeleccionEnemigo[i].gameObject.SetActive(true);
-                textosBotonesEnemigo[i].text = activeEnemies[i].GetComponent<EnemyStats>().unitName;
-            } else {
-                botonesSeleccionEnemigo[i].gameObject.SetActive(false); // Apagamos el botón si no hay enemigo o está muerto
+        // Si es un ataque en Área, no seleccionamos enemigo
+        if (esAoE) {
+            Debug.Log("<color=yellow>[Combate]</color> Preparando ataque en área. Omitiendo selección de objetivo.");
+            ConfirmarAtaqueAEnemigo(-1); 
+        } else {
+            // Mostrar menú de seleccionar enemigo
+            for (int i = 0; i < botonesSeleccionEnemigo.Length; i++) {
+                if (i < activeEnemies.Count && activeEnemies[i] != null && activeEnemies[i].GetComponent<EnemyStats>().currentHP > 0) {
+                    botonesSeleccionEnemigo[i].gameObject.SetActive(true);
+                    textosBotonesEnemigo[i].text = activeEnemies[i].GetComponent<EnemyStats>().unitName;
+                } else {
+                    botonesSeleccionEnemigo[i].gameObject.SetActive(false);
+                }
             }
+            MostrarMenu(menuSeleccionEnemigo);
         }
-
-        MostrarMenu(menuSeleccionEnemigo);
     }
 
     // --- ACCIÓN: CONFIRMAR EL OBJETIVO Y ATACAR ---
     public void ConfirmarAtaqueAEnemigo(int enemyIndex) {
         if (state != CombatState.WAITING_FOR_INPUT) return;
 
-        // Seleccionamos al enemigo de la lista según el botón que presionó
-        GameObject targetEnemyObj = activeEnemies[enemyIndex];
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
 
-        // Ahora sí, descontamos la energía
         if (ataquePendienteEsEspecial) {
             attacker.UseEnergy(ataquePendienteCosto);
             ActualizarPantallaVida();
@@ -550,10 +878,16 @@ public class CombatManager : MonoBehaviour {
             Debug.Log("¡Iniciando secuencia QTE!");
             QTEManager.Instance.IniciarQTE(ataquePendienteSecuencia, (multiplicadorQTE) => {     
                 float multiplicadorFinal = ataquePendienteMultiplicador * multiplicadorQTE;
-                StartCoroutine(PlayerAttackRoutine(targetEnemyObj, multiplicadorFinal));
+                
+                if (ataquePendienteEsAoE) {
+                    StartCoroutine(PlayerAoEAttackRoutine(multiplicadorFinal));
+                } else {
+                    GameObject targetEnemyObj = activeEnemies[enemyIndex];
+                    StartCoroutine(PlayerAttackRoutine(targetEnemyObj, multiplicadorFinal));
+                }
             });
         } else {
-            // Ataque normal directo
+            GameObject targetEnemyObj = activeEnemies[enemyIndex];
             StartCoroutine(PlayerAttackRoutine(targetEnemyObj, 1f));
         }
     }
@@ -563,4 +897,32 @@ public class CombatManager : MonoBehaviour {
             panelGuiaFortalezas.SetActive(!panelGuiaFortalezas.activeSelf);
         }
     }
+
+    void DesactivarAILocal(GameObject enemigo) {
+        MonoBehaviour ai = (MonoBehaviour)enemigo.GetComponent("EnemyAI");
+        if (ai != null) ai.enabled = false;
+        
+        Rigidbody2D rb = enemigo.GetComponent<Rigidbody2D>();
+        if (rb != null) {
+            rb.velocity = Vector2.zero;
+            rb.isKinematic = true; // Evita que se empujen por las físicas
+        }
+    }
+
+    public void BotonAceptarVictoria() {
+        if (panelVictoria != null) panelVictoria.SetActive(false);
+        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate(true, false);
+    }
+
+    public void BotonContinuarDerrota() {
+        if (panelDerrota != null) panelDerrota.SetActive(false);
+        if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate(false, false);
+    }
+
+    public void BotonMenuDerrota() {
+        Debug.Log("Saliendo al menú principal... (Próximamente)");
+        // Aquí en el futuro pondremos: UnityEngine.SceneManagement.SceneManager.LoadScene("MenuPrincipal");
+    }
+
+    
 }

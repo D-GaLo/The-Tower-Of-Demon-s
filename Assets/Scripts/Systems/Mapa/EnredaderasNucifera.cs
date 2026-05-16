@@ -95,6 +95,8 @@ public class EnredaderasNucifera : MonoBehaviour {
 
         if (InventarioEnum.Instance != null && InventarioEnum.Instance.GetCantidad(Item.Tijeras) > 0) {
             enredaderasCortadas = true;
+
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayTijeras();
             
             // Cambiamos el apartado visual
             if (imagenEnredaderas) imagenEnredaderas.SetActive(false);

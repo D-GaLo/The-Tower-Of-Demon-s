@@ -109,6 +109,8 @@ public class CombatManager : MonoBehaviour {
             state = CombatState.WON;
             Debug.Log("¡Termina el combate: VICTORIA!");
 
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayVictoria();
+
             int xpDeEstaPelea = 0;
             foreach (GameObject enemyObj in activeEnemies) {
                 if (enemyObj != null) {
@@ -164,6 +166,8 @@ public class CombatManager : MonoBehaviour {
         } else {
             state = CombatState.LOST;
             Debug.Log("¡Termina el combate: DERROTA! Game Over...");
+
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayDerrota();
             
             if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
             if (panelDerrota != null) panelDerrota.SetActive(true); // Abrimos el panel de derrota
@@ -994,8 +998,13 @@ public class CombatManager : MonoBehaviour {
     }
 
     public void BotonMenuDerrota() {
-        Debug.Log("Saliendo al menú principal... (Próximamente)");
-        // Aquí en el futuro pondremos: UnityEngine.SceneManagement.SceneManager.LoadScene("MenuPrincipal");
+        Debug.Log("Saliendo al menú principal...");
+        Time.timeScale = 1f;
+        if (GameFlowController.Instance != null) {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(GameFlowController.Instance.nombreEscenaMenu);
+        } else {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Menu"); 
+        }
     }
 
     

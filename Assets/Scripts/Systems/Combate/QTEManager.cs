@@ -172,16 +172,19 @@ public class QTEManager : MonoBehaviour {
         // 1. Regla: Secuencia correcta al 100% -> Daño no alterado (1.0x)
         if (porcentajeExito >= 1.0f) {
             if (textoResultado != null) { textoResultado.text = "Perfect"; textoResultado.color = Color.green; }
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayQTEPerfect();
             multiplicadorFinal = 1.0f; 
         } 
         // 2. Regla: Falla menos de la mitad (Es decir, acierta el 50% o más) -> Mitad de daño (0.5x)
         else if (porcentajeExito >= 0.5f) {
-            if (textoResultado != null) { textoResultado.text = "Great"; textoResultado.color = new Color(1f, 0.5f, 0f); } // Naranja
+            if (textoResultado != null) { textoResultado.text = "Great"; textoResultado.color = new Color(1f, 0.5f, 0f); }
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayQTEGreat();
             multiplicadorFinal = 0.5f; 
         } 
         // 3 y 4. Regla: Falla más de la mitad o se acaba el tiempo (0.0f) -> Falla el ataque (0.0x)
         else {
             if (textoResultado != null) { textoResultado.text = "Failure"; textoResultado.color = Color.red; }
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayQTEFailure();
             multiplicadorFinal = 0f; 
         }
 

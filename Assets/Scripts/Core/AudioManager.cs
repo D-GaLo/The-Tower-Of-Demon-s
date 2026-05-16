@@ -1,0 +1,80 @@
+using UnityEngine;
+
+[System.Serializable]
+public class SonidoConfig {
+    public AudioClip clip;
+    [Range(0f, 1f)] public float volumen = 1f;
+}
+
+public class AudioManager : MonoBehaviour {
+    public static AudioManager Instance;
+
+    [Header("Bocinas Principales (Audio Sources)")]
+    [Tooltip("Arrastra un AudioSource para la música (Ponlo en Loop).")]
+    public AudioSource musicaSource;
+    [Tooltip("Arrastra un AudioSource para los efectos (Sin Loop).")]
+    public AudioSource sfxSource;
+
+    [Header("🎶 Música")]
+    public SonidoConfig musicaAmbiental;
+    public SonidoConfig musicaCombateNormal;
+    public SonidoConfig musicaCombateJefe;
+
+    [Header("⚔️ SFX - Combate")]
+    public SonidoConfig sfxVictoria;
+    public SonidoConfig sfxDerrota;
+    public SonidoConfig sfxQTEPerfect;
+    public SonidoConfig sfxQTEGreat;
+    public SonidoConfig sfxQTEFailure;
+
+    [Header("🗺️ SFX - Exploración")]
+    public SonidoConfig sfxEspada;
+    public SonidoConfig sfxTijeras;
+    public SonidoConfig sfxLlave;
+    public SonidoConfig sfxPuerta;
+    public SonidoConfig sfxFuente;
+    public SonidoConfig sfxSonidoClic;
+    
+    void Awake() {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
+    void Start() {
+        ReproducirMusicaAmbiental();
+    }
+
+    public void ReproducirMusicaAmbiental() {
+        ReproducirMusica(musicaAmbiental);
+    }
+
+    public void ReproducirMusicaCombate(bool esJefe) {
+        ReproducirMusica(esJefe ? musicaCombateJefe : musicaCombateNormal);
+    }
+
+    private void ReproducirMusica(SonidoConfig config) {
+        if (musicaSource == null || config == null || config.clip == null) return;
+        if (musicaSource.clip == config.clip) return;
+        
+        musicaSource.clip = config.clip;
+        musicaSource.volume = config.volumen;
+        musicaSource.Play();
+    }
+
+    private void ReproducirSFX(SonidoConfig config) {
+        if (sfxSource == null || config == null || config.clip == null) return;
+        sfxSource.PlayOneShot(config.clip, config.volumen);
+    }
+
+    public void PlayVictoria() => ReproducirSFX(sfxVictoria);
+    public void PlayDerrota() => ReproducirSFX(sfxDerrota);
+    public void PlayQTEPerfect() => ReproducirSFX(sfxQTEPerfect);
+    public void PlayQTEGreat() => ReproducirSFX(sfxQTEGreat);
+    public void PlayQTEFailure() => ReproducirSFX(sfxQTEFailure);
+    public void PlayEspada() => ReproducirSFX(sfxEspada);
+    public void PlayTijeras() => ReproducirSFX(sfxTijeras);
+    public void PlayLlave() => ReproducirSFX(sfxLlave);
+    public void PlayPuerta() => ReproducirSFX(sfxPuerta);
+    public void PlayFuente() => ReproducirSFX(sfxFuente);
+    public void PlayClic() => ReproducirSFX(sfxSonidoClic);
+}

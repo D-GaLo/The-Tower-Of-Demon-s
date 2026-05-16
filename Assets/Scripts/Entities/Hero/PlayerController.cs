@@ -38,6 +38,7 @@ public class PlayerController : MonoBehaviour {
         ActualizarVisuales(inputMovimiento.x, inputMovimiento.y);
 
         if (Input.GetKeyDown(KeyCode.F)) {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayEspada();
             StopAllCoroutines();
             StartCoroutine(AnimacionAtaqueSemicircular());
             Atacar();

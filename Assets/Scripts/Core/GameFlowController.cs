@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class GameFlowController : MonoBehaviour {
     public static GameFlowController Instance; 
@@ -25,6 +26,9 @@ public class GameFlowController : MonoBehaviour {
 
     [Header("Estadísticas Globales")]
     public int combatesCompletados = 0;
+
+    [Header("Navegación")]
+    public string nombreEscenaMenu = "Menu";
 
     private GameObject enemigoActual;
     private bool enCombate = false;
@@ -63,6 +67,11 @@ public class GameFlowController : MonoBehaviour {
 
         if (CombatManager.Instance != null) {
             CombatManager.Instance.StartCombat(enemigoActual, ventajaJugador);
+        }
+
+        if (AudioManager.Instance != null) {
+            bool esJefe = enemigoActual.GetComponent<EnemyStats>().esJefe;
+            AudioManager.Instance.ReproducirMusicaCombate(esJefe);
         }
 
         if (pantallaTransicion != null) pantallaTransicion.SetActive(false);
@@ -119,5 +128,13 @@ public class GameFlowController : MonoBehaviour {
 
         if (pantallaTransicion != null) pantallaTransicion.SetActive(false);
         enCombate = false;
+
+        if (AudioManager.Instance != null) AudioManager.Instance.ReproducirMusicaAmbiental();
     }
+
+    public void VolverAlMenuPrincipal() {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(nombreEscenaMenu);
+    }
+    
 }

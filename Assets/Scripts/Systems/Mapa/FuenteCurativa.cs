@@ -75,6 +75,7 @@ public class FuenteCurativa : MonoBehaviour {
 
     // Va en el botón "SÍ" del panelPregunta
     public void BeberAgua() {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayFuente();
         fuenteVacia = true;
         
         // Guardamos el número de batallas que llevas en este momento exacto

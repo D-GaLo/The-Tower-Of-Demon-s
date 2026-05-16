@@ -76,6 +76,11 @@ public class PuertaFinal : MonoBehaviour {
 
     void AbrirPuerta() {
         puertaAbierta = true;
+
+        if (AudioManager.Instance != null) {
+            AudioManager.Instance.PlayLlave();
+            AudioManager.Instance.PlayPuerta();
+        }
         
         objetoPuertaCerrada.SetActive(false);
         objetoPuertaAbierta.SetActive(true);
@@ -99,6 +104,15 @@ public class PuertaFinal : MonoBehaviour {
             // Volvemos a poner la interfaz oscura para la pantalla final
             if(contenedorPrincipal) contenedorPrincipal.SetActive(true); 
             panelVictoria.SetActive(true);
+        }
+    }
+
+    public void BotonVolverAlMenu() {
+        Time.timeScale = 1f;
+        if (GameFlowController.Instance != null) {
+            GameFlowController.Instance.VolverAlMenuPrincipal();
+        } else {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
         }
     }
 }

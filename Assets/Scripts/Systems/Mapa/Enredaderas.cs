@@ -76,6 +76,7 @@ public void IntentarCortar() {
         // Quitamos la pausa
         Time.timeScale = 1f;
         if (contenedorPrincipal) contenedorPrincipal.SetActive(false);
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayTijeras();
 
         // Desactivamos el objeto (la imagen y la colisión se van)
         Debug.Log("¡Enredaderas cortadas!");

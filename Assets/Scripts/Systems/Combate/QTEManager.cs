@@ -30,6 +30,7 @@ public class QTEManager : MonoBehaviour {
     private List<KeyCode> teclasAtaque = new List<KeyCode> { KeyCode.A, KeyCode.S, KeyCode.W, KeyCode.D };
     private List<KeyCode> todasLasTeclasValidas = new List<KeyCode> { KeyCode.A, KeyCode.S, KeyCode.W, KeyCode.D, KeyCode.E, KeyCode.R, KeyCode.T };
     private List<KeyCode> secuenciaActual = new List<KeyCode>();
+    private List<KeyCode> teclasEsquive = new List<KeyCode> { KeyCode.E, KeyCode.R, KeyCode.T };
     private int indiceActual = 0;
     
     private bool qteActivo = false;
@@ -64,6 +65,21 @@ public class QTEManager : MonoBehaviour {
         secuenciaActual.Add(tecla);
         indiceActual = 0;
         tiempoRestante = tiempoParaQTE / 2f; 
+
+        ConfigurarVisuales();
+    }
+
+    // --- QTE DE ESQUIVE EN ÁREA (E, R, T) ---
+    public void IniciarEsquiveAoE(int longitud, System.Action<float> callback) {
+        onQTEComplete = callback;
+        secuenciaActual.Clear();
+        indiceActual = 0;
+        tiempoRestante = tiempoParaQTE; // Tiempo completo para que logren leer las teclas
+
+        // Genera una secuencia solo con E, R y T
+        for (int i = 0; i < longitud; i++) {
+            secuenciaActual.Add(teclasEsquive[Random.Range(0, teclasEsquive.Count)]);
+        }
 
         ConfigurarVisuales();
     }

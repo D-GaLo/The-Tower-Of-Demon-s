@@ -8,7 +8,8 @@ public class EnemyStats : UnitStats {
     [Tooltip("Activa esto en Jefes o enemigos fijos para que el Spawner no cambie su nivel. Pon el nivel manualmente arriba.")]
     public bool nivelManual = false; 
     public bool esJefe = false;
-
+    public int ataquesPorTurno = 1; 
+    
     [Header("Compañeros de Combate")]
     [Tooltip("Enemigos que pueden aparecer junto a este enemigo en combates normales.")]
     public GameObject[] posiblesCompaneros;

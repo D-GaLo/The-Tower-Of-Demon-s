@@ -625,6 +625,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 7400026297673989452}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: ataquesPorTurno
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: circuloPosicion
       value: 
       objectReference: {fileID: 8122218957712885852}

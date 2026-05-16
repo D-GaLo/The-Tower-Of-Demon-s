@@ -73,6 +73,10 @@ public class CombatManager : MonoBehaviour {
     private int ataquePendienteSecuencia;
     private bool ataquePendienteEsEspecial;
 
+    [Header("UI Especial Jefes")]
+    public GameObject panelTituloJefe;
+    public TextMeshProUGUI textoTituloJefe;
+
     void Awake() {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
@@ -272,11 +276,39 @@ public class CombatManager : MonoBehaviour {
 
         ActualizarPantallaVida(); 
 
+        // --- PRESENTACIÓN DEL JEFE ---
+
+        if (statsEnemigoPrincipal.esJefe) {
+            if (panelTituloJefe != null) {
+                panelTituloJefe.SetActive(true);
+                if (textoTituloJefe != null) {
+                    
+                    string tituloImponente = "";
+                    
+                    // Personalizamos según el nombre del jefe
+                    if (statsEnemigoPrincipal.unitName.Contains("Nucifera")) {
+                        tituloImponente = "<color=#8B0000><size=130%><b>N U C I F E R A</b></size></color>\n<size=50%><i><color=#FF4500>Guardián del Primer Piso</color></i></size>";
+                    } 
+                    else if (statsEnemigoPrincipal.unitName.Contains("Slime")) {
+                        tituloImponente = "<color=#006400><size=130%><b>SLIME PADRE</b></size></color>\n<size=50%><i><color=#32CD32>La Pesadilla Gelatinosa</color></i></size>";
+                    } 
+                    else {
+                        // Por si se te olvida registrar uno, sale genérico pero intimidante
+                        tituloImponente = $"<color=red><size=130%><b>{statsEnemigoPrincipal.unitName.ToUpper()}</b></size></color>";
+                    }
+
+                    textoTituloJefe.text = tituloImponente;
+                }
+            }
+            yield return new WaitForSecondsRealtime(3.0f); // Le damos 3 segundos para que se alcance a leer bien el subtítulo
+            if (panelTituloJefe != null) panelTituloJefe.SetActive(false);
+        }
+
         yield return new WaitForSecondsRealtime(0.5f); 
 
         if (panelFormacion != null) panelFormacion.SetActive(true);
         else ConfirmarFormacion(); 
-    }
+    } 
 
     IEnumerator RevisarInvocacionJefe(EnemyStats jefe) {
         if (jefe.esJefe && !jefe.yaInvoco && jefe.currentHP > 0 && jefe.currentHP <= (jefe.maxHP / 2)) {
@@ -641,66 +673,108 @@ public class CombatManager : MonoBehaviour {
         }
 
         if (heroesVivos.Count > 0 && enemyAttacker != null) {
-            HeroStats targetHero = heroesVivos[Random.Range(0, heroesVivos.Count)];
-
-            // 1. Poder Bruto Menos Defensa
-            float danoBase = enemyAttacker.attack - targetHero.defense;
-            if (danoBase < 1) danoBase = 1;
-
-            // 2. Multiplicador de clase al final
-            float multClase = CalcularMultiplicadorClasePosicion(enemyAttacker, targetHero);
-            int damage = Mathf.RoundToInt(danoBase * multClase);
-            if (damage < 1) damage = 1;
-
-            if (enemyAttacker.level > targetHero.level) {
-                Debug.Log($"<color=red>¡PELIGRO!</color> ¡Ataque ineludible de {enemyAttacker.unitName}!");
-                
-                if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
-                    damage = damage / 2;
-                    Debug.Log($"¡{targetHero.unitName} ESTÁ DEFENDIENDO! Recibe: {damage}.");
-                }
-                targetHero.TakeDamage(damage);
-                ActualizarPantallaVida();
-                yield return new WaitForSecondsRealtime(2f); 
-            } 
-            else {
-                KeyCode teclaEsquive = KeyCode.Space;
-                if (targetHero.unitName.Contains("Sieg")) teclaEsquive = KeyCode.E;
-                else if (targetHero.unitName.Contains("Merlin")) teclaEsquive = KeyCode.R;
-                else if (targetHero.unitName.Contains("Heracles")) teclaEsquive = KeyCode.T;
-
-                Debug.Log($"¡El enemigo ataca a {targetHero.unitName}! Presiona {teclaEsquive} para esquivar.");
+            
+            // --- 1. ATAQUE ESPECIAL DEL JEFE EN ÁREA (< 50% HP) ---
+            if (enemyAttacker.esJefe && enemyAttacker.currentHP <= (enemyAttacker.maxHP / 2)) {
+                Debug.Log($"<color=red>¡{enemyAttacker.unitName} USA SU ATAQUE DEFINITIVO EN ÁREA!</color>");
 
                 bool terminoEsquive = false;
+                float multiplicadorJugador = 1f;
 
-                QTEManager.Instance.IniciarEsquive(teclaEsquive, (multiplicadorEsquive) => {
-                    
-                    if (multiplicadorEsquive == 1.0f) { 
-                        Debug.Log($"¡{targetHero.unitName} ESQUIVÓ EL ATAQUE PERFECTAMENTE! (Daño 0)");
-                        damage = 0; 
-                    } 
-                    else if (multiplicadorEsquive == 0.5f) { 
-                        damage = damage / 2;
-                        Debug.Log($"¡{targetHero.unitName} esquivó parcialmente (Great)! Recibe la mitad del daño: {damage}.");
-                    } 
-                    else { 
-                        Debug.Log($"¡{targetHero.unitName} falló al esquivar (Failure)! Recibe el daño completo: {damage}.");
-                    }
-
-                    if (damage > 0 && heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
-                        damage = damage / 2;
-                        Debug.Log($"¡Pero {targetHero.unitName} estaba DEFENDIENDO! El daño se reduce a: {damage}.");
-                    }
-
-                    if (damage > 0) {
-                        targetHero.TakeDamage(damage);
-                    }
-                    
-                    ActualizarPantallaVida();
+                // Secuencia de 4 teclas usando E, R, T
+                QTEManager.Instance.IniciarEsquiveAoE(4, (multiplicadorEsquive) => {
+                    multiplicadorJugador = multiplicadorEsquive;
                     terminoEsquive = true;
                 });
 
                 yield return new WaitUntil(() => terminoEsquive);
+
+                // Aplicar el daño del área a todos los héroes vivos
+                foreach (HeroStats targetHero in heroesVivos) {
+                    float danoBase = enemyAttacker.attack - targetHero.defense;
+                    if (danoBase < 1) danoBase = 1;
+
+                    float multClase = CalcularMultiplicadorClasePosicion(enemyAttacker, targetHero);
+                    int damage = Mathf.RoundToInt(danoBase * multClase);
+                    if (damage < 1) damage = 1;
+
+                    if (multiplicadorJugador == 1.0f) {
+                        damage = 0; 
+                        Debug.Log($"<color=cyan>¡{targetHero.unitName} ESQUIVÓ PERFECTAMENTE! (Daño 0)</color>");
+                    }
+                    else if (multiplicadorJugador == 0.5f) {
+                        damage = damage / 2; 
+                        Debug.Log($"<color=yellow>¡{targetHero.unitName} esquivó parcialmente! Recibe {damage} de daño.</color>");
+                    } else {
+                        Debug.Log($"<color=purple>¡{targetHero.unitName} falló al esquivar! Recibe el daño completo: {damage}.</color>");
+                    }
+
+                    if (damage > 0 && heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
+                        damage = damage / 2;
+                        Debug.Log($"¡Pero {targetHero.unitName} estaba DEFENDIENDO! Daño reducido.");
+                    }
+
+                    if (damage > 0) targetHero.TakeDamage(damage);
+                }
+                ActualizarPantallaVida();
+            } 
+            // --- 2. ATAQUES NORMALES MULTIPLES ---
+            else {
+                int ataquesRestantes = enemyAttacker.ataquesPorTurno;
+                if (ataquesRestantes < 1) ataquesRestantes = 1; // Seguridad
+
+                for (int i = 0; i < ataquesRestantes; i++) {
+                    // Refrescamos a los vivos por si alguien murió en el primer golpe
+                    heroesVivos.Clear();
+                    foreach (var hero in heroes) if (hero.currentHP > 0) heroesVivos.Add(hero);
+                    if (heroesVivos.Count == 0) break; // Si ya mató a todos, detiene el combo
+
+                    HeroStats targetHero = heroesVivos[Random.Range(0, heroesVivos.Count)];
+
+                    float danoBase = enemyAttacker.attack - targetHero.defense;
+                    if (danoBase < 1) danoBase = 1;
+
+                    float multClase = CalcularMultiplicadorClasePosicion(enemyAttacker, targetHero);
+                    int damage = Mathf.RoundToInt(danoBase * multClase);
+                    if (damage < 1) damage = 1;
+
+                    if (enemyAttacker.level > targetHero.level) {
+                        Debug.Log($"<color=red>¡PELIGRO!</color> ¡Ataque ineludible de {enemyAttacker.unitName}!");
+                        if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) damage = damage / 2;
+                        
+                        targetHero.TakeDamage(damage);
+                        ActualizarPantallaVida();
+                        yield return new WaitForSecondsRealtime(1.5f); 
+                    } 
+                    else {
+                        KeyCode teclaEsquive = KeyCode.Space;
+                        if (targetHero.unitName.Contains("Sieg")) teclaEsquive = KeyCode.E;
+                        else if (targetHero.unitName.Contains("Merlin")) teclaEsquive = KeyCode.R;
+                        else if (targetHero.unitName.Contains("Heracles")) teclaEsquive = KeyCode.T;
+
+                        Debug.Log($"¡El enemigo ataca a {targetHero.unitName}! Presiona {teclaEsquive} para esquivar.");
+
+                        bool terminoEsquive = false;
+
+                        QTEManager.Instance.IniciarEsquive(teclaEsquive, (multiplicadorEsquive) => {
+                            if (multiplicadorEsquive == 1.0f) damage = 0; 
+                            else if (multiplicadorEsquive == 0.5f) damage = damage / 2;
+
+                            if (damage > 0 && heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
+                                damage = damage / 2;
+                            }
+
+                            if (damage > 0) targetHero.TakeDamage(damage);
+                            
+                            ActualizarPantallaVida();
+                            terminoEsquive = true;
+                        });
+
+                        yield return new WaitUntil(() => terminoEsquive);
+                    }
+                    
+                    if (i < ataquesRestantes - 1) yield return new WaitForSecondsRealtime(0.5f); // Breve pausa entre combos
+                }
             }
         }
 

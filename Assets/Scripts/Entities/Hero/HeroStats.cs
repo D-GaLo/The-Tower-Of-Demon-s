@@ -11,7 +11,7 @@ public class HeroStats : UnitStats {
     public int maxLevel = 10;
     // Puntos totales necesarios para alcanzar el siguiente nivel. 
     // Índice 1 = XP para Nivel 2, Índice 2 = XP para Nivel 3, etc.
-    public int[] xpParaNivel = { 0, 100, 300, 650, 1250, 2250, 3750, 5950, 9150, 13650 };
+    public int[] xpParaNivel = { 0, 100, 250, 450, 750, 1550, 2350, 3750, 5150, 8650 };
 
     [Header("Equipamiento")]
     public WeaponData equippedWeapon;

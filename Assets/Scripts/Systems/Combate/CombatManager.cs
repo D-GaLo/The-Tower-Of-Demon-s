@@ -549,24 +549,24 @@ public class CombatManager : MonoBehaviour {
 
         // --- 1. TRIÁNGULO DE CLASES (+/- 25%) ---
         // Ventajas
-        if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) multiplicador += 0.30f;
-        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) multiplicador += 0.30f;
-        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) multiplicador += 0.30f;
+        if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) multiplicador += 0.15f;
+        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) multiplicador += 0.15f;
+        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) multiplicador += 0.15f;
         // Desventajas
-        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Melee) multiplicador -= 0.30f;
-        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Rango) multiplicador -= 0.30f;
-        else if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Tanque) multiplicador -= 0.30f;
+        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Melee) multiplicador -= 0.15f;
+        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Rango) multiplicador -= 0.15f;
+        else if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Tanque) multiplicador -= 0.15f;
 
         // --- 2. TRIÁNGULO DE POSICIONES (+/- 25%) ---
         // Asumiendo triángulo: Volando > Tierra > BajoTierra > Volando
         // Ventajas
-        if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.Tierra) multiplicador += 0.30f;
-        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.BajoTierra) multiplicador += 0.30f;
-        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Volando) multiplicador += 0.30f;
+        if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.Tierra) multiplicador += 0.15f;
+        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.BajoTierra) multiplicador += 0.15f;
+        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Volando) multiplicador += 0.15f;
         // Desventajas
-        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) multiplicador -= 0.30f;
-        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Tierra) multiplicador -= 0.30f;
-        else if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.BajoTierra) multiplicador -= 0.30f;
+        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) multiplicador -= 0.15f;
+        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Tierra) multiplicador -= 0.15f;
+        else if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.BajoTierra) multiplicador -= 0.15f;
 
         // Maestría
         float bonoMaestria = atacante.mastery * 0.01f;

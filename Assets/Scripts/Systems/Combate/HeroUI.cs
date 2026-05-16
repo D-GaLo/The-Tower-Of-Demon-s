@@ -10,10 +10,9 @@ public class HeroUI : MonoBehaviour {
     public Image barraHP;
     public Image barraEnergia; 
 
-    // --- NUEVO: UI DE NIVEL Y XP ---
     [Header("Progreso y Nivel")]
     public TextMeshProUGUI nivelText;
-    public TextMeshProUGUI xpText; // Muestra "50 / 100"
+    public TextMeshProUGUI xpText;
     public Image barraXP;
 
     [Header("Imágenes en la UI (Los círculos)")]
@@ -38,24 +37,20 @@ public class HeroUI : MonoBehaviour {
         
         ActualizarVida();
         ActualizarEnergia(); 
-        ActualizarNivelYXP(); // <-- NUEVO: Llamamos a la función de progreso
+        ActualizarNivelYXP();
         
         AsignarIconos();
     }
 
-    // --- NUEVO: CÁLCULO DE LA BARRA DE EXPERIENCIA ---
     public void ActualizarNivelYXP() {
         if (miHeroe != null) {
-            // Actualizar texto del nivel
             if (nivelText != null) nivelText.text = "Lv. " + miHeroe.level;
 
-            // Si llegó al nivel máximo
             if (miHeroe.level >= miHeroe.maxLevel) {
                 if (barraXP != null) barraXP.fillAmount = 1f;
                 if (xpText != null) xpText.text = "MAX";
             } 
             else {
-                // Matemáticas para calcular el progreso del nivel ACTUAL
                 int xpBaseDeEsteNivel = miHeroe.xpParaNivel[miHeroe.level - 1]; 
                 int xpParaSiguienteNivel = miHeroe.xpParaNivel[miHeroe.level];
                 

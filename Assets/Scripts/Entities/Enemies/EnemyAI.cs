@@ -29,8 +29,6 @@ public class EnemyAI : MonoBehaviour {
             player = p.transform;
         }
 
-        // LÓGICA PARA ENEMIGOS MANUALES (SALA 6, 10, ETC.)
-        // Si pusiste los puntos en el Inspector, inicializamos el objetivo
         if (currentTarget == Vector3.zero) {
             if (pointA != Vector3.zero || pointB != Vector3.zero) {
                 currentTarget = pointB;
@@ -39,9 +37,7 @@ public class EnemyAI : MonoBehaviour {
         }
     }
 
-    // El Spawner llama a esta función automáticamente
     public void ConfigurarPatrulla(Vector3 pA, Vector3 pB) {
-        // Si marcamos el enemigo como especial, ignoramos lo que diga el Spawner
         if (esEnemigoEspecial) return; 
 
         pointA = pA;
@@ -63,14 +59,11 @@ public class EnemyAI : MonoBehaviour {
         float distance = Vector2.Distance(transform.position, player.position);
 
         if (distance < detectionRange) {
-            // ESTADO 1: PERSECUCIÓN
             isReturning = true; 
             Perseguir();
         } else if (isReturning) {
-            // ESTADO 2: REGRESAR A LA RUTA
             RegresarAPatrulla();
         } else {
-            // ESTADO 3: PATRULLA NORMAL
             Patrullar();
         }
     }

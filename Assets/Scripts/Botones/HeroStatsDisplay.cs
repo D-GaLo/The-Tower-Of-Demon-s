@@ -10,7 +10,7 @@ public class HeroStatsDisplay : MonoBehaviour
     public TextMeshProUGUI nameText;
     public Slider hpSlider;
     public Slider energySlider;
-    public TextMeshProUGUI statsText; // Para Attack, Defense, Speed
+    public TextMeshProUGUI statsText;
 
     public void MostrarHeroe(HeroStats hero)
     {

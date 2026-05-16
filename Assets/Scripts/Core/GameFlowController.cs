@@ -10,7 +10,7 @@ public class GameFlowController : MonoBehaviour {
     public RoomCamera camaraPrincipal;
     public Vector3 posicionArenaCombate = new Vector3(1000f, 1000f, -10f);
     
-    [Tooltip("Arrastra aquí un GameObject vacío para usarlo como punto exacto de reaparición.")]
+    [Tooltip("Arrastrar aquí el punto de reaparición.")]
     public Transform puntoReaparicion;
 
     [Header("UI (Interfaces)")]
@@ -24,10 +24,10 @@ public class GameFlowController : MonoBehaviour {
     public GameObject botonInteraccion;
     public GameObject visualEspada; 
 
-    [Header("Estadísticas Globales")]
+    [Header("Numero de combates completados")]
     public int combatesCompletados = 0;
 
-    [Header("Navegación")]
+    [Header("Menu")]
     public string nombreEscenaMenu = "Menu";
 
     private GameObject enemigoActual;
@@ -77,7 +77,6 @@ public class GameFlowController : MonoBehaviour {
         if (pantallaTransicion != null) pantallaTransicion.SetActive(false);
     }
 
-    // --- MODIFICADO: AHORA RECIBE SI EL JUGADOR HUYÓ ---
     public void TerminarCombate(bool victoria, bool huyo = false) {
         if (victoria) {
             combatesCompletados++;
@@ -94,19 +93,15 @@ public class GameFlowController : MonoBehaviour {
         if (uiCombate != null) uiCombate.SetActive(false);
         yield return new WaitForSecondsRealtime(0.5f);
 
-        // --- REGLA: EL ENEMIGO SOLO DESAPARECE SI GANAS ---
         if (victoria && enemigoActual != null) {
             Destroy(enemigoActual);
         }
 
-        // --- REGLA: CASTIGO POR DERROTA (No aplica si huyes) ---
         if (!victoria && !huyo) {
             PlayerController player = FindObjectOfType<PlayerController>();
             if (player != null) {
-                // Obtenemos la posición del punto (o la de respaldo)
-                Vector3 destino = puntoReaparicion != null ? puntoReaparicion.position : new Vector3(20.9f, -2.5f, 0f);
+                Vector3 destino = puntoReaparicion != null ? puntoReaparicion.position : new Vector3(0f, -2.5f, 0f);
                 
-                // --- CORRECCIÓN: Evitar que el jugador desaparezca en la profundidad (Eje Z) ---
                 destino.z = player.transform.position.z; 
                 
                 player.TeletransportarAlSpawn(destino);

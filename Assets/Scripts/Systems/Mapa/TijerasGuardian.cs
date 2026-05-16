@@ -3,7 +3,7 @@ using UnityEngine;
 public class TijerasGuardian : MonoBehaviour {
     [Header("Referencias del Mundo")]
     public GameObject slimePadre; 
-    public GameObject visualTijerasMapa; // La imagen con baba en el suelo
+    public GameObject visualTijerasMapa;
 
     [Header("Interfaz de Mensaje")]
     public GameObject contenedorPrincipal; 
@@ -16,7 +16,6 @@ public class TijerasGuardian : MonoBehaviour {
     }
 
     void Update() {
-        // Detecta si el Slime Padre fue destruido tras el combate
         if (slimePadre == null && !entregado) {
             DarPremio();
         }
@@ -26,18 +25,15 @@ public class TijerasGuardian : MonoBehaviour {
         entregado = true;
         if(visualTijerasMapa) visualTijerasMapa.SetActive(false);
 
-        // Registro en el inventario
         if (InventarioEnum.Instance != null) {
             InventarioEnum.Instance.AddItem(Item.Tijeras, 1);
         }
 
-        // Mostrar la UI que ya tiene el texto escrito
         Time.timeScale = 0f; 
         if(contenedorPrincipal) contenedorPrincipal.SetActive(true);
         if(panelMensaje) panelMensaje.SetActive(true);
     }
 
-    // Función para el botón "Aceptar" del panel
     public void CerrarMensaje() {
         if(panelMensaje) panelMensaje.SetActive(false);
         if(contenedorPrincipal) contenedorPrincipal.SetActive(false);

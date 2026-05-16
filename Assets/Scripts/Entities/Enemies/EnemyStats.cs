@@ -5,7 +5,7 @@ using TMPro;
 public class EnemyStats : UnitStats {
     
     [Header("Configuración de Nivel y Jefe")]
-    [Tooltip("Activa esto en Jefes o enemigos fijos para que el Spawner no cambie su nivel. Pon el nivel manualmente arriba.")]
+    [Tooltip("Activar esto en Jefes o enemigos fijos para que el Spawner no cambie su nivel.")]
     public bool nivelManual = false; 
     public bool esJefe = false;
     public int ataquesPorTurno = 1; 
@@ -17,7 +17,7 @@ public class EnemyStats : UnitStats {
     public GameObject[] enemigosAInvocar;
     [HideInInspector] public bool yaInvoco = false;
 
-    [Header("Recompensas (Drop)")]
+    [Header("Dropeos")]
     public WeaponData weaponDrop;
     [Range(0, 100)] public int dropChance = 20; 
 
@@ -43,11 +43,9 @@ public class EnemyStats : UnitStats {
     }
 
     void Start() {
-        // Si es un Jefe o está puesto a mano en el mapa, escalamos sus stats desde el inicio
         if (nivelManual) {
             EscalarEstadisticas();
         } else if (level == 1 && currentHP == 0) {
-            // Por seguridad, si es Nivel 1 le damos su vida base
             currentHP = maxHP;
         }
 
@@ -56,19 +54,16 @@ public class EnemyStats : UnitStats {
         }
     }
 
-    // --- NUEVO: CRECIMIENTO DE ESTADÍSTICAS ---
     public void EscalarEstadisticas() {
         if (level > 1) {
             int nivelesExtra = level - 1;
             
-            // Fórmula genérica de crecimiento (Puedes cambiar estos números si quieres enemigos más duros)
             maxHP += (nivelesExtra * 50);
             attack += (nivelesExtra * 25);
             defense += (nivelesExtra * 25);
             speed += (nivelesExtra * 20);
         }
         
-        // Lo curamos al tope de su nueva vida máxima
         currentHP = maxHP;
     }
 

@@ -2,14 +2,14 @@ using UnityEngine;
 
 public class UIMapaManager : MonoBehaviour {
     [Header("Referencias UI")]
-    public GameObject panelMapa; // El panel gris/negro de fondo
-    public RectTransform punteroJugador; // El icono que indica dónde estás
+    public GameObject panelMapa;
+    public RectTransform punteroJugador;
 
     [Header("Sincronización de Salas")]
-    [Tooltip("Arrastra aquí los RoomCenters del mundo 2D")]
+    [Tooltip("Arrastrar aquí los RoomCenters del mundo 2D")]
     public Transform[] centrosMundo; 
     
-    [Tooltip("Arrastra aquí los objetos centrales de tu mapa UI en EL MISMO ORDEN")]
+    [Tooltip("Arrastrar aquí los objetos centrales del mapaUI en el mismo orden que los RoomCenters del mundo")]
     public RectTransform[] centrosUI; 
 
     private bool mapaActivo = false;
@@ -18,16 +18,15 @@ public class UIMapaManager : MonoBehaviour {
         if (panelMapa != null) panelMapa.SetActive(false);
     }
 
-    // Esta función la pones en el OnClick() del Botón
     public void ToggleMapa() {
         mapaActivo = !mapaActivo;
         panelMapa.SetActive(mapaActivo);
 
         if (mapaActivo) {
-            Time.timeScale = 0f; // Pausamos el juego
+            Time.timeScale = 0f;
             ActualizarUbicacionPuntero();
         } else {
-            Time.timeScale = 1f; // Reanudamos el juego
+            Time.timeScale = 1f;
         }
     }
 
@@ -38,22 +37,19 @@ public class UIMapaManager : MonoBehaviour {
         int indiceSalaActual = 0;
         float distanciaMenor = Mathf.Infinity;
 
-        // 1. Averiguamos en qué índice de nuestra lista está el jugador en el mundo real
         for (int i = 0; i < centrosMundo.Length; i++) {
             if (centrosMundo[i] == null) continue;
 
             float distancia = Vector2.Distance(p.transform.position, centrosMundo[i].position);
             if (distancia < distanciaMenor) {
                 distanciaMenor = distancia;
-                indiceSalaActual = i; // Guardamos el número de la sala ganadora
+                indiceSalaActual = i;
             }
         }
 
-        // 2. Movemos el puntero al cuadrito UI que tenga ESE MISMO índice
         if (centrosUI.Length > indiceSalaActual && centrosUI[indiceSalaActual] != null) {
-            // Mueve el puntero exactamente a la posición del centro UI
             punteroJugador.position = centrosUI[indiceSalaActual].position;
-            punteroJugador.SetAsLastSibling(); // Lo pone al frente para que no quede detrás del mapa
+            punteroJugador.SetAsLastSibling();
         }
     }
 }

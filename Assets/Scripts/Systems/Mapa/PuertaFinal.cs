@@ -13,7 +13,7 @@ public class PuertaFinal : MonoBehaviour {
     private bool puertaAbierta = false;
 
     [Header("Referencias UI")]
-    public GameObject contenedorPrincipal; // <-- NUEVO: El panel oscuro que cubre todo
+    public GameObject contenedorPrincipal;
     public GameObject panelPregunta;
     public GameObject panelSinLlave;
     public GameObject panelVictoria;
@@ -25,7 +25,6 @@ public class PuertaFinal : MonoBehaviour {
         objetoPuertaAbierta.SetActive(false);
         colisionMuro.isTrigger = false; 
         
-        // Ahora apagamos TODO al iniciar (incluso el escudo que bloquea los clics)
         if(contenedorPrincipal) contenedorPrincipal.SetActive(false); 
         if(panelPregunta) panelPregunta.SetActive(false);
         if(panelSinLlave) panelSinLlave.SetActive(false);
@@ -47,18 +46,16 @@ public class PuertaFinal : MonoBehaviour {
         }
     }
 
-    // --- FUNCIONES PARA LOS BOTONES DE LA UI ---
-
     public void AbrirDialogoPregunta() {
         Time.timeScale = 0f; 
-        if(contenedorPrincipal) contenedorPrincipal.SetActive(true); // Encendemos el escudo
+        if(contenedorPrincipal) contenedorPrincipal.SetActive(true);
         panelPregunta.SetActive(true);
     }
 
     public void CerrarDialogos() {
         panelPregunta.SetActive(false);
         panelSinLlave.SetActive(false);
-        if(contenedorPrincipal) contenedorPrincipal.SetActive(false); // Apagamos el escudo
+        if(contenedorPrincipal) contenedorPrincipal.SetActive(false);
         Time.timeScale = 1f; 
     }
 
@@ -71,8 +68,6 @@ public class PuertaFinal : MonoBehaviour {
             panelSinLlave.SetActive(true); 
         }
     }
-
-    // --- LÓGICA INTERNA ---
 
     void AbrirPuerta() {
         puertaAbierta = true;
@@ -91,7 +86,6 @@ public class PuertaFinal : MonoBehaviour {
 
         colisionMuro.isTrigger = true; 
         
-        // Como ya la abrimos, quitamos la interfaz oscura para poder caminar
         if(contenedorPrincipal) contenedorPrincipal.SetActive(false); 
         
         Time.timeScale = 1f; 
@@ -101,7 +95,6 @@ public class PuertaFinal : MonoBehaviour {
         if (puertaAbierta && other.CompareTag("Player")) {
             Time.timeScale = 0f; 
             
-            // Volvemos a poner la interfaz oscura para la pantalla final
             if(contenedorPrincipal) contenedorPrincipal.SetActive(true); 
             panelVictoria.SetActive(true);
         }

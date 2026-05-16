@@ -8,7 +8,7 @@ public class HeroStatsPanelUI : MonoBehaviour
     public GameObject statsPanel;
     public Button openButton;
 
-    [Header("Héroes (asigna los 3 GameObjects con HeroStats)")]
+    [Header("Héroes")]
     public HeroStats[] heroes = new HeroStats[3];
 
     [Header("Botones de Pestañas")]
@@ -16,7 +16,7 @@ public class HeroStatsPanelUI : MonoBehaviour
     public Color activeTabColor = Color.white;
     public Color inactiveTabColor = new Color(0.7f, 0.7f, 0.7f);
 
-    [Header("Paneles de Contenido (uno por héroe)")]
+    [Header("Paneles de Contenido")]
     public GameObject[] contentPanels = new GameObject[3];
 
     [Header("3 slots para cada personaje")]
@@ -61,7 +61,6 @@ public class HeroStatsPanelUI : MonoBehaviour
     {
         statsPanel.SetActive(false);
 
-        //openButton.onClick.AddListener(TogglePanel);
 
         for (int i = 0; i < tabButtons.Length; i++)
         {
@@ -69,7 +68,6 @@ public class HeroStatsPanelUI : MonoBehaviour
             tabButtons[i].onClick.AddListener(() => SwitchTab(index));
         }
 
-        //PopulateAllHeroes();
         SwitchTab(0);
     }
 

@@ -26,9 +26,8 @@ public class PlayerController : MonoBehaviour {
 
         if (Time.timeScale == 0) return;
 
-        // Si el panel de combate está prendido, Sieg ignora el teclado por completo
         if (GameFlowController.Instance != null && GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf) {
-            inputMovimiento = Vector2.zero; // Reseteamos a cero para que no se quede patinando
+            inputMovimiento = Vector2.zero;
             return; 
         }
 
@@ -74,7 +73,6 @@ public class PlayerController : MonoBehaviour {
             espadaVisual.SetActive(true);
             float tiempo = 0;
             while(tiempo < duracionAtaque) {
-                // Time.deltaTime se detiene en pausa, lo cual es correcto aquí
                 tiempo += Time.deltaTime; 
                 float progresoArco = Mathf.Lerp(90, -90, tiempo / duracionAtaque);
                 espadaVisual.transform.localRotation = Quaternion.Euler(0, 0, anguloBase + progresoArco);
@@ -88,14 +86,13 @@ public class PlayerController : MonoBehaviour {
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(transform.position, attackRange);
         foreach(Collider2D enemy in hitEnemies) {
             if(enemy.CompareTag("Enemy")) {
-                // Buscamos el componente en el padre por si golpeamos un collider hijo
                 EnemyStats stats = enemy.GetComponentInParent<EnemyStats>();
                 
                 if (stats != null && GameFlowController.Instance != null) {
-                    // Le enviamos "true" para indicar que el jugador dio el primer golpe
+
                     GameFlowController.Instance.IniciarCombate(stats.gameObject, true);
                 }
-                break; // Solo atacamos a un enemigo a la vez para iniciar la pelea
+                break;
             }
         }
     }

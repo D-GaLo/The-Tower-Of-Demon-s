@@ -29,12 +29,9 @@ public class PartyFollower : MonoBehaviour {
             Vector3 puntoDestino = historialPosiciones[0];
             float distanciaAlLider = Vector3.Distance(transform.position, targetToFollow.position);
 
-            // Solo nos movemos si el líder se aleja para mantener la formación de serpiente
             if (distanciaAlLider > distanciaSeguridad) {
-                // MoveTowards es más suave y evita que los personajes "tiemblen"
                 transform.position = Vector3.MoveTowards(transform.position, puntoDestino, 5f * Time.fixedDeltaTime);
                 
-                // Flip visual según la dirección del movimiento
                 float difX = puntoDestino.x - transform.position.x;
                 if (difX > 0.01f) spriteHeroe.flipX = false;
                 else if (difX < -0.01f) spriteHeroe.flipX = true;

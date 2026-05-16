@@ -9,28 +9,24 @@ public class HeroStats : UnitStats {
     [Header("Experiencia y Progreso")]
     public int currentXP = 0;
     public int maxLevel = 10;
-    // Puntos totales necesarios para alcanzar el siguiente nivel. 
-    // Índice 1 = XP para Nivel 2, Índice 2 = XP para Nivel 3, etc.
     public int[] xpParaNivel = { 0, 100, 250, 450, 750, 1550, 2350, 3750, 5150, 8650 };
 
     [Header("Equipamiento")]
     public WeaponData equippedWeapon;
 
-    // --- LÍMITES DE ESTADÍSTICAS GDD ---
-    private const int LIMITE_HP = 500;
-    private const int LIMITE_ATK = 200;
-    private const int LIMITE_DEF = 200;
-    private const int LIMITE_SPD = 200;
-    private const int LIMITE_ENERGIA = 300;
-    private const int LIMITE_MAESTRIA = 120;
+    private const int LIMITE_HP = 1000;
+    private const int LIMITE_ATK = 500;
+    private const int LIMITE_DEF = 500;
+    private const int LIMITE_SPD = 500;
+    private const int LIMITE_ENERGIA = 500;
+    private const int LIMITE_MAESTRIA = 500;
 
     void Start() {
-        ConfigurarStatsBaseIniciales(); // Asegura que los personajes tengan sus stats correctos al Nivel 1
+        ConfigurarStatsBaseIniciales();
         currentHP = maxHP;
         currentEnergy = maxEnergy;
     }
 
-    // Configura las estadísticas base automáticamente para no tener que hacerlo a mano en Unity
     void ConfigurarStatsBaseIniciales() {
         if (level == 1) {
             if (unitName == "Sieg") {
@@ -45,14 +41,12 @@ public class HeroStats : UnitStats {
         }
     }
 
-    // --- SISTEMA DE EXPERIENCIA Y SUBIDA DE NIVEL ---
     public void GanarExperiencia(int cantidadXP) {
-        if (level >= maxLevel) return; // Si es nivel 10, no hace nada
+        if (level >= maxLevel) return;
 
         currentXP += cantidadXP;
         Debug.Log($"<color=yellow>[Experiencia]</color> {unitName} ganó {cantidadXP} XP. Total: {currentXP}/{xpParaNivel[level]}");
 
-        // Si la experiencia supera el requisito, sube de nivel (usa While por si gana XP para subir 2 niveles de golpe)
         while (level < maxLevel && currentXP >= xpParaNivel[level]) {
             SubirDeNivel();
         }
@@ -62,9 +56,7 @@ public class HeroStats : UnitStats {
         level++;
         Debug.Log($"<color=green>[Level UP!]</color> ¡{unitName} alcanzó el Nivel {level}!");
 
-        // Crecimiento de estadísticas según la identidad del personaje
         if (unitName == "Sieg") {
-            // Equilibrado en todo
             maxHP += 40;
             attack += 20;
             defense += 20;
@@ -73,7 +65,6 @@ public class HeroStats : UnitStats {
             mastery += 13;
         } 
         else if (unitName == "Merlin") {
-            // Mago: Cañón de cristal (Mucho ataque/energía, poca defensa)
             maxHP += 25;
             attack += 25;
             defense += 10;
@@ -82,7 +73,6 @@ public class HeroStats : UnitStats {
             mastery += 15;
         }
         else if (unitName == "Heracles") {
-            // Tanque: Fuerte, muy resistente, pero muy lento
             maxHP += 45;
             attack += 22;
             defense += 25;
@@ -93,7 +83,6 @@ public class HeroStats : UnitStats {
 
         AplicarLimitesDeGDD();
 
-        // Al subir de nivel, se recupera toda la vida y la energía como recompensa
         currentHP = maxHP;
         currentEnergy = maxEnergy;
     }
@@ -107,7 +96,6 @@ public class HeroStats : UnitStats {
         mastery = Mathf.Min(mastery, LIMITE_MAESTRIA);
     }
 
-    // --- FUNCIONES ORIGINALES ---
     public bool UseEnergy(int amount) {
         if (currentEnergy >= amount) {
             currentEnergy -= amount;

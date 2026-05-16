@@ -8,26 +8,25 @@ public class MainMenuController : MonoBehaviour {
     public GameObject panelHistoria;
     public GameObject panelCreditos;
 
-    [Header("Configuración del Tutorial (Carrusel)")]
+    [Header("Configuración del Tutorial")]
     public Image contenedorImagenTutorial;
-    [Tooltip("Arrastra aquí en orden los Sprites de las imágenes de tu tutorial.")]
+    [Tooltip("Arrastrar aquí en orden los Sprites de las imágenes del tutorial.")]
     public Sprite[] imagenesTutorial;
     private int indiceTutorialActual = 0;
 
     [Header("Configuración de Escena")]
     public string nombreEscenaMapa = "Mapa";
 
-    [Header("Sistema de Audio Independiente")]
+    [Header("Sistema de Audio")]
     [Tooltip("AudioSource dedicado a la música de fondo.")]
     public AudioSource fuenteMusica; 
-    [Tooltip("AudioSource dedicado a los efectos de sonido (clics).")]
+    [Tooltip("AudioSource dedicado a los efectos de sonido.")]
     public AudioSource fuenteSonidos; 
     public AudioClip sonidoClic;
 
     void Start() {
         CerrarTodosLosPaneles();
         
-        // Iniciamos la música ambiental si hay una asignada
         if (fuenteMusica != null && !fuenteMusica.isPlaying) {
             fuenteMusica.Play();
         }
@@ -36,18 +35,16 @@ public class MainMenuController : MonoBehaviour {
     void Update() {
         if (Input.GetKeyDown(KeyCode.Escape)) {
             CerrarTodosLosPaneles();
-            ReproducirSonidoClic(); // Opcional: Sonido al cerrar con Esc
+            ReproducirSonidoClic();
         }
     }
 
-    // --- FUNCIÓN DE SONIDO ---
     public void ReproducirSonidoClic() {
         if (fuenteSonidos != null && sonidoClic != null) {
             fuenteSonidos.PlayOneShot(sonidoClic);
         }
     }
 
-    // --- BOTONES PRINCIPALES ---
     public void OnBotonIniciar() {
         ReproducirSonidoClic();
         SceneManager.LoadScene(nombreEscenaMapa);
@@ -85,7 +82,6 @@ public class MainMenuController : MonoBehaviour {
         Application.Quit(); 
     }
 
-    // --- NAVEGACIÓN DEL CARRUSEL ---
     public void OnBotonSiguienteTutorial() {
         ReproducirSonidoClic();
         if (imagenesTutorial == null || imagenesTutorial.Length == 0) return;

@@ -26,16 +26,12 @@ public class CombatManager : MonoBehaviour {
     public GameObject menuEspeciales;
     public Vector3 menuOffset = new Vector3(0, 1.5f, 0);
 
-    [Header("UI - Textos Ataques Especiales")]
+    [Header("UI de textos Ataques Especiales")]
     public TextMeshProUGUI textoEspecial1;
     public TextMeshProUGUI textoEspecial2;
     public TextMeshProUGUI textoEspecial3;
 
-    // --- NUEVO: Control de Área y UI de Posiciones ---
     private bool ataquePendienteEsAoE = false;
-    
-    // (Opcional) Si quieres colorear los botones de las posiciones desde código en el futuro, 
-    // puedes declarar arreglos de Image aquí, pero la lógica base funcionará directo.
 
     public HeroUI[] heroesUI;
 
@@ -82,7 +78,7 @@ public class CombatManager : MonoBehaviour {
         else Destroy(gameObject);
     }
     public void StartCombat(GameObject enemy, bool ventajaJugador = false) {
-        if (enCombateActivo) return; // Si ya estamos peleando, ignoramos otros choques
+        if (enCombateActivo) return;
         enCombateActivo = true;
         
         activeEnemies.Clear();
@@ -119,14 +115,12 @@ public class CombatManager : MonoBehaviour {
                 }
             }
 
-            // Configuramos los textos
             if (textoVictoriaXP != null) textoVictoriaXP.text = $"XP Obtenida: {xpDeEstaPelea}";
             string recuentoNiveles = "";
 
             foreach (HeroStats heroe in listaParty) {
                 if (heroe != null && heroe.currentHP > 0) { 
                     
-                    // Guardamos los stats viejos para compararlos
                     int nivelViejo = heroe.level;
                     int hpViejo = heroe.maxHP;
                     int atqViejo = heroe.attack;
@@ -134,7 +128,6 @@ public class CombatManager : MonoBehaviour {
 
                     heroe.GanarExperiencia(xpDeEstaPelea);
                     
-                    // Si el nivel cambió, agregamos el texto chulo de mejora de stats
                     if (heroe.level > nivelViejo) {
                         recuentoNiveles += $"<color=yellow>¡{heroe.unitName} alcanzó el Nivel {heroe.level}!</color>\n";
                         recuentoNiveles += $"HP: {hpViejo} -> {heroe.maxHP} | Atq: {atqViejo} -> {heroe.attack} | Def: {defViejo} -> {heroe.defense}\n\n";
@@ -161,7 +154,7 @@ public class CombatManager : MonoBehaviour {
             }
 
             if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
-            if (panelVictoria != null) panelVictoria.SetActive(true); // Abrimos el panel y ESPERAMOS al clic
+            if (panelVictoria != null) panelVictoria.SetActive(true);
 
         } else {
             state = CombatState.LOST;
@@ -170,7 +163,7 @@ public class CombatManager : MonoBehaviour {
             if (AudioManager.Instance != null) AudioManager.Instance.PlayDerrota();
             
             if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
-            if (panelDerrota != null) panelDerrota.SetActive(true); // Abrimos el panel de derrota
+            if (panelDerrota != null) panelDerrota.SetActive(true);
         }
 
         RestaurarPosiciones();
@@ -184,7 +177,6 @@ public class CombatManager : MonoBehaviour {
         
         activeEnemies[0].name = activeEnemies[0].name.Replace("(Clone)", "").Trim();
         
-        // --- CORRECCIÓN DE NOMBRE: Solo usamos el nombre del GameObject si no pusiste uno personalizado ---
         if (string.IsNullOrEmpty(statsEnemigoPrincipal.unitName)) {
             statsEnemigoPrincipal.unitName = activeEnemies[0].name;
         }
@@ -212,7 +204,6 @@ public class CombatManager : MonoBehaviour {
                 
                 EnemyStats statsClon = clon.GetComponent<EnemyStats>();
                 
-                // --- CORRECCIÓN DE NOMBRE PARA CLONES ---
                 if (string.IsNullOrEmpty(statsClon.unitName)) {
                     statsClon.unitName = clon.name;
                 }
@@ -268,19 +259,31 @@ public class CombatManager : MonoBehaviour {
         heroOriginalPositions.Clear(); 
         heroesDefendiendo.Clear(); 
 
+        foreach (HeroStats heroe in listaParty) {
+            heroOriginalPositions[heroe.gameObject] = heroe.transform.position;
+            heroesDefendiendo[heroe] = false;
+        }
+
         for (int i = 0; i < listaParty.Count && i < heroPositions.Length; i++) {
             GameObject heroObj = listaParty[i].gameObject;
-            
-            heroOriginalPositions[heroObj] = heroObj.transform.position; 
-            heroObj.transform.position = heroPositions[i].position;
-            heroesDefendiendo[listaParty[i]] = false; 
+            if (heroObj.GetComponent<HeroStats>().unitName == "Sieg") {
+                heroObj.transform.position = heroPositions[i].position;
+            }
+        }
 
-            if (i < heroesUI.Length && heroesUI[i] != null) heroesUI[i].ConfigurarUI(listaParty[i]);
+        for (int i = 0; i < listaParty.Count && i < heroPositions.Length; i++) {
+            GameObject heroObj = listaParty[i].gameObject;
+            if (heroObj.GetComponent<HeroStats>().unitName != "Sieg") {
+                heroObj.transform.position = heroPositions[i].position;
+            }
+            
+            if (i < heroesUI.Length && heroesUI[i] != null) {
+                heroesUI[i].ConfigurarUI(listaParty[i]);
+            }
         }
 
         ActualizarPantallaVida(); 
 
-        // --- PRESENTACIÓN DEL JEFE ---
 
         if (statsEnemigoPrincipal.esJefe) {
             if (panelTituloJefe != null) {
@@ -289,7 +292,6 @@ public class CombatManager : MonoBehaviour {
                     
                     string tituloImponente = "";
                     
-                    // Personalizamos según el nombre del jefe
                     if (statsEnemigoPrincipal.unitName.Contains("Nucifera")) {
                         tituloImponente = "<color=#8B0000><size=130%><b>N U C I F E R A</b></size></color>\n<size=50%><i><color=#FF4500>Guardián del Primer Piso</color></i></size>";
                     } 
@@ -297,14 +299,13 @@ public class CombatManager : MonoBehaviour {
                         tituloImponente = "<color=#006400><size=130%><b>SLIME PADRE</b></size></color>\n<size=50%><i><color=#32CD32>La Pesadilla Gelatinosa</color></i></size>";
                     } 
                     else {
-                        // Por si se te olvida registrar uno, sale genérico pero intimidante
                         tituloImponente = $"<color=red><size=130%><b>{statsEnemigoPrincipal.unitName.ToUpper()}</b></size></color>";
                     }
 
                     textoTituloJefe.text = tituloImponente;
                 }
             }
-            yield return new WaitForSecondsRealtime(3.0f); // Le damos 3 segundos para que se alcance a leer bien el subtítulo
+            yield return new WaitForSecondsRealtime(3.0f);
             if (panelTituloJefe != null) panelTituloJefe.SetActive(false);
         }
 
@@ -344,7 +345,6 @@ public class CombatManager : MonoBehaviour {
                     
                     EnemyStats statsClon = clon.GetComponent<EnemyStats>();
                     
-                    // --- CORRECCIÓN DE NOMBRE PARA INVOCACIONES ---
                     if (string.IsNullOrEmpty(statsClon.unitName)) {
                         statsClon.unitName = clon.name;
                     }
@@ -377,10 +377,7 @@ public class CombatManager : MonoBehaviour {
 
 
 
-    // --- NUEVA LÓGICA DE SELECTOR DE POSICIONES ---
-    // Esta función la pondrás en los nuevos botones de Símbolos en tu UI
     public void SeleccionarPosicion(string nombreHeroe_Y_Posicion) {
-        // Ej: El botón de Sieg Volando envía "Sieg_Volando"
         string[] datos = nombreHeroe_Y_Posicion.Split('_');
         string heroeObjetivo = datos[0];
         string posElegida = datos[1];
@@ -391,7 +388,6 @@ public class CombatManager : MonoBehaviour {
             else if (posElegida == "BajoTierra") heroe.unitPosition = UnitPosition.BajoTierra;
             else if (posElegida == "Volando") heroe.unitPosition = UnitPosition.Volando;
             
-            // Actualizamos su UI para que el icono del círculo cambie de inmediato
             HeroUI ui = System.Array.Find(heroesUI, u => u.nombreText.text == heroe.unitName);
             if (ui != null) ui.ConfigurarUI(heroe);
         }
@@ -406,7 +402,6 @@ public class CombatManager : MonoBehaviour {
     void CalcularOrdenDeTurnos() {
         turnQueue.Clear();
         
-        // Agregamos a todos los héroes vivos
         HeroStats[] heroes = FindObjectsOfType<HeroStats>();
         foreach(var h in heroes) {
             if (h.currentHP > 0) turnQueue.Add(h.gameObject);
@@ -417,7 +412,6 @@ public class CombatManager : MonoBehaviour {
             if (eStats != null && eStats.currentHP > 0) turnQueue.Add(enemyObj);
         }
 
-        // Ordenamos la lista de mayor Velocidad a menor Velocidad
         turnQueue.Sort((actorA, actorB) => GetSpeed(actorB).CompareTo(GetSpeed(actorA)));
 
         Debug.Log("--- NUEVA RONDA ---");
@@ -426,7 +420,6 @@ public class CombatManager : MonoBehaviour {
         }
     }
 
-    // Función auxiliar para leer la velocidad 
     int GetSpeed(GameObject actor) {
         HeroStats hs = actor.GetComponent<HeroStats>();
         if (hs != null) return hs.speed;
@@ -547,40 +540,33 @@ public class CombatManager : MonoBehaviour {
         if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate(false, true);
     }
 
-    // --- LÓGICA DE DEBILIDADES Y MAESTRÍA ---
     float CalcularMultiplicadorClasePosicion(UnitStats atacante, UnitStats defensor) {
         float multiplicador = 1.0f;
 
-        // --- 1. TRIÁNGULO DE CLASES (+/- 25%) ---
-        // Ventajas
         if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) multiplicador += 0.15f;
         else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) multiplicador += 0.15f;
         else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) multiplicador += 0.15f;
-        // Desventajas
+
         else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Melee) multiplicador -= 0.15f;
         else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Rango) multiplicador -= 0.15f;
         else if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Tanque) multiplicador -= 0.15f;
 
-        // --- 2. TRIÁNGULO DE POSICIONES (+/- 25%) ---
-        // Asumiendo triángulo: Volando > Tierra > BajoTierra > Volando
-        // Ventajas
         if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.Tierra) multiplicador += 0.15f;
         else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.BajoTierra) multiplicador += 0.15f;
         else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Volando) multiplicador += 0.15f;
-        // Desventajas
+
         else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) multiplicador -= 0.15f;
         else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Tierra) multiplicador -= 0.15f;
         else if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.BajoTierra) multiplicador -= 0.15f;
 
-        // Maestría
+
         float bonoMaestria = atacante.mastery * 0.01f;
         multiplicador += bonoMaestria;
 
         return Mathf.Max(0.0f, multiplicador); 
     }
 
-    // --- CÁLCULO DE DAÑO JUGADOR ---
-    // --- CÁLCULO DE DAÑO DEL JUGADOR ---
+
     IEnumerator PlayerAttackRoutine(GameObject targetEnemyObj, float multiplicadorQTE) {
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
         EnemyStats target = targetEnemyObj.GetComponent<EnemyStats>();
@@ -606,7 +592,6 @@ public class CombatManager : MonoBehaviour {
                 Debug.Log($"{target.unitName} ha sido derrotado y desaparece.");
                 target.gameObject.SetActive(false); 
             } else {
-                // Revisamos si el objetivo es un Jefe que debe invocar
                 yield return StartCoroutine(RevisarInvocacionJefe(target));
             }
         }
@@ -616,7 +601,6 @@ public class CombatManager : MonoBehaviour {
         AvanzarTurno(); 
     }
 
-    // --- CÁLCULO DE ÁREA ---
     IEnumerator PlayerAoEAttackRoutine(float multiplicadorQTE) {
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
         heroesDefendiendo[attacker] = false;
@@ -646,12 +630,11 @@ public class CombatManager : MonoBehaviour {
                     if (target.currentHP <= 0) {
                         target.gameObject.SetActive(false); 
                     } else if (target.esJefe && !target.yaInvoco && target.currentHP <= (target.maxHP / 2)) {
-                        jefesHeridos.Add(target); // Guardamos al jefe para que invoque después de recibir el daño
+                        jefesHeridos.Add(target);
                     }
                 }
             }
 
-            // Hacemos que los jefes invoquen
             foreach (var jefe in jefesHeridos) {
                 yield return StartCoroutine(RevisarInvocacionJefe(jefe));
             }
@@ -662,8 +645,6 @@ public class CombatManager : MonoBehaviour {
         AvanzarTurno(); 
     }
 
-// --- CÁLCULO DE DAÑO ENEMIGO ---
-    // --- CÁLCULO CORREGIDO DE DAÑO ENEMIGO ---
     IEnumerator EnemyTurnRoutine() {
         Debug.Log("Turno del enemigo...");
         yield return new WaitForSecondsRealtime(1f); 
@@ -678,14 +659,12 @@ public class CombatManager : MonoBehaviour {
 
         if (heroesVivos.Count > 0 && enemyAttacker != null) {
             
-            // --- 1. ATAQUE ESPECIAL DEL JEFE EN ÁREA (< 50% HP) ---
             if (enemyAttacker.esJefe && enemyAttacker.currentHP <= (enemyAttacker.maxHP / 2)) {
                 Debug.Log($"<color=red>¡{enemyAttacker.unitName} USA SU ATAQUE DEFINITIVO EN ÁREA!</color>");
 
                 bool terminoEsquive = false;
                 float multiplicadorJugador = 1f;
 
-                // Secuencia de 4 teclas usando E, R, T
                 QTEManager.Instance.IniciarEsquiveAoE(4, (multiplicadorEsquive) => {
                     multiplicadorJugador = multiplicadorEsquive;
                     terminoEsquive = true;
@@ -693,7 +672,6 @@ public class CombatManager : MonoBehaviour {
 
                 yield return new WaitUntil(() => terminoEsquive);
 
-                // Aplicar el daño del área a todos los héroes vivos
                 foreach (HeroStats targetHero in heroesVivos) {
                     float danoBase = enemyAttacker.attack - targetHero.defense;
                     if (danoBase < 1) danoBase = 1;
@@ -722,16 +700,15 @@ public class CombatManager : MonoBehaviour {
                 }
                 ActualizarPantallaVida();
             } 
-            // --- 2. ATAQUES NORMALES MULTIPLES ---
+
             else {
                 int ataquesRestantes = enemyAttacker.ataquesPorTurno;
-                if (ataquesRestantes < 1) ataquesRestantes = 1; // Seguridad
+                if (ataquesRestantes < 1) ataquesRestantes = 1;
 
                 for (int i = 0; i < ataquesRestantes; i++) {
-                    // Refrescamos a los vivos por si alguien murió en el primer golpe
                     heroesVivos.Clear();
                     foreach (var hero in heroes) if (hero.currentHP > 0) heroesVivos.Add(hero);
-                    if (heroesVivos.Count == 0) break; // Si ya mató a todos, detiene el combo
+                    if (heroesVivos.Count == 0) break; 
 
                     HeroStats targetHero = heroesVivos[Random.Range(0, heroesVivos.Count)];
 
@@ -777,7 +754,7 @@ public class CombatManager : MonoBehaviour {
                         yield return new WaitUntil(() => terminoEsquive);
                     }
                     
-                    if (i < ataquesRestantes - 1) yield return new WaitForSecondsRealtime(0.5f); // Breve pausa entre combos
+                    if (i < ataquesRestantes - 1) yield return new WaitForSecondsRealtime(0.5f);
                 }
             }
         }
@@ -789,7 +766,15 @@ public class CombatManager : MonoBehaviour {
 
     void RestaurarPosiciones() {
         foreach (var hero in heroOriginalPositions) {
-             if(hero.Key != null) hero.Key.transform.position = hero.Value;
+             if(hero.Key != null && hero.Key.GetComponent<HeroStats>().unitName == "Sieg") {
+                 hero.Key.transform.position = hero.Value;
+             }
+        }
+
+        foreach (var hero in heroOriginalPositions) {
+             if(hero.Key != null && hero.Key.GetComponent<HeroStats>().unitName != "Sieg") {
+                 hero.Key.transform.position = hero.Value;
+             }
         }
 
         if (activeEnemies.Count > 0 && activeEnemies[0] != null) {
@@ -815,7 +800,6 @@ public class CombatManager : MonoBehaviour {
         }
     }
 
-    // --- NUEVO: SISTEMA DE SUB-MENÚS ---
     public void MostrarMenu(GameObject menuAMostrar) {
         if (menuPrincipal != null) menuPrincipal.SetActive(false);
         if (menuTipoAtaque != null) menuTipoAtaque.SetActive(false);
@@ -825,23 +809,21 @@ public class CombatManager : MonoBehaviour {
         if (menuAMostrar != null) menuAMostrar.SetActive(true);
     }
 
-    // Botón "Atacar" del menú principal
+
     public void OnBotonMenuAtacar() {
         MostrarMenu(menuTipoAtaque);
     }
 
-    // Botón "Atq. Especial"
     public void OnBotonMenuEspeciales() {
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
-        
-        // Personalizamos los textos de los botones
+
         if (attacker.unitName == "Sieg") {
             if (textoEspecial1 != null) textoEspecial1.text = "Corte Veloz (10)";
-            if (textoEspecial2 != null) textoEspecial2.text = "Golpe Heroico (20)";
-            if (textoEspecial3 != null) textoEspecial3.text = "Furia del Dragón (50)";
+            if (textoEspecial2 != null) textoEspecial2.text = "Corte Destructor (20)";
+            if (textoEspecial3 != null) textoEspecial3.text = "Tajo Divino (50)";
         } 
         else if (attacker.unitName == "Merlin") {
-            if (textoEspecial1 != null) textoEspecial1.text = "Dardo de Hielo (15)";
+            if (textoEspecial1 != null) textoEspecial1.text = "Bala de Hielo (15)";
             if (textoEspecial2 != null) textoEspecial2.text = "Rayo Arcano (30)";
             if (textoEspecial3 != null) textoEspecial3.text = "Lluvia de Meteoros (60) [ÁREA]";
         }
@@ -854,12 +836,10 @@ public class CombatManager : MonoBehaviour {
         MostrarMenu(menuEspeciales);
     }
 
-    // Botón "Atras" (sirve para cualquier menú)
     public void OnBotonAtras() {
         MostrarMenu(menuPrincipal);
     }
 
-    // --- ACCIÓN: ATACAR ---
     
     public void OnAtaqueNormal() {
         Debug.Log("<color=cyan>[Combate]</color> Botón de Ataque Normal presionado.");
@@ -884,7 +864,6 @@ public class CombatManager : MonoBehaviour {
 
         int costo = 10; float mult = 1.5f; int seqLen = 3; bool esAoE = false;
 
-        // --- DICCIONARIO DE ATAQUES ---
         if (nombre == "Sieg") {
             if (slotEspecial == 1) { costo = 10; mult = 1.2f; seqLen = 3; }
             else if (slotEspecial == 2) { costo = 20; mult = 1.8f; seqLen = 4; }
@@ -908,10 +887,9 @@ public class CombatManager : MonoBehaviour {
         if (state != CombatState.WAITING_FOR_INPUT) return;
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
         
-        // REVISIÓN DE ENERGÍA CON ALERTA
         if (esEspecial && attacker.currentEnergy < costo) {
             Debug.LogWarning($"<color=red>¡ERROR!</color> {attacker.unitName} intentó usar un ataque de coste {costo}, pero solo tiene {attacker.currentEnergy} de energía.");
-            return; // Aquí es donde se cancelaba silenciosamente
+            return;
         }
 
         ataquePendienteCosto = costo;
@@ -920,12 +898,10 @@ public class CombatManager : MonoBehaviour {
         ataquePendienteEsEspecial = esEspecial;
         ataquePendienteEsAoE = esAoE;
 
-        // Si es un ataque en Área, no seleccionamos enemigo
         if (esAoE) {
             Debug.Log("<color=yellow>[Combate]</color> Preparando ataque en área. Omitiendo selección de objetivo.");
             ConfirmarAtaqueAEnemigo(-1); 
         } else {
-            // Mostrar menú de seleccionar enemigo
             for (int i = 0; i < botonesSeleccionEnemigo.Length; i++) {
                 if (i < activeEnemies.Count && activeEnemies[i] != null && activeEnemies[i].GetComponent<EnemyStats>().currentHP > 0) {
                     botonesSeleccionEnemigo[i].gameObject.SetActive(true);
@@ -938,7 +914,6 @@ public class CombatManager : MonoBehaviour {
         }
     }
 
-    // --- ACCIÓN: CONFIRMAR EL OBJETIVO Y ATACAR ---
     public void ConfirmarAtaqueAEnemigo(int enemyIndex) {
         if (state != CombatState.WAITING_FOR_INPUT) return;
 
@@ -983,7 +958,7 @@ public class CombatManager : MonoBehaviour {
         Rigidbody2D rb = enemigo.GetComponent<Rigidbody2D>();
         if (rb != null) {
             rb.velocity = Vector2.zero;
-            rb.isKinematic = true; // Evita que se empujen por las físicas
+            rb.isKinematic = true;
         }
     }
 

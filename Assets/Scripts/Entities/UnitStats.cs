@@ -1,6 +1,5 @@
 using UnityEngine;
 
-// Clases y Posiciones según las reglas de tu GDD
 public enum UnitClass { Melee, Rango, Tanque }
 public enum UnitPosition { Tierra, BajoTierra, Volando }
 
@@ -11,7 +10,7 @@ public class UnitStats : MonoBehaviour {
     public UnitPosition unitPosition;
 
     [Header("Nivel")]
-    public int level = 1; // Añadido para Héroes (y futuros enemigos)
+    public int level = 1;
 
     [Header("Estadísticas Base")]
     public int maxHP = 100;
@@ -21,7 +20,6 @@ public class UnitStats : MonoBehaviour {
     public int speed = 10; 
     public int mastery = 0; 
 
-    // El método virtual permite que los hijos (Hero o Enemy) lo modifiquen si quieren
     public virtual void TakeDamage(int damage) {
         currentHP -= damage;
         if (currentHP < 0) currentHP = 0;

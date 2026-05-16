@@ -7,17 +7,17 @@ public class FuenteCurativa : MonoBehaviour {
 
     [Header("Configuración")]
     public float distanciaInteraccion = 2f;
-    public int combatesParaRecargar = 2; // Número de batallas necesarias para que vuelva a haber agua
+    public int combatesParaRecargar = 2;
     
     private bool fuenteVacia = false;
-    private int combatesAlVaciar = 0; // Guarda el récord de batallas que llevabas al beber
+    private int combatesAlVaciar = 0;
     private Transform player;
 
     [Header("UI - Paneles (Con texto pre-hecho)")]
     public GameObject contenedorPrincipal; 
     public GameObject panelPregunta; 
     public GameObject panelCurado;   
-    public GameObject panelSeca; // <-- NUEVO: "La fuente no tiene agua en este momento"
+    public GameObject panelSeca;
 
     void Start() {
         if (objetoFuenteLlena) objetoFuenteLlena.SetActive(true);
@@ -26,7 +26,7 @@ public class FuenteCurativa : MonoBehaviour {
         if (contenedorPrincipal) contenedorPrincipal.SetActive(false);
         if (panelPregunta) panelPregunta.SetActive(false);
         if (panelCurado) panelCurado.SetActive(false);
-        if (panelSeca) panelSeca.SetActive(false); // Apagamos el nuevo panel
+        if (panelSeca) panelSeca.SetActive(false);
 
         GameObject p = GameObject.FindGameObjectWithTag("Player");
         if (p != null) player = p.transform;
@@ -35,18 +35,14 @@ public class FuenteCurativa : MonoBehaviour {
     void Update() {
         if (player == null || Time.timeScale == 0) return;
 
-        // 1. REVISAR SI DEBEMOS RECARGAR LA FUENTE
         if (fuenteVacia && GameFlowController.Instance != null) {
-            // Si las batallas actuales son mayores o iguales a (las que tenías + las que te pide)
             if (GameFlowController.Instance.combatesCompletados >= (combatesAlVaciar + combatesParaRecargar)) {
                 RecargarFuente();
             }
         }
 
-        // 2. DETECTAR INTERACCIÓN
         if (Vector2.Distance(transform.position, player.position) <= distanciaInteraccion) {
             if (Input.GetKeyDown(KeyCode.E)) {
-                // Si la fuente tiene agua, preguntamos si quiere beber. Si no, le mostramos el panel de rechazo.
                 if (!fuenteVacia) {
                     AbrirPanel(panelPregunta);
                 } else {
@@ -55,8 +51,6 @@ public class FuenteCurativa : MonoBehaviour {
             }
         }
     }
-
-    // --- FUNCIONES INTERNAS ---
 
     void RecargarFuente() {
         fuenteVacia = false;
@@ -71,14 +65,10 @@ public class FuenteCurativa : MonoBehaviour {
         if (panelSeleccionado) panelSeleccionado.SetActive(true);
     }
 
-    // --- FUNCIONES PARA LOS BOTONES DE LA INTERFAZ ---
-
-    // Va en el botón "SÍ" del panelPregunta
     public void BeberAgua() {
         if (AudioManager.Instance != null) AudioManager.Instance.PlayFuente();
         fuenteVacia = true;
         
-        // Guardamos el número de batallas que llevas en este momento exacto
         if (GameFlowController.Instance != null) {
             combatesAlVaciar = GameFlowController.Instance.combatesCompletados;
         }
@@ -104,7 +94,6 @@ public class FuenteCurativa : MonoBehaviour {
         }
     }
 
-    // Va en los botones "NO" (panelPregunta), "ACEPTAR" (panelCurado) y "ACEPTAR" (panelSeca)
     public void CerrarDialogos() {
         if (panelPregunta) panelPregunta.SetActive(false);
         if (panelCurado) panelCurado.SetActive(false);

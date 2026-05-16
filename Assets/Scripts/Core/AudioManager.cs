@@ -9,25 +9,25 @@ public class SonidoConfig {
 public class AudioManager : MonoBehaviour {
     public static AudioManager Instance;
 
-    [Header("Bocinas Principales (Audio Sources)")]
-    [Tooltip("Arrastra un AudioSource para la música (Ponlo en Loop).")]
+    [Header("AudioSources")]
+    [Tooltip("Arrastrar un AudioSource para la música.")]
     public AudioSource musicaSource;
-    [Tooltip("Arrastra un AudioSource para los efectos (Sin Loop).")]
+    [Tooltip("Arrastrar un AudioSource para los efectos.")]
     public AudioSource sfxSource;
 
-    [Header("🎶 Música")]
+    [Header("Música")]
     public SonidoConfig musicaAmbiental;
     public SonidoConfig musicaCombateNormal;
     public SonidoConfig musicaCombateJefe;
 
-    [Header("⚔️ SFX - Combate")]
+    [Header("SFX - Combate")]
     public SonidoConfig sfxVictoria;
     public SonidoConfig sfxDerrota;
     public SonidoConfig sfxQTEPerfect;
     public SonidoConfig sfxQTEGreat;
     public SonidoConfig sfxQTEFailure;
 
-    [Header("🗺️ SFX - Exploración")]
+    [Header("SFX - Exploración")]
     public SonidoConfig sfxEspada;
     public SonidoConfig sfxTijeras;
     public SonidoConfig sfxLlave;

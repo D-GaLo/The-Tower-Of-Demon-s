@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic; // Necesario para usar Listas
+using System.Collections.Generic;
 
 public class EnemySpawner : MonoBehaviour {
     public GameObject[] enemyPrefabs; 
@@ -8,7 +8,6 @@ public class EnemySpawner : MonoBehaviour {
     public Vector2 areaSize = new Vector2(14, 6); 
     public float distanciaMinimaEntreEnemigos = 2f; 
 
-    // --- NUEVO: Configuración de Respawn ---
     [Header("Configuración de Respawn")]
     public float tiempoRespawnMinutos = 3f;
     private List<GameObject> enemigosSpawneados = new List<GameObject>();
@@ -19,10 +18,8 @@ public class EnemySpawner : MonoBehaviour {
     }
 
     void Update() {
-        // Si no hay enemigos o ya estamos contando el tiempo, ignorar
         if (esperandoRespawn || enemigosSpawneados.Count == 0) return;
 
-        // Revisamos la lista para ver si queda al menos UN enemigo vivo en el mapa
         bool todosMuertos = true;
         for (int i = 0; i < enemigosSpawneados.Count; i++) {
             if (enemigosSpawneados[i] != null) {
@@ -31,7 +28,6 @@ public class EnemySpawner : MonoBehaviour {
             }
         }
 
-        // Si se limpió la sala, empezamos a contar
         if (todosMuertos) {
             StartCoroutine(RutinaRespawn());
         }
@@ -39,11 +35,10 @@ public class EnemySpawner : MonoBehaviour {
 
     IEnumerator RutinaRespawn() {
         esperandoRespawn = true;
-        enemigosSpawneados.Clear(); // Limpiamos la lista vieja
+        enemigosSpawneados.Clear();
         
         Debug.Log($"<color=yellow>[Spawner]</color> Sala limpiada. Los enemigos volverán en {tiempoRespawnMinutos} minutos...");
         
-        // Esperamos el tiempo (3 minutos = 180 segundos)
         yield return new WaitForSeconds(tiempoRespawnMinutos * 60f); 
         
         Debug.Log("<color=yellow>[Spawner]</color> ¡Reapareciendo enemigos!");
@@ -81,7 +76,6 @@ public class EnemySpawner : MonoBehaviour {
                 int randomIndex = Random.Range(0, enemyPrefabs.Length);
                 GameObject enemigoObj = Instantiate(enemyPrefabs[randomIndex], spawnPos, Quaternion.identity);
                 
-                // --- NUEVO: Guardamos el enemigo en nuestra lista para vigilarlo ---
                 enemigosSpawneados.Add(enemigoObj);
 
                 EnemyStats eStats = enemigoObj.GetComponent<EnemyStats>();

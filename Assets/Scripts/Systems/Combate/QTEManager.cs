@@ -15,7 +15,7 @@ public class QTEManager : MonoBehaviour {
     public TextMeshProUGUI textoPresiona;
     public Image barraTiempo;               
 
-    [Header("Sprites de tus Teclas (¡Asígnalos!)")]
+    [Header("Sprites de tus Teclas")]
     public Sprite sprite_A;
     public Sprite sprite_S;
     public Sprite sprite_W;
@@ -69,14 +69,12 @@ public class QTEManager : MonoBehaviour {
         ConfigurarVisuales();
     }
 
-    // --- QTE DE ESQUIVE EN ÁREA (E, R, T) ---
     public void IniciarEsquiveAoE(int longitud, System.Action<float> callback) {
         onQTEComplete = callback;
         secuenciaActual.Clear();
         indiceActual = 0;
-        tiempoRestante = tiempoParaQTE; // Tiempo completo para que logren leer las teclas
+        tiempoRestante = tiempoParaQTE;
 
-        // Genera una secuencia solo con E, R y T
         for (int i = 0; i < longitud; i++) {
             secuenciaActual.Add(teclasEsquive[Random.Range(0, teclasEsquive.Count)]);
         }
@@ -101,11 +99,10 @@ public class QTEManager : MonoBehaviour {
         qteActivo = true;
         panelQTE.SetActive(true);
         
-        // --- CONTROL DE TEXTOS AL INICIO ---
-        if (textoResultado != null) textoResultado.gameObject.SetActive(false); // Ocultamos el resultado
+        if (textoResultado != null) textoResultado.gameObject.SetActive(false);
         
         if (textoPresiona != null) {
-            textoPresiona.gameObject.SetActive(true); // Mostramos el "Presiona"
+            textoPresiona.gameObject.SetActive(true);
             textoPresiona.text = "¡Presiona!";
             textoPresiona.color = Color.white;
         }
@@ -162,26 +159,21 @@ public class QTEManager : MonoBehaviour {
     void TerminarQTE(float porcentajeExito) {
         qteActivo = false;
         
-        // El multiplicador que enviaremos al CombatManager
         float multiplicadorFinal = 1.0f;
 
-        // --- CONTROL DE TEXTOS AL FINALIZAR ---
         if (textoPresiona != null) textoPresiona.gameObject.SetActive(false); 
         if (textoResultado != null) textoResultado.gameObject.SetActive(true); 
 
-        // 1. Regla: Secuencia correcta al 100% -> Daño no alterado (1.0x)
         if (porcentajeExito >= 1.0f) {
             if (textoResultado != null) { textoResultado.text = "Perfect"; textoResultado.color = Color.green; }
             if (AudioManager.Instance != null) AudioManager.Instance.PlayQTEPerfect();
             multiplicadorFinal = 1.0f; 
         } 
-        // 2. Regla: Falla menos de la mitad (Es decir, acierta el 50% o más) -> Mitad de daño (0.5x)
         else if (porcentajeExito >= 0.5f) {
             if (textoResultado != null) { textoResultado.text = "Great"; textoResultado.color = new Color(1f, 0.5f, 0f); }
             if (AudioManager.Instance != null) AudioManager.Instance.PlayQTEGreat();
             multiplicadorFinal = 0.5f; 
         } 
-        // 3 y 4. Regla: Falla más de la mitad o se acaba el tiempo (0.0f) -> Falla el ataque (0.0x)
         else {
             if (textoResultado != null) { textoResultado.text = "Failure"; textoResultado.color = Color.red; }
             if (AudioManager.Instance != null) AudioManager.Instance.PlayQTEFailure();

@@ -1204,7 +1204,26 @@ MonoBehaviour:
   panelHistoria: {fileID: 511478824}
   panelCreditos: {fileID: 1269420949}
   contenedorImagenTutorial: {fileID: 1003295585}
-  imagenesTutorial: []
+  imagenesTutorial:
+  - {fileID: 21300000, guid: a58523a0cea5bef42b3f0412d515a213, type: 3}
+  - {fileID: 21300000, guid: d5959e93735cca44699698995cf06fa6, type: 3}
+  - {fileID: 21300000, guid: bba2040c6ec7fbb4ab2e2ddbfeabbd55, type: 3}
+  - {fileID: 21300000, guid: f73a97e5ed0f2384b8ca3050ec62929f, type: 3}
+  - {fileID: 21300000, guid: bd906de82c52c754ab77ccebad23259b, type: 3}
+  - {fileID: 21300000, guid: 80d8c54767c79064984386f75b143c0a, type: 3}
+  - {fileID: 21300000, guid: 0f42d0f8cb60168469c45ab7f47fc9c4, type: 3}
+  - {fileID: 21300000, guid: 01758d9671a382445b058998c0f42ccd, type: 3}
+  - {fileID: 21300000, guid: 9920e84937c9116448817dd07f127ca9, type: 3}
+  - {fileID: 21300000, guid: f342790da2430554fa4d72332025aaac, type: 3}
+  - {fileID: 21300000, guid: 0fac63f70b565f349bca681de416a602, type: 3}
+  - {fileID: 21300000, guid: 1959827261937a743af6a64a623ab3a0, type: 3}
+  - {fileID: 21300000, guid: ec0b45272ca76c84aa296d60086f144a, type: 3}
+  - {fileID: 21300000, guid: 1cb58f82d65f3c541aa131366106e4fb, type: 3}
+  - {fileID: 21300000, guid: 55ea7777330dadc479cbcc6b4b8dbd6a, type: 3}
+  - {fileID: 21300000, guid: 8d8c053b9bcb5be428edbdf72c403d25, type: 3}
+  - {fileID: 21300000, guid: 8c14d89b88e05b6479e3fc6dbc55257a, type: 3}
+  - {fileID: 21300000, guid: 6b30a46bace866e4693f5e3efb217d72, type: 3}
+  - {fileID: 21300000, guid: bed7f45d697a4334e9c405ae0a61b5a0, type: 3}
   nombreEscenaMapa: Mapa
   fuenteMusica: {fileID: 430992139}
   fuenteSonidos: {fileID: 430992138}

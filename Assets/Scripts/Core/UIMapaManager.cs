@@ -12,6 +12,9 @@ public class UIMapaManager : MonoBehaviour {
     [Tooltip("Arrastrar aquí los objetos centrales del mapaUI en el mismo orden que los RoomCenters del mundo")]
     public RectTransform[] centrosUI; 
 
+    [Tooltip("Arrastrar aquí el botón de Estadísticas")]
+    public GameObject botonEstadisticas; 
+
     private bool mapaActivo = false;
 
     void Start() {
@@ -24,9 +27,12 @@ public class UIMapaManager : MonoBehaviour {
 
         if (mapaActivo) {
             Time.timeScale = 0f;
+            if (botonEstadisticas != null) botonEstadisticas.SetActive(false);
             ActualizarUbicacionPuntero();
         } else {
             Time.timeScale = 1f;
+            if (botonEstadisticas != null) botonEstadisticas.SetActive(true);
+            
         }
     }
 

@@ -134,13 +134,13 @@ public class HeroStatsPanelUI : MonoBehaviour
         if (h == null) return;
 
         nameT.text    = h.unitName;
-        classT.text   = $"{h.unitClass} · {h.unitPosition}";
-        hpT.text      = $"{h.currentHP} / {h.maxHP}";
-        energyT.text  = $"{h.currentEnergy} / {h.maxEnergy}";
-        atkT.text     = h.attack.ToString();
-        defT.text     = h.defense.ToString();
-        spdT.text     = h.speed.ToString();
-        mastT.text    = $"Nivel {h.mastery}";
+        classT.text   = $"Clase: {h.unitClass} · {h.unitPosition}";
+        hpT.text      = $"Vida: {h.currentHP} / {h.maxHP}";
+        energyT.text  = $"Energia: {h.currentEnergy} / {h.maxEnergy}";
+        atkT.text     = $"Ataque: {h.attack.ToString()}";
+        defT.text     = $"Defensa: {h.defense.ToString()}";
+        spdT.text     = $"Velocidad: {h.speed.ToString()}";
+        mastT.text    = $"Nivel: {h.mastery}";
         weapT.text    = h.equippedWeapon != null ? h.equippedWeapon.weaponName : "Sin arma";
 
         HeroEquipment equipo = h.GetComponent<HeroEquipment>();

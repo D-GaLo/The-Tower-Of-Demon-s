@@ -21,6 +21,10 @@ public class InventarioSlotUI : MonoBehaviour, IPointerClickHandler
         iconoImagen.sprite = icono;
         iconoImagen.enabled = cantidad > 0;
         cantidadTexto.text = cantidad > 0 ? cantidad.ToString() : "";
+        if (cantidad > 0)
+        {
+            iconoImagen.color = Color.white;
+        }
     }
 
     public void OnPointerClick(PointerEventData e){

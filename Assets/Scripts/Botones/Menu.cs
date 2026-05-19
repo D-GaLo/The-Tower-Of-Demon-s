@@ -68,6 +68,16 @@ public class Menu : MonoBehaviour
         }
     }
 
+    public void TogglePanel()
+    {
+        panelAMostrar.SetActive(!panelAMostrar.activeSelf);
+        if (panelAMostrar.activeSelf){
+            ActivarPanel();
+        }else{
+            DesactivarPanel();
+        }
+    }
+
     public void ActivarPanel()
     {
         if (panelAMostrar != null)

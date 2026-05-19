@@ -9,4 +9,7 @@ public class WeaponData : ScriptableObject {
     
     [Tooltip("¿Cuánto ataque suma?")]
     public int attackBonus = 5;
+
+    [Tooltip("El icono que se mostrará en el inventario y equipamiento")]
+    public Sprite icono;
 }

@@ -27,7 +27,8 @@ public class EquipSlotUI : MonoBehaviour, IDropHandler, IPointerClickHandler
         }
         else
         {
-            nombreTexto.text = item.ToString();
+            if (nombreTexto != null) 
+               nombreTexto.text = item.ToString();
         }
 
         if (iconoImagen != null)
@@ -63,6 +64,34 @@ public class EquipSlotUI : MonoBehaviour, IDropHandler, IPointerClickHandler
         else if (e.button == PointerEventData.InputButton.Right && equipo != null){
             equipo.Desequipar(slotIndex);
             Refrescar();
+        }
+    }
+
+    public void ActualizarSlot(WeaponData armaEquipada)
+    {
+        if (armaEquipada != null)
+        {
+            if (iconoImagen != null)
+            {
+                iconoImagen.enabled = true;
+                iconoImagen.sprite = armaEquipada.icono; 
+                iconoImagen.color = Color.white;
+            }
+            if (nombreTexto != null)
+            {
+                nombreTexto.text = armaEquipada.weaponName; 
+            }
+        }
+        else
+        {
+            if (iconoImagen != null)
+            {
+                iconoImagen.enabled = false; 
+            }
+            if (nombreTexto != null)
+            {
+                nombreTexto.text = "Sin arma";
+            }
         }
     }
 }

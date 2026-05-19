@@ -84,12 +84,14 @@ public class EnemySpawner : MonoBehaviour {
                     int nivelCalculado = nivelJugador;
                     int dado = Random.Range(1, 101);
 
-                    if (dado <= 45) { 
-                        nivelCalculado = nivelJugador - 1;
-                    } else if (dado <= 65) { 
-                        nivelCalculado = nivelJugador + 1;
-                    } else {
+                    if (dado <= 65) {
                         nivelCalculado = nivelJugador;
+                    } 
+                    else if (dado <= 85) {
+                        nivelCalculado = nivelJugador - 1;
+                    } 
+                    else {
+                        nivelCalculado = nivelJugador + 1;
                     }
 
                     if (nivelCalculado < 1) nivelCalculado = 1;

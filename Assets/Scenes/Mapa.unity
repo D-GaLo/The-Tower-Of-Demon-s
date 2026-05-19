@@ -88747,6 +88747,30 @@ PrefabInstance:
       propertyPath: level
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 5439001681014501550, guid: 80c3fdd916530ff4f90efd34ab24a1f0, type: 3}
+      propertyPath: maxHP
+      value: 2500
+      objectReference: {fileID: 0}
+    - target: {fileID: 5439001681014501550, guid: 80c3fdd916530ff4f90efd34ab24a1f0, type: 3}
+      propertyPath: speed
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 5439001681014501550, guid: 80c3fdd916530ff4f90efd34ab24a1f0, type: 3}
+      propertyPath: attack
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 5439001681014501550, guid: 80c3fdd916530ff4f90efd34ab24a1f0, type: 3}
+      propertyPath: defense
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 5439001681014501550, guid: 80c3fdd916530ff4f90efd34ab24a1f0, type: 3}
+      propertyPath: currentHP
+      value: 2500
+      objectReference: {fileID: 0}
+    - target: {fileID: 5439001681014501550, guid: 80c3fdd916530ff4f90efd34ab24a1f0, type: 3}
+      propertyPath: statsManuales
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6300186084409094280, guid: 80c3fdd916530ff4f90efd34ab24a1f0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -105017,19 +105041,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: maxHP
-      value: 600
+      value: 6000
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: speed
-      value: 50
+      value: 300
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: attack
-      value: 100
+      value: 280
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: defense
-      value: 50
+      value: 150
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: canvasUI
@@ -105045,7 +105069,7 @@ PrefabInstance:
       objectReference: {fileID: 1153364944}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: currentHP
-      value: 600
+      value: 6000
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: nivelManual
@@ -105055,6 +105079,10 @@ PrefabInstance:
       propertyPath: circuloClase
       value: 
       objectReference: {fileID: 1998504538}
+    - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
+      propertyPath: statsManuales
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: circuloPosicion
       value: 
@@ -107481,10 +107509,10 @@ MonoBehaviour:
     volumen: 1
   sfxEspada:
     clip: {fileID: 8300000, guid: b375148a5dd2c04419c6046f18fd567b, type: 3}
-    volumen: 1
+    volumen: 0.5
   sfxTijeras:
     clip: {fileID: 8300000, guid: 1f9bd7986ad958d428bffc67b14fa9d5, type: 3}
-    volumen: 1
+    volumen: 0.7
   sfxLlave:
     clip: {fileID: 8300000, guid: ca995e2a215cb714e97a0e523dde9255, type: 3}
     volumen: 1

@@ -181,6 +181,33 @@ public class CombatManager : MonoBehaviour {
             statsEnemigoPrincipal.unitName = activeEnemies[0].name;
         }
 
+        if (!statsEnemigoPrincipal.nivelManual && !statsEnemigoPrincipal.esJefe) {
+            
+            int nivelMaximoGrupo = 1;
+            foreach (HeroStats heroe in listaParty) {
+                if (heroe.level > nivelMaximoGrupo) nivelMaximoGrupo = heroe.level;
+            }
+
+            int dado = Random.Range(1, 101);
+            int nivelCalculado = nivelMaximoGrupo;
+
+            if (dado <= 65) {
+                nivelCalculado = nivelMaximoGrupo;
+            } 
+            else if (dado <= 85) {
+                nivelCalculado = nivelMaximoGrupo - 1;
+            } 
+            else {
+                nivelCalculado = nivelMaximoGrupo + 1;
+            }
+
+            if (nivelCalculado < 1) nivelCalculado = 1;
+            if (nivelCalculado > 10) nivelCalculado = 10;
+
+            statsEnemigoPrincipal.level = nivelCalculado;
+            statsEnemigoPrincipal.EscalarEstadisticas();
+        }
+
         DesactivarAILocal(activeEnemies[0]);
 
         if (!statsEnemigoPrincipal.esJefe) {
@@ -543,25 +570,22 @@ public class CombatManager : MonoBehaviour {
     float CalcularMultiplicadorClasePosicion(UnitStats atacante, UnitStats defensor) {
         float multiplicador = 1.0f;
 
-        if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) multiplicador += 0.15f;
-        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) multiplicador += 0.15f;
-        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) multiplicador += 0.15f;
-
-        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Melee) multiplicador -= 0.15f;
-        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Rango) multiplicador -= 0.15f;
-        else if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Tanque) multiplicador -= 0.15f;
-
-        if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.Tierra) multiplicador += 0.15f;
-        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.BajoTierra) multiplicador += 0.15f;
-        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Volando) multiplicador += 0.15f;
-
-        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) multiplicador -= 0.15f;
-        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Tierra) multiplicador -= 0.15f;
-        else if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.BajoTierra) multiplicador -= 0.15f;
+        if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) { multiplicador += 0.15f; }
+        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) { multiplicador += 0.15f; }
+        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) { multiplicador += 0.15f; }
+        // Desventajas de Clase
+        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Melee) { multiplicador -= 0.15f; }
+        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Rango) { multiplicador -= 0.15f; }
+        else if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Tanque) { multiplicador -= 0.15f; }
 
 
-        float bonoMaestria = atacante.mastery * 0.01f;
-        multiplicador += bonoMaestria;
+        if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.Tierra) { multiplicador += 0.15f; }
+        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.BajoTierra) { multiplicador += 0.15f; }
+        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Volando) { multiplicador += 0.15f; }
+        // Desventajas de Posición
+        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) { multiplicador -= 0.15f; }
+        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Tierra) { multiplicador -= 0.15f; }
+        else if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.BajoTierra) { multiplicador -= 0.15f; }
 
         return Mathf.Max(0.0f, multiplicador); 
     }
@@ -577,12 +601,13 @@ public class CombatManager : MonoBehaviour {
             Debug.Log($"¡{attacker.unitName} falló el ataque por completo!");
         } 
         else {
-            float poderAtaque = attacker.GetTotalAttack() * ataquePendienteMultiplicador;
-            float danoBase = poderAtaque - target.defense;
-            if (danoBase < 1) danoBase = 1;
+
+            float danoBruto = attacker.GetTotalAttack() - target.defense;
+            if (danoBruto < 1) danoBruto = 1;
 
             float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target);
-            int damage = Mathf.RoundToInt(danoBase * multiplicadorQTE * multiplicadorClase);
+            
+            int damage = Mathf.RoundToInt(danoBruto * ataquePendienteMultiplicador * multiplicadorQTE * multiplicadorClase);
             if (damage < 1) damage = 1;
 
             Debug.Log($"¡{attacker.unitName} ataca a {target.unitName}! Hizo {damage} de daño.");
@@ -617,12 +642,12 @@ public class CombatManager : MonoBehaviour {
                 EnemyStats target = enemy.GetComponent<EnemyStats>();
                 if (target != null && target.currentHP > 0) {
                     
-                    float poderAtaque = attacker.GetTotalAttack() * ataquePendienteMultiplicador;
-                    float danoBase = poderAtaque - target.defense;
-                    if (danoBase < 1) danoBase = 1;
+                    float danoBruto = attacker.GetTotalAttack() - target.defense;
+                    if (danoBruto < 1) danoBruto = 1;
 
                     float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target);
-                    int damage = Mathf.RoundToInt(danoBase * multiplicadorQTE * multiplicadorClase);
+                    
+                    int damage = Mathf.RoundToInt(danoBruto * ataquePendienteMultiplicador * multiplicadorQTE * multiplicadorClase);
                     if (damage < 1) damage = 1;
 
                     target.TakeDamage(damage);
@@ -665,7 +690,18 @@ public class CombatManager : MonoBehaviour {
                 bool terminoEsquive = false;
                 float multiplicadorJugador = 1f;
 
-                QTEManager.Instance.IniciarEsquiveAoE(4, (multiplicadorEsquive) => {
+                int maxMastery = 0;
+                foreach (HeroStats h in heroesVivos) {
+                    if (h.mastery > maxMastery) maxMastery = h.mastery;
+                }
+                
+                int reduccionTeclas = maxMastery / 50;
+                int secuenciaFinal = Mathf.Max(1, 6 - reduccionTeclas);
+                
+                float aumentoTiempo = (maxMastery / 30) * 0.10f;
+                float tiempoFinal = (QTEManager.Instance.tiempoParaQTE - 0.5f) * (1.0f + aumentoTiempo);
+
+                QTEManager.Instance.IniciarEsquiveAoE(secuenciaFinal, tiempoFinal, (multiplicadorEsquive) => {
                     multiplicadorJugador = multiplicadorEsquive;
                     terminoEsquive = true;
                 });
@@ -737,7 +773,11 @@ public class CombatManager : MonoBehaviour {
 
                         bool terminoEsquive = false;
 
-                        QTEManager.Instance.IniciarEsquive(teclaEsquive, (multiplicadorEsquive) => {
+                        float aumentoTiempo = (targetHero.mastery / 30) * 0.10f;
+                        
+                        float tiempoFinal = (QTEManager.Instance.tiempoParaQTE / 3f) * (1.0f + aumentoTiempo);
+
+                        QTEManager.Instance.IniciarEsquive(teclaEsquive, tiempoFinal, (multiplicadorEsquive) => {
                             if (multiplicadorEsquive == 1.0f) damage = 0; 
                             else if (multiplicadorEsquive == 0.5f) damage = damage / 2;
 
@@ -825,12 +865,12 @@ public class CombatManager : MonoBehaviour {
         else if (attacker.unitName == "Merlin") {
             if (textoEspecial1 != null) textoEspecial1.text = "Bala de Hielo (15)";
             if (textoEspecial2 != null) textoEspecial2.text = "Rayo Arcano (30)";
-            if (textoEspecial3 != null) textoEspecial3.text = "Lluvia de Meteoros (60) [ÁREA]";
+            if (textoEspecial3 != null) textoEspecial3.text = "Lluvia de Meteoros (60)";
         }
         else if (attacker.unitName == "Heracles") {
             if (textoEspecial1 != null) textoEspecial1.text = "Rompe Cráneos (15)";
-            if (textoEspecial2 != null) textoEspecial2.text = "Terremoto (35)";
-            if (textoEspecial3 != null) textoEspecial3.text = "Ejecución Titánica (55)";
+            if (textoEspecial2 != null) textoEspecial2.text = "Ejecución Titánica (35)";
+            if (textoEspecial3 != null) textoEspecial3.text = "Terremoto Infernal (65)";
         }
 
         MostrarMenu(menuEspeciales);
@@ -865,19 +905,19 @@ public class CombatManager : MonoBehaviour {
         int costo = 10; float mult = 1.5f; int seqLen = 3; bool esAoE = false;
 
         if (nombre == "Sieg") {
-            if (slotEspecial == 1) { costo = 10; mult = 1.2f; seqLen = 3; }
+            if (slotEspecial == 1) { costo = 10; mult = 1.5f; seqLen = 3; }
             else if (slotEspecial == 2) { costo = 20; mult = 1.8f; seqLen = 4; }
             else if (slotEspecial == 3) { costo = 50; mult = 3.0f; seqLen = 6; }
         } 
         else if (nombre == "Merlin") {
-            if (slotEspecial == 1) { costo = 15; mult = 1.5f; seqLen = 3; }
+            if (slotEspecial == 1) { costo = 15; mult = 1.9f; seqLen = 3; }
             else if (slotEspecial == 2) { costo = 30; mult = 2.2f; seqLen = 4; }
-            else if (slotEspecial == 3) { costo = 60; mult = 1.8f; seqLen = 5; esAoE = true; } 
+            else if (slotEspecial == 3) { costo = 60; mult = 1.8f; seqLen = 6; esAoE = true; } 
         }
         else if (nombre == "Heracles") {
-            if (slotEspecial == 1) { costo = 15; mult = 1.6f; seqLen = 3; }
+            if (slotEspecial == 1) { costo = 15; mult = 2f; seqLen = 3; }
             else if (slotEspecial == 2) { costo = 35; mult = 2.5f; seqLen = 5; }
-            else if (slotEspecial == 3) { costo = 55; mult = 3.5f; seqLen = 6; }
+            else if (slotEspecial == 3) { costo = 65; mult = 3.5f; seqLen = 6; }
         }
 
         PrepararAtaque(costo, mult, seqLen, true, esAoE);
@@ -929,7 +969,14 @@ public class CombatManager : MonoBehaviour {
 
         if (ataquePendienteEsEspecial) {
             Debug.Log("¡Iniciando secuencia QTE!");
-            QTEManager.Instance.IniciarQTE(ataquePendienteSecuencia, (multiplicadorQTE) => {     
+
+            int reduccionTeclas = attacker.mastery / 50;
+            int secuenciaFinal = Mathf.Max(1, ataquePendienteSecuencia - reduccionTeclas);
+
+            float aumentoTiempo = (attacker.mastery / 30) * 0.10f;
+            float tiempoFinal = QTEManager.Instance.tiempoParaQTE * (1.0f + aumentoTiempo);
+
+            QTEManager.Instance.IniciarQTE(secuenciaFinal, tiempoFinal, (multiplicadorQTE) => {     
                 float multiplicadorFinal = ataquePendienteMultiplicador * multiplicadorQTE;
                 
                 if (ataquePendienteEsAoE) {

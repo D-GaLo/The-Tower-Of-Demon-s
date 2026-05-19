@@ -578,15 +578,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: maxHP
-      value: 600
+      value: 3000
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: speed
-      value: 50
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: attack
-      value: 100
+      value: 540
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: esJefe
@@ -594,7 +594,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: defense
-      value: 50
+      value: 600
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: canvasUI
@@ -610,7 +610,7 @@ PrefabInstance:
       objectReference: {fileID: 5994999383666562049}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: currentHP
-      value: 600
+      value: 3000
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: textoNivel

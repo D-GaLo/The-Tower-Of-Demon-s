@@ -9,6 +9,9 @@ public class EnemyStats : UnitStats {
     public bool nivelManual = false; 
     public bool esJefe = false;
     public int ataquesPorTurno = 1; 
+
+    [Tooltip("Activar esto si se pusieron las estadísticas exactas a mano en el Inspector y no quieres que el nivel las altere.")]
+    public bool statsManuales = false; 
     
     [Header("Compañeros de Combate")]
     [Tooltip("Enemigos que pueden aparecer junto a este enemigo en combates normales.")]
@@ -38,6 +41,13 @@ public class EnemyStats : UnitStats {
     public Sprite spriteBajoTierra;
     public Sprite spriteVolando;
 
+
+    private int baseMaxHP;
+    private int baseAttack;
+    private int baseDefense;
+    private int baseSpeed;
+    private bool basesGuardadas = false;
+
     void Awake() {
         if (canvasUI != null) canvasUI.SetActive(false);
     }
@@ -55,13 +65,31 @@ public class EnemyStats : UnitStats {
     }
 
     public void EscalarEstadisticas() {
+        if (statsManuales) {
+            currentHP = maxHP; 
+            return;
+        }
+
+        if (!basesGuardadas) {
+            baseMaxHP = maxHP;
+            baseAttack = attack;
+            baseDefense = defense;
+            baseSpeed = speed;
+            basesGuardadas = true;
+        }
+
         if (level > 1) {
             int nivelesExtra = level - 1;
             
-            maxHP += (nivelesExtra * 50);
-            attack += (nivelesExtra * 25);
-            defense += (nivelesExtra * 25);
-            speed += (nivelesExtra * 20);
+            maxHP = baseMaxHP + (nivelesExtra * 50);
+            attack = baseAttack + (nivelesExtra * 25);
+            defense = baseDefense + (nivelesExtra * 20);
+            speed = baseSpeed + (nivelesExtra * 20);
+        } else {
+            maxHP = baseMaxHP;
+            attack = baseAttack;
+            defense = baseDefense;
+            speed = baseSpeed;
         }
         
         currentHP = maxHP;

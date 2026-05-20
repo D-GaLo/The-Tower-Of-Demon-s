@@ -42,11 +42,11 @@ public class EnemyStats : UnitStats {
     public Sprite spriteVolando;
 
 
-    private int baseMaxHP;
-    private int baseAttack;
-    private int baseDefense;
-    private int baseSpeed;
-    private bool basesGuardadas = false;
+    [HideInInspector] public int baseMaxHP;
+    [HideInInspector] public int baseAttack;
+    [HideInInspector] public int baseDefense;
+    [HideInInspector] public int baseSpeed;
+    [HideInInspector] public bool basesGuardadas = false;
 
     void Awake() {
         if (canvasUI != null) canvasUI.SetActive(false);

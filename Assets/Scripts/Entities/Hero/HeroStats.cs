@@ -30,13 +30,13 @@ public class HeroStats : UnitStats {
     void ConfigurarStatsBaseIniciales() {
         if (level == 1) {
             if (unitName == "Sieg") {
-                maxHP = 120; attack = 15; defense = 12; speed = 15; maxEnergy = 100;
+                maxHP = 120; attack = 30; defense = 22; speed = 25; maxEnergy = 100;
             } 
             else if (unitName == "Merlin") {
-                maxHP = 80; attack = 25; defense = 5; speed = 18; maxEnergy = 150;
+                maxHP = 80; attack = 37; defense = 15; speed = 28; maxEnergy = 150;
             }
             else if (unitName == "Heracles") {
-                maxHP = 160; attack = 20; defense = 25; speed = 6; maxEnergy = 80;
+                maxHP = 160; attack = 33; defense = 35; speed =16; maxEnergy = 80;
             }
         }
     }

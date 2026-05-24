@@ -92,11 +92,19 @@ public class PuertaFinal : MonoBehaviour {
     }
 
     void OnTriggerEnter2D(Collider2D other) {
+        RevisarVictoria(other);
+    }
+
+    void OnTriggerStay2D(Collider2D other) {
+        RevisarVictoria(other);
+    }
+
+    void RevisarVictoria(Collider2D other) {
         if (puertaAbierta && other.CompareTag("Player")) {
             Time.timeScale = 0f; 
             
             if(contenedorPrincipal) contenedorPrincipal.SetActive(true); 
-            panelVictoria.SetActive(true);
+            if(panelVictoria) panelVictoria.SetActive(true);
         }
     }
 

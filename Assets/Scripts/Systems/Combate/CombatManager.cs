@@ -183,22 +183,24 @@ public class CombatManager : MonoBehaviour {
 
         if (!statsEnemigoPrincipal.nivelManual && !statsEnemigoPrincipal.esJefe) {
             
-            int nivelMaximoGrupo = 1;
+            int nivelMinimoGrupo = int.MaxValue;
             foreach (HeroStats heroe in listaParty) {
-                if (heroe.level > nivelMaximoGrupo) nivelMaximoGrupo = heroe.level;
+                if (heroe.level < nivelMinimoGrupo) nivelMinimoGrupo = heroe.level;
             }
+            
+            if (nivelMinimoGrupo == int.MaxValue) nivelMinimoGrupo = 1;
 
             int dado = Random.Range(1, 101);
-            int nivelCalculado = nivelMaximoGrupo;
+            int nivelCalculado = nivelMinimoGrupo;
 
             if (dado <= 65) {
-                nivelCalculado = nivelMaximoGrupo;
+                nivelCalculado = nivelMinimoGrupo;
             } 
             else if (dado <= 85) {
-                nivelCalculado = nivelMaximoGrupo - 1;
+                nivelCalculado = nivelMinimoGrupo - 1;
             } 
             else {
-                nivelCalculado = nivelMaximoGrupo + 1;
+                nivelCalculado = nivelMinimoGrupo + 1;
             }
 
             if (nivelCalculado < 1) nivelCalculado = 1;
@@ -320,7 +322,7 @@ public class CombatManager : MonoBehaviour {
                     string tituloImponente = "";
                     
                     if (statsEnemigoPrincipal.unitName.Contains("Nucifera")) {
-                        tituloImponente = "<color=#8B0000><size=130%><b>N U C I F E R A</b></size></color>\n<size=50%><i><color=#FF4500>Guardián del Primer Piso</color></i></size>";
+                        tituloImponente = "<color=#8B0000><size=130%><b>NUCIFERA</b></size></color>\n<size=50%><i><color=#FF4500>Guardián del Primer Piso</color></i></size>";
                     } 
                     else if (statsEnemigoPrincipal.unitName.Contains("Slime")) {
                         tituloImponente = "<color=#006400><size=130%><b>SLIME PADRE</b></size></color>\n<size=50%><i><color=#32CD32>La Pesadilla Gelatinosa</color></i></size>";

@@ -18,6 +18,7 @@ public class InventarioPanelUI : MonoBehaviour
     {
         slotSiendoEditado = slotPedidor;
         panelVisual.SetActive(true);
+        ActualizarTodoElPanel();
     }
 
     public void SeleccionarItem(Item itemSeleccionado)
@@ -31,6 +32,15 @@ public class InventarioPanelUI : MonoBehaviour
                 slotSiendoEditado.Refrescar();
                 panelVisual.SetActive(false); 
             }
+        }
+    }
+
+    public void ActualizarTodoElPanel()
+    {
+        InventarioSlotUI[] slots = FindObjectsOfType<InventarioSlotUI>();
+        foreach(var slot in slots)
+        {
+            slot.Refrescar();
         }
     }
 }

@@ -9,6 +9,13 @@ public class InventarioEnum : MonoBehaviour
 
     private int[] cantidades;
 
+    [Header("Sprites de Items")]
+    public Sprite spriteEspada;
+    public Sprite spriteBaculo;
+    public Sprite spriteEscudo;
+    public Sprite spriteLlave;
+    public Sprite spriteTijeras;
+
     private void Awake(){
         if (Instance == null) { 
             Instance = this; 
@@ -26,6 +33,15 @@ public class InventarioEnum : MonoBehaviour
         if(item == Item.None) return;
 
         cantidades[(int) item] += cantidad;
+
+        InventarioSlotUI[] todosLosSlots = FindObjectsOfType<InventarioSlotUI>();
+        foreach (InventarioSlotUI slot in todosLosSlots)
+        {
+            if (slot.item == item)
+            {
+                slot.Refrescar();
+            }
+        }
     }
     
     public void RemoveItem(Item item, int cantidad){
@@ -36,5 +52,24 @@ public class InventarioEnum : MonoBehaviour
 
     public int GetCantidad(Item item){
         return cantidades[(int)item];
+    }
+
+    public Sprite GetSpriteDeItem(Item item)
+    {
+        switch (item)
+        {
+            case Item.Espada:
+                return spriteEspada;
+            case Item.Baculo:
+                return spriteBaculo;
+            case Item.Escudo:
+                return spriteEscudo;
+            case Item.Llave:
+                return spriteLlave;
+            case Item.Tijeras:
+                return spriteTijeras;
+            default:
+                return null; // Si no encuentra nada o es Item.None
+        }
     }
 }

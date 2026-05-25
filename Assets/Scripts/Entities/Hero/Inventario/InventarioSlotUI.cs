@@ -17,13 +17,51 @@ public class InventarioSlotUI : MonoBehaviour, IPointerClickHandler
     public void Setup(Item _item, Sprite icono)
     {
         item = _item;
-        int cantidad = InventarioEnum.Instance.GetCantidad(item);
-        iconoImagen.sprite = icono;
-        iconoImagen.enabled = cantidad > 0;
-        cantidadTexto.text = cantidad > 0 ? cantidad.ToString() : "";
-        if (cantidad > 0)
+        item = _item;
+        if (iconoImagen != null)
         {
-            iconoImagen.color = Color.white;
+            iconoImagen.sprite = icono;
+        }
+        
+        Refrescar();
+    }
+
+
+    public void Refrescar()
+    {
+        if (InventarioEnum.Instance == null) return;
+
+        int cantidad = InventarioEnum.Instance.GetCantidad(item);
+
+        if (iconoImagen != null)
+        {
+            if (item == Item.None || cantidad <= 0)
+            {
+                iconoImagen.sprite = null;
+                iconoImagen.color = new Color(1, 1, 1, 0); 
+            }
+            else
+            {
+                iconoImagen.color = Color.white;
+                iconoImagen.enabled = true;
+                
+                if(iconoImagen.sprite == null)
+                {
+                    iconoImagen.sprite = InventarioEnum.Instance.GetSpriteDeItem(item);
+                }
+            }
+        }
+
+        if (cantidadTexto != null)
+        {
+            if (item == Item.None || cantidad <= 0)
+            {
+                cantidadTexto.text = "";
+            }
+            else
+            {
+                cantidadTexto.text = cantidad.ToString();
+            }
         }
     }
 

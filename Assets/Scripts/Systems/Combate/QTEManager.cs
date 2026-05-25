@@ -25,7 +25,7 @@ public class QTEManager : MonoBehaviour {
     public Sprite sprite_T;
 
     [Header("Configuración")]
-    public float tiempoParaQTE = 3.0f;
+    public float tiempoParaQTE = 2.5f;
 
     private List<KeyCode> teclasAtaque = new List<KeyCode> { KeyCode.A, KeyCode.S, KeyCode.W, KeyCode.D };
     private List<KeyCode> todasLasTeclasValidas = new List<KeyCode> { KeyCode.A, KeyCode.S, KeyCode.W, KeyCode.D, KeyCode.E, KeyCode.R, KeyCode.T };
@@ -35,6 +35,7 @@ public class QTEManager : MonoBehaviour {
     
     private bool qteActivo = false;
     private float tiempoRestante; 
+    private float tiempoTotalActual;
 
     private Color colorDefault = Color.white;
     private Color colorAcierto = Color.green; 
@@ -46,11 +47,12 @@ public class QTEManager : MonoBehaviour {
         else Destroy(gameObject);
     }
 
-    public void IniciarQTE(int longitud, System.Action<float> callback) {
+    public void IniciarQTE(int longitud, float tiempoAsignado, System.Action<float> callback) {
         onQTEComplete = callback;
         secuenciaActual.Clear();
         indiceActual = 0;
-        tiempoRestante = tiempoParaQTE; 
+        tiempoTotalActual = tiempoAsignado;
+        tiempoRestante = tiempoAsignado; 
 
         for (int i = 0; i < longitud; i++) {
             secuenciaActual.Add(teclasAtaque[Random.Range(0, teclasAtaque.Count)]);
@@ -59,21 +61,23 @@ public class QTEManager : MonoBehaviour {
         ConfigurarVisuales();
     }
 
-    public void IniciarEsquive(KeyCode tecla, System.Action<float> callback) {
+    public void IniciarEsquive(KeyCode tecla, float tiempoAsignado, System.Action<float> callback) {
         onQTEComplete = callback;
         secuenciaActual.Clear();
         secuenciaActual.Add(tecla);
         indiceActual = 0;
-        tiempoRestante = tiempoParaQTE / 2f; 
+        tiempoTotalActual = tiempoAsignado;
+        tiempoRestante = tiempoAsignado; 
 
         ConfigurarVisuales();
     }
 
-    public void IniciarEsquiveAoE(int longitud, System.Action<float> callback) {
+    public void IniciarEsquiveAoE(int longitud, float tiempoAsignado, System.Action<float> callback) {
         onQTEComplete = callback;
         secuenciaActual.Clear();
         indiceActual = 0;
-        tiempoRestante = tiempoParaQTE;
+        tiempoTotalActual = tiempoAsignado;
+        tiempoRestante = tiempoAsignado;
 
         for (int i = 0; i < longitud; i++) {
             secuenciaActual.Add(teclasEsquive[Random.Range(0, teclasEsquive.Count)]);
@@ -124,7 +128,8 @@ public class QTEManager : MonoBehaviour {
         if (!qteActivo) return;
 
         tiempoRestante -= Time.unscaledDeltaTime;
-        if (barraTiempo != null) barraTiempo.fillAmount = tiempoRestante / tiempoParaQTE;
+        
+        if (barraTiempo != null) barraTiempo.fillAmount = tiempoRestante / tiempoTotalActual;
 
         if (tiempoRestante <= 0) {
             TerminarQTE(0f); 

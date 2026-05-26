@@ -20,7 +20,7 @@ MonoBehaviour:
   category: 0
   maxStack: 1
   equipable: 1
-  requiredClass: 1
+  requiredClass: 2
   bonusATK: 20
   bonusDEF: 0
   bonusSPD: 5

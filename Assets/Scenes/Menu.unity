@@ -1224,6 +1224,9 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 8c14d89b88e05b6479e3fc6dbc55257a, type: 3}
   - {fileID: 21300000, guid: 6b30a46bace866e4693f5e3efb217d72, type: 3}
   - {fileID: 21300000, guid: bed7f45d697a4334e9c405ae0a61b5a0, type: 3}
+  - {fileID: 21300000, guid: 8bb47f5a17de518439b711d8aedd3ce0, type: 3}
+  - {fileID: 21300000, guid: fb1d162f3460385429aca04b0bb6ab1a, type: 3}
+  - {fileID: 21300000, guid: 0aa0a080668b02c46a157ba85cf4e4a9, type: 3}
   nombreEscenaMapa: Mapa
   fuenteMusica: {fileID: 430992139}
   fuenteSonidos: {fileID: 430992138}

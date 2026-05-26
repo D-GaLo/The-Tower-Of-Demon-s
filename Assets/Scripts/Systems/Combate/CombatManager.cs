@@ -63,7 +63,6 @@ public class CombatManager : MonoBehaviour {
 
     public GameObject panelDerrota;
     
-    // --- LISTA QUE ALMACENA LO RECOLECTADO EN LA PELEA ---
     private List<string> botinDelCombate = new List<string>();
 
     private int ataquePendienteCosto;
@@ -84,7 +83,7 @@ public class CombatManager : MonoBehaviour {
         if (enCombateActivo) return;
         enCombateActivo = true;
         
-        botinDelCombate.Clear(); // Limpiamos la bolsa de la pelea anterior
+        botinDelCombate.Clear();
         
         activeEnemies.Clear();
         activeEnemies.Add(enemy);
@@ -147,7 +146,6 @@ public class CombatManager : MonoBehaviour {
                 textoVictoriaNivel.text = string.IsNullOrEmpty(recuentoNiveles) ? "Los héroes ganaron experiencia." : recuentoNiveles;
             }
 
-            // --- LÓGICA DE TEXTO DE OBJETOS ACTUALIZADA ---
             if (textoVictoriaObjeto != null) {
                 if (botinDelCombate.Count > 0) {
                     textoVictoriaObjeto.text = "Objetos obtenidos:\n<color=#FFD700>• " + string.Join("\n• ", botinDelCombate) + "</color>";
@@ -578,7 +576,6 @@ public class CombatManager : MonoBehaviour {
         if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) { multiplicador += 0.15f; }
         else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) { multiplicador += 0.15f; }
         else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) { multiplicador += 0.15f; }
-        // Desventajas de Clase
         else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Melee) { multiplicador -= 0.15f; }
         else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Rango) { multiplicador -= 0.15f; }
         else if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Tanque) { multiplicador -= 0.15f; }
@@ -587,7 +584,6 @@ public class CombatManager : MonoBehaviour {
         if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.Tierra) { multiplicador += 0.15f; }
         else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.BajoTierra) { multiplicador += 0.15f; }
         else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Volando) { multiplicador += 0.15f; }
-        // Desventajas de Posición
         else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) { multiplicador -= 0.15f; }
         else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Tierra) { multiplicador -= 0.15f; }
         else if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.BajoTierra) { multiplicador -= 0.15f; }
@@ -621,16 +617,19 @@ public class CombatManager : MonoBehaviour {
             if (target.currentHP <= 0) {
                 Debug.Log($"{target.unitName} ha sido derrotado y desaparece.");
                 
-                // --- NUEVA LÓGICA DE DROPEO MÚLTIPLE ---
                 if (target.posiblesDropeos != null && target.posiblesDropeos.Length > 0) {
+                    int tirada = Random.Range(1, 101);
+                    int probabilidadAcumulada = 0;
+
                     foreach (DropData drop in target.posiblesDropeos) {
                         if (drop.item != null) {
-                            int tirada = Random.Range(1, 101);
-                            if (tirada <= drop.probabilidad) {
+                            probabilidadAcumulada += drop.probabilidad;
+                            
+                            if (tirada <= probabilidadAcumulada) {
                                 InventarioEnum.Instance.AddItem(drop.item.itemID, 1);
                                 botinDelCombate.Add(drop.item.itemName);
                                 Debug.Log($"<color=yellow>¡{target.unitName} dropeó {drop.item.itemName}!</color>");
-                                break; // <- ¡Se detiene y no suelta más cosas!
+                                break; 
                             }
                         }
                     }
@@ -675,12 +674,15 @@ public class CombatManager : MonoBehaviour {
 
                     if (target.currentHP <= 0) {
                         
-                        // --- NUEVA LÓGICA DE DROPEO MÚLTIPLE EN ÁREA ---
                         if (target.posiblesDropeos != null && target.posiblesDropeos.Length > 0) {
+                            int tirada = Random.Range(1, 101);
+                            int probabilidadAcumulada = 0;
+
                             foreach (DropData drop in target.posiblesDropeos) {
                                 if (drop.item != null) {
-                                    int tirada = Random.Range(1, 101);
-                                    if (tirada <= drop.probabilidad) {
+                                    probabilidadAcumulada += drop.probabilidad;
+                                    
+                                    if (tirada <= probabilidadAcumulada) {
                                         InventarioEnum.Instance.AddItem(drop.item.itemID, 1);
                                         botinDelCombate.Add(drop.item.itemName);
                                         Debug.Log($"<color=yellow>¡{target.unitName} dropeó {drop.item.itemName}!</color>");
@@ -1032,7 +1034,15 @@ public class CombatManager : MonoBehaviour {
 
     public void ToggleGuiaFortalezas() {
         if (panelGuiaFortalezas != null) {
-            panelGuiaFortalezas.SetActive(!panelGuiaFortalezas.activeSelf);
+            bool estaActiva = !panelGuiaFortalezas.activeSelf;
+            panelGuiaFortalezas.SetActive(estaActiva);
+            
+            Time.timeScale = estaActiva ? 0f : 1f;
+            
+            if (AudioManager.Instance != null) {
+                if (estaActiva) AudioManager.Instance.PlayClic();
+                else AudioManager.Instance.PlayClic();
+            }
         }
     }
 

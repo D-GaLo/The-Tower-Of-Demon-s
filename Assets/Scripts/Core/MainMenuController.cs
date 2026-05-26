@@ -25,7 +25,7 @@ public class MainMenuController : MonoBehaviour {
     public AudioClip sonidoClic;
 
     void Start() {
-        CerrarTodosLosPaneles();
+        CerrarTodosLosPaneles(); 
         
         if (fuenteMusica != null && !fuenteMusica.isPlaying) {
             fuenteMusica.Play();
@@ -34,8 +34,7 @@ public class MainMenuController : MonoBehaviour {
 
     void Update() {
         if (Input.GetKeyDown(KeyCode.Escape)) {
-            CerrarTodosLosPaneles();
-            ReproducirSonidoClic();
+            BotonCerrarPanel();
         }
     }
 
@@ -114,7 +113,6 @@ public class MainMenuController : MonoBehaviour {
     }
 
     public void CerrarTodosLosPaneles() {
-        ReproducirSonidoClic();
         if (panelTutorial != null) panelTutorial.SetActive(false);
         if (panelHistoria != null) panelHistoria.SetActive(false);
         if (panelCreditos != null) panelCreditos.SetActive(false);

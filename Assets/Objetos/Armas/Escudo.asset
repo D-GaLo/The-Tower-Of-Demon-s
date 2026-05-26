@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 117756cfe2aa11d6dafede7a36fa3898, type: 3}
   m_Name: Escudo
   m_EditorClassIdentifier: 
-  itemID: 0
+  itemID: 3
   itemName: Escudo
   itemDescription: Un escudo bastante resistente y duradero, excelente para defenderte
     de ataques enemigos.
@@ -20,7 +20,7 @@ MonoBehaviour:
   category: 0
   maxStack: 1
   equipable: 1
-  requiredClass: 2
+  requiredClass: 3
   bonusATK: 5
   bonusDEF: 20
   bonusSPD: 0

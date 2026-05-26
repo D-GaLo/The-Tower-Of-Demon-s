@@ -20,16 +20,17 @@ public class InventarioPanelUI : MonoBehaviour {
     public TextMeshProUGUI descInfo;
     public TextMeshProUGUI statsInfo;
     public GameObject btnEquipar; 
-
-    [Header("Nuevos Elementos UI (Pulido)")]
     public TextMeshProUGUI textoTituloPestana; 
     public TextMeshProUGUI textoCantidadInventario; 
+    public TextMeshProUGUI textoMensajeError;
     public GameObject btnDesequipar; 
 
     private ItemCategory pestanaActual = ItemCategory.Objeto;
     
     private EquipSlotUI slotActivoParaEquipar;
     private ItemData itemSeleccionado;
+    
+    private float timeScalePrevio;
 
     void Awake() {
         if (Instance == null) Instance = this;
@@ -38,6 +39,7 @@ public class InventarioPanelUI : MonoBehaviour {
     void Start() {
         if (panelInfo != null) panelInfo.SetActive(false);
         if (btnDesequipar != null) btnDesequipar.SetActive(false);
+        if (textoMensajeError != null) textoMensajeError.gameObject.SetActive(false);
     }
 
     void Update() {
@@ -51,6 +53,8 @@ public class InventarioPanelUI : MonoBehaviour {
         if (panelVisual != null) panelVisual.SetActive(false);
         slotActivoParaEquipar = null; 
         if (btnDesequipar != null) btnDesequipar.SetActive(false);
+        
+        Time.timeScale = timeScalePrevio;
     }
 
     public void AbrirInventarioGeneral() {
@@ -58,7 +62,26 @@ public class InventarioPanelUI : MonoBehaviour {
         if (panelVisual != null) panelVisual.SetActive(true);
         if (btnEquipar != null) btnEquipar.SetActive(false); 
         if (btnDesequipar != null) btnDesequipar.SetActive(false); 
+        
+        timeScalePrevio = Time.timeScale; 
+        Time.timeScale = 0f; 
+
         BotonPestanaObjetos(); 
+    }
+
+    public void AbrirParaSlot(EquipSlotUI slot) {
+        slotActivoParaEquipar = slot;
+        if (panelVisual != null) panelVisual.SetActive(true);
+
+        if (btnDesequipar != null) {
+            btnDesequipar.SetActive(slot.equipo.slots[slot.slotIndex] != null);
+        }
+
+        timeScalePrevio = Time.timeScale; 
+        Time.timeScale = 0f; 
+
+        if (slot.slotIndex == 0) BotonPestanaArmas();
+        else BotonPestanaObjetos();
     }
 
     public void BotonPestanaArmas() => AbrirPestana(ItemCategory.Arma);
@@ -113,7 +136,7 @@ public class InventarioPanelUI : MonoBehaviour {
         }
 
         bool puedeEquiparEnSlot = false;
-        bool esElObjetoEquipado = false;
+        bool esElObjetoEquipado = false; 
         string mensajeError = "";
 
         if (slotActivoParaEquipar != null) {
@@ -123,14 +146,24 @@ public class InventarioPanelUI : MonoBehaviour {
             esElObjetoEquipado = (slotActivoParaEquipar.equipo.slots[slotActivoParaEquipar.slotIndex] == data);
 
             if (data.category == ItemCategory.Arma && data.requiredClass != heroeActual.unitClass) {
-                mensajeError = $"\n\n<color=#FF5555>¡Esta arma no es para la clase {heroeActual.unitClass}!</color>";
+                mensajeError = $"¡Esta arma no es para la clase {heroeActual.unitClass}!";
             } 
             else if (!esElObjetoEquipado && cantidad <= 0) {
-                mensajeError = $"\n\n<color=#FF5555>No tienes más unidades disponibles para equipar.</color>";
+                mensajeError = $"No tienes más unidades disponibles para equipar.";
             }
         }
 
-        descInfo.text = data.itemDescription + mensajeError;
+        descInfo.text = data.itemDescription;
+
+        if (textoMensajeError != null) {
+            textoMensajeError.text = mensajeError;
+            if (string.IsNullOrEmpty(mensajeError)) {
+                textoMensajeError.gameObject.SetActive(false);
+            } else {
+                textoMensajeError.color = new Color(1f, 0.33f, 0.33f);
+                textoMensajeError.gameObject.SetActive(true);
+            }
+        }
 
         string stats = "";
         if (data.bonusATK > 0) stats += $"ATK +{data.bonusATK}   ";
@@ -147,20 +180,11 @@ public class InventarioPanelUI : MonoBehaviour {
 
         if (slotActivoParaEquipar != null) {
             if (btnEquipar != null) btnEquipar.SetActive(puedeEquiparEnSlot && cantidad > 0 && !esElObjetoEquipado);
-            
             if (btnDesequipar != null) btnDesequipar.SetActive(esElObjetoEquipado);
         } else {
             if (btnEquipar != null) btnEquipar.SetActive(false);
             if (btnDesequipar != null) btnDesequipar.SetActive(false);
         }
-    }
-
-    public void AbrirParaSlot(EquipSlotUI slot) {
-        slotActivoParaEquipar = slot;
-        if (panelVisual != null) panelVisual.SetActive(true);
-
-        if (slot.slotIndex == 0) BotonPestanaArmas();
-        else BotonPestanaObjetos();
     }
 
     public void AccionBotonEquipar() {
@@ -188,4 +212,4 @@ public class InventarioPanelUI : MonoBehaviour {
             if (HeroStatsPanelUI.Instance != null) HeroStatsPanelUI.Instance.ActualizarVistaActiva();
         }
     }
-    }
+}

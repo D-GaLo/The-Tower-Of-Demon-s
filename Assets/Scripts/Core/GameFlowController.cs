@@ -20,6 +20,8 @@ public class GameFlowController : MonoBehaviour {
     [Header("Botones de Exploración")]
     public GameObject botonMapa;
     public GameObject botonEstadisticas;
+
+    public GameObject botonInventario;
     public GameObject botonEspada;
     public GameObject botonInteraccion;
     public GameObject visualEspada; 
@@ -58,6 +60,7 @@ public class GameFlowController : MonoBehaviour {
         
         if (botonMapa != null) botonMapa.SetActive(false);
         if (botonEstadisticas != null) botonEstadisticas.SetActive(false);
+        if (botonInventario != null) botonInventario.SetActive(false);
         if (botonEspada != null) botonEspada.SetActive(false);
         if (botonInteraccion != null) botonInteraccion.SetActive(false);
         if (visualEspada != null) visualEspada.SetActive(false); 
@@ -118,6 +121,7 @@ public class GameFlowController : MonoBehaviour {
         
         if (botonMapa != null) botonMapa.SetActive(true);
         if (botonEstadisticas != null) botonEstadisticas.SetActive(true);
+        if (botonInventario != null) botonInventario.SetActive(true);   
         if (botonEspada != null) botonEspada.SetActive(true);
         if (botonInteraccion != null) botonInteraccion.SetActive(true);
 

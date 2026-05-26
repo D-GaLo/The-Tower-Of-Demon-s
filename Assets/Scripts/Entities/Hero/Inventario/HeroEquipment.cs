@@ -48,7 +48,6 @@ public class HeroEquipment : MonoBehaviour
         
         InventarioEnum.Instance.AddItem(slots[slotIndex].itemID, 1);
         
-        // Al quitarnos el objeto, perdemos los bonos
         RemoverBonoDeStats(slots[slotIndex]); 
 
         slots[slotIndex] = null;

@@ -14,7 +14,7 @@ public class HeroEquipment : MonoBehaviour
     {
         if (item == Item.None) return true; 
         if (slotIndex == 0) return EsArma(item); 
-        return !EsArma(item);
+        return true;//!EsArma(item);
     }
 
     public bool Equipar(int slotIndex, Item item)

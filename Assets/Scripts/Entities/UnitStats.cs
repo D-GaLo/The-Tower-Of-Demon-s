@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum UnitClass { Melee, Rango, Tanque }
+public enum UnitClass { None, Melee, Rango, Tanque }
 public enum UnitPosition { Tierra, BajoTierra, Volando }
 
 public class UnitStats : MonoBehaviour {

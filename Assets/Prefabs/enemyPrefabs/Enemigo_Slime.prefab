@@ -696,7 +696,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitName: Slime
-  unitClass: 0
+  unitClass: 1
   unitPosition: 0
   level: 1
   maxHP: 50
@@ -707,13 +707,18 @@ MonoBehaviour:
   mastery: 0
   nivelManual: 0
   esJefe: 0
+  ataquesPorTurno: 1
+  statsManuales: 0
   posiblesCompaneros:
   - {fileID: 8050015716422366192, guid: 2384eb746cd9f4f428396b647a1dc845, type: 3}
   - {fileID: 7931088695150446534}
   enemigosAInvocar: []
   yaInvoco: 0
-  weaponDrop: {fileID: 0}
-  dropChance: 20
+  posiblesDropeos:
+  - item: {fileID: 11400000, guid: ed9f313ad95ef5948885e89444d3afa6, type: 2}
+    probabilidad: 20
+  - item: {fileID: 11400000, guid: e49989dec7377e34f801735ce39d441d, type: 2}
+    probabilidad: 20
   canvasUI: {fileID: 4443194567776706443}
   barraVida: {fileID: 5632687336069829943}
   circuloClase: {fileID: 6115812792444485927}
@@ -725,6 +730,11 @@ MonoBehaviour:
   spriteTierra: {fileID: 21300000, guid: 0a1dc97128119b04f8f038615eb4effd, type: 3}
   spriteBajoTierra: {fileID: 21300000, guid: 29861dae79069924091a09bc9670aa3e, type: 3}
   spriteVolando: {fileID: 21300000, guid: c15fa3fe0b2f76b489ba5d677f40a9b1, type: 3}
+  baseMaxHP: 0
+  baseAttack: 0
+  baseDefense: 0
+  baseSpeed: 0
+  basesGuardadas: 0
 --- !u!50 &-3678460507777434516
 Rigidbody2D:
   serializedVersion: 4

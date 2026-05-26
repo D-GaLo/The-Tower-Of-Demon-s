@@ -62,7 +62,9 @@ public class CombatManager : MonoBehaviour {
     public TextMeshProUGUI textoVictoriaObjeto;
 
     public GameObject panelDerrota;
-
+    
+    // --- LISTA QUE ALMACENA LO RECOLECTADO EN LA PELEA ---
+    private List<string> botinDelCombate = new List<string>();
 
     private int ataquePendienteCosto;
     private float ataquePendienteMultiplicador;
@@ -77,9 +79,12 @@ public class CombatManager : MonoBehaviour {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
+    
     public void StartCombat(GameObject enemy, bool ventajaJugador = false) {
         if (enCombateActivo) return;
         enCombateActivo = true;
+        
+        botinDelCombate.Clear(); // Limpiamos la bolsa de la pelea anterior
         
         activeEnemies.Clear();
         activeEnemies.Add(enemy);
@@ -142,13 +147,11 @@ public class CombatManager : MonoBehaviour {
                 textoVictoriaNivel.text = string.IsNullOrEmpty(recuentoNiveles) ? "Los héroes ganaron experiencia." : recuentoNiveles;
             }
 
-            EnemyStats enemyStats = activeEnemies[0].GetComponent<EnemyStats>();
-            if (enemyStats != null) {
-                WeaponData droppedWeapon = enemyStats.TryGetDrop(); 
-                if (droppedWeapon != null && textoVictoriaObjeto != null) {
-                    textoVictoriaObjeto.text = $"¡Objeto obtenido: {droppedWeapon.weaponName}!";
-                    foreach(HeroStats hero in FindObjectsOfType<HeroStats>()) hero.TryEquipWeapon(droppedWeapon); 
-                } else if (textoVictoriaObjeto != null) {
+            // --- LÓGICA DE TEXTO DE OBJETOS ACTUALIZADA ---
+            if (textoVictoriaObjeto != null) {
+                if (botinDelCombate.Count > 0) {
+                    textoVictoriaObjeto.text = "Objetos obtenidos:\n<color=#FFD700>• " + string.Join("\n• ", botinDelCombate) + "</color>";
+                } else {
                     textoVictoriaObjeto.text = "Ningún objeto obtenido.";
                 }
             }
@@ -617,6 +620,22 @@ public class CombatManager : MonoBehaviour {
 
             if (target.currentHP <= 0) {
                 Debug.Log($"{target.unitName} ha sido derrotado y desaparece.");
+                
+                // --- NUEVA LÓGICA DE DROPEO MÚLTIPLE ---
+                if (target.posiblesDropeos != null && target.posiblesDropeos.Length > 0) {
+                    foreach (DropData drop in target.posiblesDropeos) {
+                        if (drop.item != null) {
+                            int tirada = Random.Range(1, 101);
+                            if (tirada <= drop.probabilidad) {
+                                InventarioEnum.Instance.AddItem(drop.item.itemID, 1);
+                                botinDelCombate.Add(drop.item.itemName);
+                                Debug.Log($"<color=yellow>¡{target.unitName} dropeó {drop.item.itemName}!</color>");
+                                break; // <- ¡Se detiene y no suelta más cosas!
+                            }
+                        }
+                    }
+                }
+                
                 target.gameObject.SetActive(false); 
             } else {
                 yield return StartCoroutine(RevisarInvocacionJefe(target));
@@ -655,6 +674,22 @@ public class CombatManager : MonoBehaviour {
                     target.TakeDamage(damage);
 
                     if (target.currentHP <= 0) {
+                        
+                        // --- NUEVA LÓGICA DE DROPEO MÚLTIPLE EN ÁREA ---
+                        if (target.posiblesDropeos != null && target.posiblesDropeos.Length > 0) {
+                            foreach (DropData drop in target.posiblesDropeos) {
+                                if (drop.item != null) {
+                                    int tirada = Random.Range(1, 101);
+                                    if (tirada <= drop.probabilidad) {
+                                        InventarioEnum.Instance.AddItem(drop.item.itemID, 1);
+                                        botinDelCombate.Add(drop.item.itemName);
+                                        Debug.Log($"<color=yellow>¡{target.unitName} dropeó {drop.item.itemName}!</color>");
+                                        break; 
+                                    }
+                                }
+                            }
+                        }
+
                         target.gameObject.SetActive(false); 
                     } else if (target.esJefe && !target.yaInvoco && target.currentHP <= (target.maxHP / 2)) {
                         jefesHeridos.Add(target);
@@ -738,7 +773,6 @@ public class CombatManager : MonoBehaviour {
                 }
                 ActualizarPantallaVida();
             } 
-
             else {
                 int ataquesRestantes = enemyAttacker.ataquesPorTurno;
                 if (ataquesRestantes < 1) ataquesRestantes = 1;
@@ -757,9 +791,16 @@ public class CombatManager : MonoBehaviour {
                     int damage = Mathf.RoundToInt(danoBase * multClase);
                     if (damage < 1) damage = 1;
 
-                    if (enemyAttacker.level > targetHero.level) {
-                        Debug.Log($"<color=red>¡PELIGRO!</color> ¡Ataque ineludible de {enemyAttacker.unitName}!");
-                        if (heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) damage = damage / 2;
+                    bool estaDefendiendo = heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero];
+
+                    if (enemyAttacker.level > targetHero.level || estaDefendiendo) {
+                        
+                        if (estaDefendiendo) {
+                            Debug.Log($"<color=cyan>¡{targetHero.unitName} espera el golpe en posición defensiva!</color> Daño reducido a la mitad.");
+                            damage = damage / 2;
+                        } else {
+                            Debug.Log($"<color=red>¡PELIGRO!</color> ¡Ataque ineludible de {enemyAttacker.unitName}!");
+                        }
                         
                         targetHero.TakeDamage(damage);
                         ActualizarPantallaVida();
@@ -776,16 +817,11 @@ public class CombatManager : MonoBehaviour {
                         bool terminoEsquive = false;
 
                         float aumentoTiempo = (targetHero.mastery / 30) * 0.10f;
-                        
                         float tiempoFinal = (QTEManager.Instance.tiempoParaQTE / 3f) * (1.0f + aumentoTiempo);
 
                         QTEManager.Instance.IniciarEsquive(teclaEsquive, tiempoFinal, (multiplicadorEsquive) => {
                             if (multiplicadorEsquive == 1.0f) damage = 0; 
                             else if (multiplicadorEsquive == 0.5f) damage = damage / 2;
-
-                            if (damage > 0 && heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
-                                damage = damage / 2;
-                            }
 
                             if (damage > 0) targetHero.TakeDamage(damage);
                             
@@ -1030,6 +1066,4 @@ public class CombatManager : MonoBehaviour {
             UnityEngine.SceneManagement.SceneManager.LoadScene("Menu"); 
         }
     }
-
-    
 }

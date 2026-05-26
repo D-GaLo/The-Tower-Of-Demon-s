@@ -12,7 +12,7 @@ public class HeroStats : UnitStats {
     public int[] xpParaNivel = { 0, 100, 250, 450, 750, 1550, 2350, 3750, 5150, 8650 };
 
     [Header("Equipamiento")]
-    public WeaponData equippedWeapon;
+    public ItemData equippedWeapon;
 
     private const int LIMITE_HP = 1000;
     private const int LIMITE_ATK = 500;
@@ -105,17 +105,13 @@ public class HeroStats : UnitStats {
     }
 
     public int GetTotalAttack() {
-        int total = attack;
-        if (equippedWeapon != null) {
-            total += equippedWeapon.attackBonus;
-        }
-        return total;
+        return attack; 
     }
 
-    public void TryEquipWeapon(WeaponData newWeapon) {
+    public void TryEquipWeapon(ItemData newWeapon) {
         if (newWeapon.requiredClass == this.unitClass) {
             equippedWeapon = newWeapon;
-            Debug.Log($"¡{unitName} se equipó {newWeapon.weaponName}! Ataque total ahora es {GetTotalAttack()}");
+            Debug.Log($"¡{unitName} se equipó {newWeapon.itemName}! Ataque total ahora es {GetTotalAttack()}");
         }
     }
 }

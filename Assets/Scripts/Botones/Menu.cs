@@ -74,7 +74,7 @@ public class Menu : MonoBehaviour
         {
             panelAMostrar.SetActive(true);
             
-            if (panelBotonesPausa != null) panelBotonesPausa.SetActive(true);
+            if (panelBotonesPausa != null) panelBotonesPausa.SetActive(false);
             if (panelComoJugar != null) panelComoJugar.SetActive(false);
             
             
@@ -87,7 +87,8 @@ public class Menu : MonoBehaviour
         if (panelAMostrar != null)
         {
             panelAMostrar.SetActive(false);
-            
+
+            if (panelBotonesPausa != null) panelBotonesPausa.SetActive(true);
             if (botonEstadisticas != null) botonEstadisticas.SetActive(true); 
             if (botonMapa != null) botonMapa.SetActive(true);
 
@@ -110,7 +111,6 @@ public class Menu : MonoBehaviour
     public void CerrarComoJugar()
     {
         if (panelComoJugar != null) panelComoJugar.SetActive(false);
-        if (panelBotonesPausa != null) panelBotonesPausa.SetActive(true);
         if (botonEstadisticas != null) botonEstadisticas.SetActive(true); 
         if (botonMapa != null) botonMapa.SetActive(true);
     }

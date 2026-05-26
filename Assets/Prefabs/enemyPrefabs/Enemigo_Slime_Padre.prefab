@@ -78,8 +78,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: unitClass
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: weaponDrop
+      value: 
+      objectReference: {fileID: 11400000, guid: c2b93a528c932d849b261a37ce72a1d4, type: 2}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: nivelManual
       value: 1
@@ -87,6 +91,10 @@ PrefabInstance:
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: ataquesPorTurno
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: posiblesDropeos.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: enemigosAInvocar.Array.size
@@ -104,6 +112,14 @@ PrefabInstance:
       propertyPath: enemigosAInvocar.Array.data[1]
       value: 
       objectReference: {fileID: 7931088695150446534, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: posiblesDropeos.Array.data[0].item
+      value: 
+      objectReference: {fileID: 11400000, guid: c2b93a528c932d849b261a37ce72a1d4, type: 2}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: posiblesDropeos.Array.data[0].probabilidad
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 6775870944302813709, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: m_LocalScale.x
       value: 3

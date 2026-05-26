@@ -42,8 +42,12 @@ PrefabInstance:
       objectReference: {fileID: 5732192582841999617}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: unitClass
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: weaponDrop
+      value: 
+      objectReference: {fileID: 11400000, guid: e49989dec7377e34f801735ce39d441d, type: 2}
     - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: spriteMelee
       value: 
@@ -84,6 +88,14 @@ PrefabInstance:
       propertyPath: posiblesCompaneros.Array.data[0]
       value: 
       objectReference: {fileID: 7931088695150446534, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: posiblesDropeos.Array.data[0].item
+      value: 
+      objectReference: {fileID: 11400000, guid: 0ab4a2da9359f324fbdf97d75d41bfa6, type: 2}
+    - target: {fileID: 4764047897283023403, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
+      propertyPath: posiblesDropeos.Array.data[1].item
+      value: 
+      objectReference: {fileID: 11400000, guid: 2c0a18291c5f1ef499c56d6f4d546d59, type: 2}
     - target: {fileID: 6775870944302813709, guid: 34d14cd3552f7944286193e602f5372a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

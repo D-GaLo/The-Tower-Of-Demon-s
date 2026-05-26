@@ -20,9 +20,8 @@ public class EnemyStats : UnitStats {
     public GameObject[] enemigosAInvocar;
     [HideInInspector] public bool yaInvoco = false;
 
-    [Header("Dropeos")]
-    public WeaponData weaponDrop;
-    [Range(0, 100)] public int dropChance = 20; 
+    [Header("Dropeos (Orden de prioridad: arriba a abajo)")]
+    public DropData[] posiblesDropeos;
 
     [Header("UI Visual en la Arena")]
     public GameObject canvasUI; 
@@ -128,11 +127,10 @@ public class EnemyStats : UnitStats {
             circuloPosicion.color = Color.white; 
         }
     }
+}
 
-    public WeaponData TryGetDrop() {
-        if (weaponDrop == null) return null;
-        int randomValue = Random.Range(1, 101);
-        if (randomValue <= dropChance) return weaponDrop; 
-        return null; 
-    }
+[System.Serializable]
+public class DropData {
+    public ItemData item;
+    [Range(0, 100)] public int probabilidad;
 }

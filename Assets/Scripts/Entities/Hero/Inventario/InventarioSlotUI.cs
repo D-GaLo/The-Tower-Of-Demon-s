@@ -1,34 +1,40 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using TMPro;
 
-public class InventarioSlotUI : MonoBehaviour, IPointerClickHandler
-{
-    public Item item;
-    public Image iconoImagen;
-    public TextMeshProUGUI cantidadTexto;
+public class InventarioSlotUI : MonoBehaviour {
+    public Image iconoObjeto;
+    public TextMeshProUGUI textoCantidad;
 
-    public static Item itemArrastrado = Item.None;
-    public static InventarioSlotUI slotOrigen = null;
+    private ItemData itemData;
+    private int cantidadActual;
+    private InventarioPanelUI panelPrincipal;
 
-    private static GameObject fantasma;
+    public void Configurar(ItemData data, int cantidad, InventarioPanelUI panel) {
+        itemData = data;
+        cantidadActual = cantidad;
+        panelPrincipal = panel;
 
-    public void Setup(Item _item, Sprite icono)
-    {
-        item = _item;
-        int cantidad = InventarioEnum.Instance.GetCantidad(item);
-        iconoImagen.sprite = icono;
-        iconoImagen.enabled = cantidad > 0;
-        cantidadTexto.text = cantidad > 0 ? cantidad.ToString() : "";
-    }
+        iconoObjeto.sprite = data.itemIcon;
+        
+        if (data.maxStack > 1) {
+            textoCantidad.text = cantidad.ToString();
+            textoCantidad.gameObject.SetActive(true);
+        } else {
+            textoCantidad.gameObject.SetActive(false);
+        }
 
-    public void OnPointerClick(PointerEventData e){
-        if (InventarioEnum.Instance.GetCantidad(item) > 0)
-        {
-            Debug.Log("Clic en item: " + item);
-            InventarioPanelUI.Instance.SeleccionarItem(item);
+        if (cantidad <= 0) {
+            iconoObjeto.color = new Color(0.3f, 0.3f, 0.3f, 1f); 
+        } else {
+            iconoObjeto.color = Color.white;
         }
     }
 
+    public void AlHacerClic() {
+        if (panelPrincipal != null && itemData != null && AudioManager.Instance != null) {
+            AudioManager.Instance.PlayClic();
+            panelPrincipal.MostrarDetalles(itemData, cantidadActual);
+        }
+    }
 }

@@ -1,0 +1,130 @@
+\documentclass[14pt,a4paper]{extarticle}
+
+% ==========================================
+% 1. PAQUETES BÁSICOS (Base Principal)
+% ==========================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+
+% ==========================================
+% 2. GEOMETRÍA Y MÁRGENES (Base Principal)
+% ==========================================
+\usepackage{geometry}
+\geometry{top=3cm, bottom=3cm, left=2.5cm, right=2.5cm}
+
+% ==========================================
+% 3. GRÁFICOS Y COLORES (Combinado)
+% ==========================================
+\usepackage{graphicx,epsfig}
+\graphicspath{{./figs/}} % Carpeta por defecto para imágenes del Doc 2
+
+% Colores (Debe cargarse antes que las cajas)
+\usepackage[dvipsnames]{xcolor}
+\definecolor{bibi}{RGB}{0,103,148}
+
+% ==========================================
+% 4. MATEMÁTICAS Y SÍMBOLOS (Del Doc 2)
+% ==========================================
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{cancel}
+\usepackage{dsfont}
+\usepackage{wasysym} % (De tu base principal, necesario para \checked y \XBox)
+\renewcommand{\proofname}{Demostración}
+
+% ==========================================
+% 5. TABLAS, LISTAS Y FORMATO (Combinado)
+% ==========================================
+\usepackage{titlesec} % (Base Principal)
+\usepackage[shortlabels]{enumitem} % Combinado con la opción del Doc 2
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{verbatim}
+\setlength{\parindent}{0pt} % Sangría en cero (Del Doc 2)
+
+% ==========================================
+% 6. FLOTANTES, ÍNDICES Y BIBLIOGRAFÍA (Del Doc 2)
+% ==========================================
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tocloft}
+\usepackage[numbers]{natbib}
+
+% ==========================================
+% 7. ENCABEZADOS Y PIES DE PÁGINA (Del Doc 2)
+% ==========================================
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+% ==========================================
+% 8. DIAGRAMAS Y ALGORITMOS (Del Doc 2)
+% ==========================================
+\usepackage{venndiagram}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ==========================================
+% 9. CAJAS PERSONALIZADAS (Del Doc 2)
+% ==========================================
+\usepackage[most]{tcolorbox}
+
+% Caja para Análisis de Juego
+\newtcolorbox{analisisbox}[1]{
+    colback=bibi!5!white,
+    colframe=bibi,
+    title=\textbf{#1},
+    fonttitle=\bfseries,
+    arc=3pt,
+    outer arc=3pt,
+    boxrule=1pt,
+    enhanced,
+    drop shadow
+}
+
+% Cajas para pros y contras
+\newtcolorbox{positiveside}{
+    colback=green!5!white,
+    colframe=green!50!black,
+    title=\textbf{Puntos Positivos \checked},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{negativeside}{
+    colback=red!5!white,
+    colframe=red!50!black,
+    title=\textbf{Puntos Negativos \XBox},
+    fonttitle=\bfseries
+}
+
+% ==========================================
+% 10. ENLACES E HIPERVÍNCULOS (Al final siempre)
+% ==========================================
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=red, % Extraído del Doc 2
+}
+
+% --- ESTRUCTURA DEL DOCUMENTO (Base Principal) ---
+
+\begin{document}
+
+\input{portada.tex}
+
+\newpage
+\tableofcontents
+\newpage
+
+\input{contenido.tex}
+
+\end{document}

@@ -53,12 +53,12 @@ public class EnredaderasNucifera : MonoBehaviour {
 
         if (Vector2.Distance(transform.position, player.position) <= distanciaInteraccion) {
             if (Input.GetKeyDown(KeyCode.E)) {
-                ProcesarInteraccion();
+                InteraccionHUD();
             }
         }
     }
 
-    void ProcesarInteraccion() {
+    void InteraccionHUD() {
         if (llaveRecogida) return;
 
         if (nucifera != null) {

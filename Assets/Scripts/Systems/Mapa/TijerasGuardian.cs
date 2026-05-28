@@ -28,7 +28,6 @@ public class TijerasGuardian : MonoBehaviour {
         if(panelMensajeVictoria) panelMensajeVictoria.SetActive(false);
         if(panelPregunta) panelPregunta.SetActive(false);
         if(panelObtenidas) panelObtenidas.SetActive(false);
-    
         if(panelMensajeOculto) panelMensajeOculto.SetActive(false); 
 
         GameObject p = GameObject.FindGameObjectWithTag("Player");
@@ -40,26 +39,25 @@ public class TijerasGuardian : MonoBehaviour {
 
         if (slimePadre == null && !jefeDerrotado) {
             jefeDerrotado = true;
-            
             if(visualTijerasConBaba) visualTijerasConBaba.SetActive(false);
             if(visualTijerasLimpias) visualTijerasLimpias.SetActive(true);
-            
             MostrarPanel(panelMensajeVictoria);
-            return; 
         }
 
         if (!tijerasRecogidas && player != null) {
             if (Vector2.Distance(transform.position, player.position) <= distanciaInteraccion) {
                 if (Input.GetKeyDown(KeyCode.E)) {
-                    
-                    if (jefeDerrotado) {
-                        MostrarPanel(panelPregunta);
-                    } else {
-                        MostrarPanel(panelMensajeOculto);
-                    }
-
+                    InteraccionHUD();
                 }
             }
+        }
+    }
+
+    public void InteraccionHUD() {
+        if (jefeDerrotado) {
+            MostrarPanel(panelPregunta);
+        } else {
+            MostrarPanel(panelMensajeOculto);
         }
     }
 
@@ -89,11 +87,7 @@ public class TijerasGuardian : MonoBehaviour {
         if(panelMensajeOculto) panelMensajeOculto.SetActive(false); 
         
         if(contenedorPrincipal) contenedorPrincipal.SetActive(false);
-        
         Time.timeScale = 1f; 
-        
-        if (tijerasRecogidas) {
-            Destroy(gameObject); 
-        }
+        if (tijerasRecogidas) Destroy(gameObject); 
     }
 }

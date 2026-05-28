@@ -113,7 +113,10 @@ public class HeroStatsPanelUI : MonoBehaviour
     public void CerrarPanelStats() {
         if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
         statsPanel.SetActive(false);
-        Time.timeScale = 1f; 
+        
+        if (Menu.Instance == null || !Menu.Instance.estaPausado) {
+            Time.timeScale = 1f; 
+        }
     }
 
     public void SwitchTab(int tabIndex)
@@ -172,8 +175,8 @@ public class HeroStatsPanelUI : MonoBehaviour
         if (h == null) return;
 
         if (nameT != null) nameT.text = h.unitName;
-        if (classT != null) classT.text = $"{h.unitClass}";
-        if (posT != null) posT.text = $"{h.unitPosition}";
+        if (classT != null) classT.text = $"Clase: {h.unitClass}";
+        if (posT != null) posT.text = $"Posición: {h.unitPosition}";
         
         if (hpT != null) hpT.text = $"{h.currentHP} / {h.maxHP}";
         if (energyT != null) energyT.text = $"{h.currentEnergy} / {h.maxEnergy}";

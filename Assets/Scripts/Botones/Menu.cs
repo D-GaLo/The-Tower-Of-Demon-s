@@ -5,24 +5,20 @@ using UnityEngine.UI;
 
 public class Menu : MonoBehaviour
 {
-    [Header("Paneles Generales")]
-    [Tooltip("Arrastrar aqui el objeto de opcciones")]
-    public GameObject panelAMostrar; 
-    [Tooltip("Arrastrar aqui el objeto hijo Menu")]
-    public GameObject panelBotonesPausa; 
+    public static Menu Instance { get; private set; }
+
+    [Header("Paneles de Pausa")]
+    [Tooltip("El botón único en el HUD que abre la pausa")]
+    public GameObject botonMenuPausaHUD; 
+    [Tooltip("El panel con los botones de exploración (Mapa, Items, Stats)")]
+    public GameObject menuPausaMapa; 
+    [Tooltip("El panel con los botones de combate (Guía)")]
+    public GameObject menuPausaCombate; 
     [Tooltip("El objeto Panel¿ComoJugar?")]
     public GameObject panelComoJugar; 
 
-    [Header("Botones Externos (HUD)")]
-    [Tooltip("Arrastrar aquí el botón de Estadísticas")]
-    public GameObject botonEstadisticas; 
-    [Tooltip("Arrastrar aquí el botón de Mapa")]
-    public GameObject botonMapa; 
-
     [Header("Bloqueo de Seguridad")]
-    [Tooltip("Arrastra aquí el Panel del Mapa")]
     public GameObject panelMapaUI; 
-    [Tooltip("Arrastra aquí el Panel de Estadísticas")]
     public GameObject panelHeroesStats;
 
     [Header("Configuración del Carrusel")]
@@ -30,10 +26,16 @@ public class Menu : MonoBehaviour
     public Sprite[] spritesCarrusel; 
     
     private int indiceActual = 0;
+    public bool estaPausado = false; 
+
+    void Awake() {
+        if (Instance == null) Instance = this;
+    }
 
     void Start()
     {
-        if (panelAMostrar != null) panelAMostrar.SetActive(false);
+        if (menuPausaMapa != null) menuPausaMapa.SetActive(false);
+        if (menuPausaCombate != null) menuPausaCombate.SetActive(false);
         if (panelComoJugar != null) panelComoJugar.SetActive(false);
             
         ActualizarImagen();
@@ -45,62 +47,70 @@ public class Menu : MonoBehaviour
         {
             bool mapaAbierto = (panelMapaUI != null && panelMapaUI.activeSelf);
             bool statsAbiertos = (panelHeroesStats != null && panelHeroesStats.activeSelf);
+            bool inventarioAbierto = (InventarioPanelUI.Instance != null && InventarioPanelUI.Instance.panelVisual.activeSelf);
             
-            if (mapaAbierto || statsAbiertos) 
+            if (mapaAbierto || statsAbiertos || inventarioAbierto) 
             {
                 return;
             }
+
             if (panelComoJugar != null && panelComoJugar.activeSelf)
             {
                 CerrarComoJugar();
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
             }
-            else if (panelAMostrar != null && panelAMostrar.activeSelf)
+            else 
             {
-                DesactivarPanel();
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
-            }
-            else if (panelAMostrar != null && !panelAMostrar.activeSelf)
-            {
-                ActivarPanel();
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
+                TogglePausa();
             }
         }
     }
 
-    public void ActivarPanel()
+    public void TogglePausa()
     {
-        if (panelAMostrar != null)
-        {
-            panelAMostrar.SetActive(true);
-            
-            if (panelBotonesPausa != null) panelBotonesPausa.SetActive(false);
-            if (panelComoJugar != null) panelComoJugar.SetActive(false);
-            
-            
-            Time.timeScale = 0f; 
+        if (estaPausado) DesactivarPausa();
+        else ActivarPausa();
+    }
+
+    public void ActivarPausa()
+    {
+        estaPausado = true;
+        Time.timeScale = 0f; 
+        
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
+
+        if (botonMenuPausaHUD != null) botonMenuPausaHUD.SetActive(false);
+
+        bool enCombate = false;
+        if (GameFlowController.Instance != null) {
+            enCombate = GameFlowController.Instance.enCombate;
+        }
+
+        if (enCombate) {
+            if (menuPausaCombate != null) menuPausaCombate.SetActive(true);
+        } else {
+            if (menuPausaMapa != null) menuPausaMapa.SetActive(true);
         }
     }
 
-    public void DesactivarPanel()
+    public void DesactivarPausa()
     {
-        if (panelAMostrar != null)
-        {
-            panelAMostrar.SetActive(false);
+        estaPausado = false;
+        Time.timeScale = 1f; 
 
-            if (panelBotonesPausa != null) panelBotonesPausa.SetActive(true);
-            if (botonEstadisticas != null) botonEstadisticas.SetActive(true); 
-            if (botonMapa != null) botonMapa.SetActive(true);
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
 
-            Time.timeScale = 1f; 
-        }
+        if (menuPausaMapa != null) menuPausaMapa.SetActive(false);
+        if (menuPausaCombate != null) menuPausaCombate.SetActive(false);
+
+        if (botonMenuPausaHUD != null) botonMenuPausaHUD.SetActive(true);
     }
 
     public void AbrirComoJugar()
     {
-        if (panelBotonesPausa != null) panelBotonesPausa.SetActive(false);
-        if (botonEstadisticas != null) botonEstadisticas.SetActive(false); 
-        if (botonMapa != null) botonMapa.SetActive(false);
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
+
+        if (menuPausaMapa != null) menuPausaMapa.SetActive(false);
+        if (menuPausaCombate != null) menuPausaCombate.SetActive(false);
 
         if (panelComoJugar != null) panelComoJugar.SetActive(true);
         
@@ -110,13 +120,24 @@ public class Menu : MonoBehaviour
 
     public void CerrarComoJugar()
     {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
         if (panelComoJugar != null) panelComoJugar.SetActive(false);
-        if (botonEstadisticas != null) botonEstadisticas.SetActive(true); 
-        if (botonMapa != null) botonMapa.SetActive(true);
+        
+        bool enCombate = false;
+        if (GameFlowController.Instance != null) {
+            enCombate = GameFlowController.Instance.enCombate;
+        }
+
+        if (enCombate) {
+            if (menuPausaCombate != null) menuPausaCombate.SetActive(true);
+        } else {
+            if (menuPausaMapa != null) menuPausaMapa.SetActive(true);
+        }
     }
 
     public void SalirJuego()
     {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
         Debug.Log("Saliendo del juego...");
         Application.Quit();
         #if UNITY_EDITOR
@@ -126,6 +147,7 @@ public class Menu : MonoBehaviour
 
     public void SiguienteImagen()
     {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
         if (spritesCarrusel == null || spritesCarrusel.Length == 0) return;
         indiceActual++;
         if (indiceActual >= spritesCarrusel.Length) indiceActual = 0;
@@ -134,6 +156,7 @@ public class Menu : MonoBehaviour
 
     public void ImagenAnterior()
     {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
         if (spritesCarrusel == null || spritesCarrusel.Length == 0) return;
         indiceActual--;
         if (indiceActual < 0) indiceActual = spritesCarrusel.Length - 1;

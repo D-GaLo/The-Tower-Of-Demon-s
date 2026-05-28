@@ -13,7 +13,7 @@ public class FuenteCurativa : MonoBehaviour {
     private int combatesAlVaciar = 0;
     private Transform player;
 
-    [Header("UI - Paneles (Con texto pre-hecho)")]
+    [Header("UI - Paneles")]
     public GameObject contenedorPrincipal; 
     public GameObject panelPregunta; 
     public GameObject panelCurado;   
@@ -43,20 +43,20 @@ public class FuenteCurativa : MonoBehaviour {
 
         if (Vector2.Distance(transform.position, player.position) <= distanciaInteraccion) {
             if (Input.GetKeyDown(KeyCode.E)) {
-                if (!fuenteVacia) {
-                    AbrirPanel(panelPregunta);
-                } else {
-                    AbrirPanel(panelSeca);
-                }
+                InteraccionHUD();
             }
         }
+    }
+
+    public void InteraccionHUD() {
+        if (!fuenteVacia) AbrirPanel(panelPregunta);
+        else AbrirPanel(panelSeca);
     }
 
     void RecargarFuente() {
         fuenteVacia = false;
         if (objetoFuenteLlena) objetoFuenteLlena.SetActive(true);
         if (objetoFuenteVacia) objetoFuenteVacia.SetActive(false);
-        Debug.Log("<color=cyan>[Fuente]</color> Magia pura: La fuente se ha recargado de agua.");
     }
 
     void AbrirPanel(GameObject panelSeleccionado) {
@@ -75,11 +75,9 @@ public class FuenteCurativa : MonoBehaviour {
 
         if (objetoFuenteLlena) objetoFuenteLlena.SetActive(false);
         if (objetoFuenteVacia) objetoFuenteVacia.SetActive(true);
-
         if (panelPregunta) panelPregunta.SetActive(false);
 
         CurarEquipo();
-
         if (panelCurado) panelCurado.SetActive(true);
     }
 
@@ -99,7 +97,6 @@ public class FuenteCurativa : MonoBehaviour {
         if (panelCurado) panelCurado.SetActive(false);
         if (panelSeca) panelSeca.SetActive(false);
         if (contenedorPrincipal) contenedorPrincipal.SetActive(false);
-        
         Time.timeScale = 1f; 
     }
 }

@@ -945,14 +945,14 @@ public class CombatManager : MonoBehaviour {
         int costo = 10; float mult = 1.5f; int seqLen = 3; bool esAoE = false;
 
         if (nombre == "Sieg") {
-            if (slotEspecial == 1) { costo = 10; mult = 1.5f; seqLen = 3; }
-            else if (slotEspecial == 2) { costo = 20; mult = 1.8f; seqLen = 4; }
+            if (slotEspecial == 1) { costo = 10; mult = 2f; seqLen = 3; }
+            else if (slotEspecial == 2) { costo = 20; mult = 2.5f; seqLen = 4; }
             else if (slotEspecial == 3) { costo = 50; mult = 3.0f; seqLen = 6; }
         } 
         else if (nombre == "Merlin") {
-            if (slotEspecial == 1) { costo = 15; mult = 1.9f; seqLen = 3; }
-            else if (slotEspecial == 2) { costo = 30; mult = 2.2f; seqLen = 4; }
-            else if (slotEspecial == 3) { costo = 60; mult = 1.8f; seqLen = 6; esAoE = true; } 
+            if (slotEspecial == 1) { costo = 15; mult = 1.5f; seqLen = 3; esAoE = true; }
+            else if (slotEspecial == 2) { costo = 30; mult = 2f; seqLen = 4; esAoE = true; }
+            else if (slotEspecial == 3) { costo = 60; mult = 2.5f; seqLen = 6; esAoE = true; } 
         }
         else if (nombre == "Heracles") {
             if (slotEspecial == 1) { costo = 15; mult = 2f; seqLen = 3; }

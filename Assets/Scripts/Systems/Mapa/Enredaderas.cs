@@ -28,11 +28,14 @@ public class Enredaderas : MonoBehaviour {
 
         if (Vector2.Distance(transform.position, player.position) <= distanciaInteraccion) {
             if (Input.GetKeyDown(KeyCode.E)) {
-                AbrirDialogoPregunta();
+                InteraccionHUD();
             }
         }
     }
 
+    public void  InteraccionHUD() {
+        AbrirDialogoPregunta();
+    }
 
     public void AbrirDialogoPregunta() {
         Time.timeScale = 0f;
@@ -47,7 +50,7 @@ public class Enredaderas : MonoBehaviour {
         Time.timeScale = 1f;
     }
 
-public void IntentarCortar() {
+    public void IntentarCortar() {
         if (panelPregunta) panelPregunta.SetActive(false);
 
         if (InventarioEnum.Instance == null) {
@@ -57,7 +60,6 @@ public void IntentarCortar() {
         }
 
         int cantidadTijeras = InventarioEnum.Instance.GetCantidad(Item.Tijeras);
-        Debug.Log($"<color=yellow>[Inventario]</color> Tienes exactamente {cantidadTijeras} tijeras en tu bolsa.");
 
         if (cantidadTijeras > 0) {
             Cortar();

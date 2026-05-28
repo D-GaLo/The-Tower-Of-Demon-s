@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI; 
 
 public class PlayerController : MonoBehaviour {
     public float speed = 5f;
@@ -13,6 +14,12 @@ public class PlayerController : MonoBehaviour {
     private Vector2 direccionMirada = Vector2.right;
     private Vector2 inputMovimiento;
     private float escalaFija = 1f;
+    private bool isAttacking = false;
+
+    [Header("Botones HUD (UI)")]
+    public Button botonAtacarHUD;
+    public Button botonInteractuarHUD;
+    private Color colorOriginalInteract = Color.white;
 
     void Start() {
         rb = GetComponent<Rigidbody2D>();
@@ -20,28 +27,42 @@ public class PlayerController : MonoBehaviour {
         transform.localScale = new Vector3(escalaFija, escalaFija, 1f);
         
         if(espadaVisual != null) espadaVisual.SetActive(false);
+
+        if(botonInteractuarHUD != null) {
+            colorOriginalInteract = botonInteractuarHUD.image.color;
+            botonInteractuarHUD.onClick.AddListener(BotonInteractuarHUD_Click);
+        }
+        if(botonAtacarHUD != null) {
+            botonAtacarHUD.onClick.AddListener(BotonAtacarHUD_Click);
+        }
     }
 
     void Update() {
-
         if (Time.timeScale == 0) return;
 
-        if (GameFlowController.Instance != null && GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf) {
+        bool enCombate = false;
+        if (GameFlowController.Instance != null) {
+            enCombate = GameFlowController.Instance.enCombate || 
+                       (GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf);
+        }
+
+        if (enCombate) {
             inputMovimiento = Vector2.zero;
             return; 
+        }
+
+        if (isAttacking) {
+            inputMovimiento = Vector2.zero;
+            return;
         }
 
         inputMovimiento.x = Input.GetAxisRaw("Horizontal");
         inputMovimiento.y = Input.GetAxisRaw("Vertical");
 
         ActualizarVisuales(inputMovimiento.x, inputMovimiento.y);
+        VerificarInteraccionesHUD();
 
-        if (Input.GetKeyDown(KeyCode.F)) {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayEspada();
-            StopAllCoroutines();
-            StartCoroutine(AnimacionAtaqueSemicircular());
-            Atacar();
-        }
+        if (Input.GetKeyDown(KeyCode.F)) BotonAtacarHUD_Click();
     }
 
     void FixedUpdate() {
@@ -50,7 +71,13 @@ public class PlayerController : MonoBehaviour {
             return;
         }
 
-        if (GameFlowController.Instance != null && GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf) {
+        bool enCombate = false;
+        if (GameFlowController.Instance != null) {
+            enCombate = GameFlowController.Instance.enCombate || 
+                       (GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf);
+        }
+
+        if (enCombate) {
             rb.velocity = Vector2.zero;
             return;
         }
@@ -65,7 +92,72 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
+    public void BotonAtacarHUD_Click() {
+        if (Time.timeScale == 0) return;
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayEspada();
+        StopAllCoroutines();
+        StartCoroutine(AnimacionAtaqueSemicircular());
+        Atacar();
+    }
+
+    public void BotonInteractuarHUD_Click() {
+        if (Time.timeScale == 0) return;
+        
+        MonoBehaviour closest = null;
+        float minDistance = Mathf.Infinity;
+
+        foreach(var p in FindObjectsOfType<PuertaFinal>()) {
+            float d = Vector2.Distance(transform.position, p.transform.position);
+            if(d <= p.distanciaInteraccion && d < minDistance) { minDistance = d; closest = p; }
+        }
+        foreach(var e in FindObjectsOfType<Enredaderas>()) {
+            float d = Vector2.Distance(transform.position, e.transform.position);
+            if(d <= e.distanciaInteraccion && d < minDistance) { minDistance = d; closest = e; }
+        }
+        foreach(var eN in FindObjectsOfType<EnredaderasNucifera>()) {
+            float d = Vector2.Distance(transform.position, eN.transform.position);
+            if(d <= eN.distanciaInteraccion && d < minDistance) { minDistance = d; closest = eN; }
+        }
+        foreach(var f in FindObjectsOfType<FuenteCurativa>()) {
+            float d = Vector2.Distance(transform.position, f.transform.position);
+            if(d <= f.distanciaInteraccion && d < minDistance) { minDistance = d; closest = f; }
+        }
+        foreach(var t in FindObjectsOfType<TijerasGuardian>()) {
+            float d = Vector2.Distance(transform.position, t.transform.position);
+            if(d <= t.distanciaInteraccion && d < minDistance) { minDistance = d; closest = t; }
+        }
+
+        if (closest != null) {
+            closest.SendMessage("InteraccionHUD", SendMessageOptions.DontRequireReceiver);
+        }
+    }
+
+    void VerificarInteraccionesHUD() {
+        if (botonInteractuarHUD == null) return;
+        
+        bool interactableCerca = false;
+
+        foreach(var p in FindObjectsOfType<PuertaFinal>()) 
+            if(Vector2.Distance(transform.position, p.transform.position) <= p.distanciaInteraccion) interactableCerca = true;
+        foreach(var e in FindObjectsOfType<Enredaderas>()) 
+            if(Vector2.Distance(transform.position, e.transform.position) <= e.distanciaInteraccion) interactableCerca = true;
+        foreach(var eN in FindObjectsOfType<EnredaderasNucifera>()) 
+            if(Vector2.Distance(transform.position, eN.transform.position) <= eN.distanciaInteraccion) interactableCerca = true;
+        foreach(var f in FindObjectsOfType<FuenteCurativa>()) 
+            if(Vector2.Distance(transform.position, f.transform.position) <= f.distanciaInteraccion) interactableCerca = true;
+        foreach(var t in FindObjectsOfType<TijerasGuardian>()) 
+            if(Vector2.Distance(transform.position, t.transform.position) <= t.distanciaInteraccion) interactableCerca = true;
+
+        botonInteractuarHUD.interactable = interactableCerca;
+        if (interactableCerca) {
+            botonInteractuarHUD.image.color = colorOriginalInteract;
+        } else {
+            botonInteractuarHUD.image.color = new Color(0.4f, 0.4f, 0.4f, 1f);
+        }
+    }
+
     IEnumerator AnimacionAtaqueSemicircular() {
+        isAttacking = true;
         if(espadaVisual != null) {
             float anguloBase = Mathf.Atan2(direccionMirada.y, direccionMirada.x) * Mathf.Rad2Deg;
             espadaVisual.transform.localPosition = new Vector3(direccionMirada.x, direccionMirada.y, 0) * distanciaEspada;
@@ -73,13 +165,14 @@ public class PlayerController : MonoBehaviour {
             espadaVisual.SetActive(true);
             float tiempo = 0;
             while(tiempo < duracionAtaque) {
-                tiempo += Time.deltaTime; 
+                tiempo += Time.unscaledDeltaTime; 
                 float progresoArco = Mathf.Lerp(90, -90, tiempo / duracionAtaque);
                 espadaVisual.transform.localRotation = Quaternion.Euler(0, 0, anguloBase + progresoArco);
                 yield return null;
             }
             espadaVisual.SetActive(false);
         }
+        isAttacking = false;
     }
 
     void Atacar() {
@@ -89,7 +182,6 @@ public class PlayerController : MonoBehaviour {
                 EnemyStats stats = enemy.GetComponentInParent<EnemyStats>();
                 
                 if (stats != null && GameFlowController.Instance != null) {
-
                     GameFlowController.Instance.IniciarCombate(stats.gameObject, true);
                 }
                 break;

@@ -19,7 +19,13 @@ public class PartyFollower : MonoBehaviour {
         
         if (targetToFollow == null || Time.timeScale == 0) return;
         
-        if (GameFlowController.Instance != null && GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf) {
+        bool enCombate = false;
+        if (GameFlowController.Instance != null) {
+            enCombate = GameFlowController.Instance.enCombate || 
+                       (GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf);
+        }
+
+        if (enCombate) {
             return;
         }
 

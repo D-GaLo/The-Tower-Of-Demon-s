@@ -1,10 +1,9 @@
 using UnityEngine;
 
 public class PuertaFinal : MonoBehaviour {
-    [Header("Objetos Visuales de la Puerta")]
+    [Header("Objetos Visuales")]
     public GameObject objetoPuertaCerrada;
     public GameObject objetoPuertaAbierta;
-    
     private BoxCollider2D colisionMuro;
     private Transform player;
 
@@ -37,19 +36,17 @@ public class PuertaFinal : MonoBehaviour {
     void Update() {
         if (puertaAbierta || player == null || Time.timeScale == 0) return;
 
-        float distancia = Vector2.Distance(transform.position, player.position);
-
-        if (distancia <= distanciaInteraccion) {
+        if (Vector2.Distance(transform.position, player.position) <= distanciaInteraccion) {
             if (Input.GetKeyDown(KeyCode.E)) {
-                AbrirDialogoPregunta();
+                InteraccionHUD();
             }
         }
     }
 
-    public void AbrirDialogoPregunta() {
+    public void InteraccionHUD() {
         Time.timeScale = 0f; 
-        if(contenedorPrincipal) contenedorPrincipal.SetActive(true);
-        panelPregunta.SetActive(true);
+        if(contenedorPrincipal) contenedorPrincipal.SetActive(true); 
+        if(panelPregunta) panelPregunta.SetActive(true);
     }
 
     public void CerrarDialogos() {
@@ -79,30 +76,19 @@ public class PuertaFinal : MonoBehaviour {
         
         objetoPuertaCerrada.SetActive(false);
         objetoPuertaAbierta.SetActive(true);
-        
-        if (InventarioEnum.Instance != null) {
-            InventarioEnum.Instance.RemoveItem(Item.Llave, 1);
-        }
+        if (InventarioEnum.Instance != null) InventarioEnum.Instance.RemoveItem(Item.Llave, 1);
 
         colisionMuro.isTrigger = true; 
-        
         if(contenedorPrincipal) contenedorPrincipal.SetActive(false); 
-        
         Time.timeScale = 1f; 
     }
 
-    void OnTriggerEnter2D(Collider2D other) {
-        RevisarVictoria(other);
-    }
-
-    void OnTriggerStay2D(Collider2D other) {
-        RevisarVictoria(other);
-    }
+    void OnTriggerEnter2D(Collider2D other) { RevisarVictoria(other); }
+    void OnTriggerStay2D(Collider2D other) { RevisarVictoria(other); }
 
     void RevisarVictoria(Collider2D other) {
         if (puertaAbierta && other.CompareTag("Player")) {
             Time.timeScale = 0f; 
-            
             if(contenedorPrincipal) contenedorPrincipal.SetActive(true); 
             if(panelVictoria) panelVictoria.SetActive(true);
         }
@@ -110,10 +96,6 @@ public class PuertaFinal : MonoBehaviour {
 
     public void BotonVolverAlMenu() {
         Time.timeScale = 1f;
-        if (GameFlowController.Instance != null) {
-            GameFlowController.Instance.VolverAlMenuPrincipal();
-        } else {
-            UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
-        }
+        if (GameFlowController.Instance != null) GameFlowController.Instance.VolverAlMenuPrincipal();
     }
 }

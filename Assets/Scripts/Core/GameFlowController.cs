@@ -17,11 +17,7 @@ public class GameFlowController : MonoBehaviour {
     public GameObject pantallaTransicion; 
     public GameObject uiCombate; 
     
-    [Header("Botones de Exploración")]
-    public GameObject botonMapa;
-    public GameObject botonEstadisticas;
-
-    public GameObject botonInventario;
+    [Header("Botones de Exploración (Restantes en HUD)")]
     public GameObject botonEspada;
     public GameObject botonInteraccion;
     public GameObject visualEspada; 
@@ -33,7 +29,8 @@ public class GameFlowController : MonoBehaviour {
     public string nombreEscenaMenu = "Menu";
 
     private GameObject enemigoActual;
-    private bool enCombate = false;
+    
+    public bool enCombate = false;
 
     void Awake() {
         if (Instance == null) Instance = this;
@@ -58,9 +55,6 @@ public class GameFlowController : MonoBehaviour {
 
         if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(true, posicionArenaCombate);
         
-        if (botonMapa != null) botonMapa.SetActive(false);
-        if (botonEstadisticas != null) botonEstadisticas.SetActive(false);
-        if (botonInventario != null) botonInventario.SetActive(false);
         if (botonEspada != null) botonEspada.SetActive(false);
         if (botonInteraccion != null) botonInteraccion.SetActive(false);
         if (visualEspada != null) visualEspada.SetActive(false); 
@@ -104,9 +98,7 @@ public class GameFlowController : MonoBehaviour {
             PlayerController player = FindObjectOfType<PlayerController>();
             if (player != null) {
                 Vector3 destino = puntoReaparicion != null ? puntoReaparicion.position : new Vector3(0f, -2.5f, 0f);
-                
                 destino.z = player.transform.position.z; 
-                
                 player.TeletransportarAlSpawn(destino);
             }
 
@@ -119,9 +111,6 @@ public class GameFlowController : MonoBehaviour {
 
         if (camaraPrincipal != null) camaraPrincipal.CambiarModoCombate(false, Vector3.zero);
         
-        if (botonMapa != null) botonMapa.SetActive(true);
-        if (botonEstadisticas != null) botonEstadisticas.SetActive(true);
-        if (botonInventario != null) botonInventario.SetActive(true);   
         if (botonEspada != null) botonEspada.SetActive(true);
         if (botonInteraccion != null) botonInteraccion.SetActive(true);
 
@@ -135,5 +124,4 @@ public class GameFlowController : MonoBehaviour {
         Time.timeScale = 1f;
         SceneManager.LoadScene(nombreEscenaMenu);
     }
-    
 }

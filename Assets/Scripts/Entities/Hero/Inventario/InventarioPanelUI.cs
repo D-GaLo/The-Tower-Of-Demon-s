@@ -54,7 +54,7 @@ public class InventarioPanelUI : MonoBehaviour {
         slotActivoParaEquipar = null; 
         if (btnDesequipar != null) btnDesequipar.SetActive(false);
         
-        Time.timeScale = timeScalePrevio;
+        Time.timeScale = timeScalePrevio; 
     }
 
     public void AbrirInventarioGeneral() {
@@ -160,7 +160,7 @@ public class InventarioPanelUI : MonoBehaviour {
             if (string.IsNullOrEmpty(mensajeError)) {
                 textoMensajeError.gameObject.SetActive(false);
             } else {
-                textoMensajeError.color = new Color(1f, 0.33f, 0.33f);
+                textoMensajeError.color = new Color(1f, 0.33f, 0.33f); 
                 textoMensajeError.gameObject.SetActive(true);
             }
         }

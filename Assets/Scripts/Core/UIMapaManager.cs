@@ -12,12 +12,6 @@ public class UIMapaManager : MonoBehaviour {
     [Tooltip("Arrastrar aquí los objetos centrales del mapaUI en el mismo orden que los RoomCenters del mundo")]
     public RectTransform[] centrosUI; 
 
-    [Header("Botones")]
-    [Tooltip("Arrastrar aquí los botones que van a desaparecer al abrir el mapa")]
-    public GameObject botonEstadisticas; 
-    public GameObject botonMapa; 
-    public GameObject botonMenuPausa;
-    public GameObject botonInventario;
 
      private bool mapaActivo = false;
 
@@ -42,10 +36,6 @@ public class UIMapaManager : MonoBehaviour {
     public void AbrirMapa() {
         mapaActivo = true;
         panelMapa.SetActive(true);
-        if (botonEstadisticas != null) botonEstadisticas.SetActive(false); 
-        if (botonMenuPausa != null) botonMenuPausa.SetActive(false);
-        if (botonInventario != null) botonInventario.SetActive(false);
-        if (botonMapa != null) botonMapa.SetActive(false);
 
         Time.timeScale = 0f;
         ActualizarUbicacionPuntero();
@@ -56,12 +46,10 @@ public class UIMapaManager : MonoBehaviour {
     public void CerrarMapa() {
         mapaActivo = false;
         panelMapa.SetActive(false);
-        Time.timeScale = 1f;
         
-        if (botonEstadisticas != null) botonEstadisticas.SetActive(true);
-        if (botonMenuPausa != null) botonMenuPausa.SetActive(true);
-        if (botonInventario != null) botonInventario.SetActive(true);
-        if (botonMapa != null) botonMapa.SetActive(true);
+        if (Menu.Instance == null || !Menu.Instance.estaPausado) {
+            Time.timeScale = 1f; 
+        }
 
         if (AudioManager.Instance != null) AudioManager.Instance.PlayClic();
     }

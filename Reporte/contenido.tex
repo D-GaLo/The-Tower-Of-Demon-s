@@ -341,7 +341,6 @@ Ante la inminente aniquilación, los reyes más grandes unieron sus voluntades p
 
 \section{Cosas que no se pudieron poner en el prototipo}
 
-
 \section{Pruebas}
 
 A continuación, se detallan las pruebas de usuario; estas competen a los perfiles de aquellos que probaron el prototipo, y la retroalimentación que nos otorgaron, tanto de manera escrita con el cuestionario, como de manera visual y auditiva al probar el prototipo.
@@ -626,14 +625,31 @@ Al final se quedó con ganas de jugar un poco mas.\\
     \caption{Reaccion sonriente de Elias con los time-quick-events.}
  \end{figure}
 
-
  \subsection{Hallagos}
-\begin{itemize}
-    \item  En muchas ocasiones se mencionó que los enemigos estaban bien equilibrados
+
+ \begin{itemize}
+    \item  En muchas ocasiones se mencionó que los enemigos estaban bien equilibrados.
     \item Los jefes se describieron como dificiles, aunque muchos no lo llegaron a jugar realemnte. Los que lo probaron nos parecio un combate justo puesto que primero necesitan levelear a sus personajes.
     \item Realmente el mapa no se utilizó demasiado.
     \item Los time-quick-events lucen por divertir, soprender y alertar a los jugadores.
     \item Los jugadores si lograron generar estrategias dentro del juego.
-    \item 
+    \item Al principio los jugadores les costaba un poco el combate, pero poco a poco le fueron agarrando la onda.
 \end{itemize}
 
+\subsection{Lista de Cambios Implementados en el Prototipo}
+
+Para dar solución a los problemas detectados y mejorar la usabilidad, se aplicaron las siguientes correcciones y mejoras al juego:
+
+\begin{itemize}
+    \item Todos los botones de interfaz se metieron dentro del botón de pausa para estar en un solo lugar y limpiar algo la pantalla.
+    \item Se añadieron botones en pantalla para atacar e interactuar, para que los jugadores sepan de la existencia de estas funciones.
+    \item Se añadió un Minimapa persistente, ya que los jugadores nunca usaron el mapa general, así que con esto lo verán siempre.
+    \item Cuando fallas en la secuencia de teclas, ahora se indica en qué tecla exacta de la secuencia te equivocaste, marcándola de color rojo.
+    \item Cuando te golpean o golpeas a un enemigo, ahora se ve un parpadeo rojo y se reproduce un sonido.
+    \item En la pantalla de victoria, al obtener un objeto el texto parpadea para llamar la atención de los jugadores y que sepan que obtuvieron algo.
+    \item Ahora se indica claramente qué ataques son ataques en área (AoE).
+    \item Se hizo más útil el botón de defender: ahora cura un poco de vida y regenera un poco de energía, esto para incentivar a que los jugadores lo usen más.
+    \item Cuando un héroe es derrotado, este desaparece físicamente y se marca con una X en su interfaz, para que los jugadores sepan claramente quién murió.
+    \item Ahora la Fuente de los Sueños se regenera al instante tras revivir, para solucionar la complicación de que los usuarios aparecieran casi sin vida y sin la posibilidad de curarse.
+    \item Ahora, al huir o ganar un combate, el jugador tiene cierto tiempo de inmunidad para que no sea llevado a otro combate de forma instantánea.
+\end{itemize}

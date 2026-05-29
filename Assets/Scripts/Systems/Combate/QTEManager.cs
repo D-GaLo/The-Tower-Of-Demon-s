@@ -148,6 +148,7 @@ public class QTEManager : MonoBehaviour {
                         TerminarQTE(1f); 
                     }
                 } else {
+                    imagenesTeclas[indiceActual].color = Color.red; 
                     float porcentaje = (float)indiceActual / secuenciaActual.Count;
                     TerminarQTE(porcentaje); 
                 }
@@ -161,6 +162,7 @@ public class QTEManager : MonoBehaviour {
         }
         return KeyCode.None;
     }
+
     void TerminarQTE(float porcentajeExito) {
         qteActivo = false;
         

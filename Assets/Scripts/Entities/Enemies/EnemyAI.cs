@@ -120,10 +120,12 @@ public class EnemyAI : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D other) {
         if (other.CompareTag("Player") && Time.timeScale != 0) {
-            if (GameFlowController.Instance != null) {
+            
+            if (GameFlowController.Instance != null && !GameFlowController.Instance.isImmune) {
                 rb.velocity = Vector2.zero; 
                 GameFlowController.Instance.IniciarCombate(gameObject);
             }
+            
         }
     }
 }

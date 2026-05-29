@@ -26,6 +26,7 @@ public class AudioManager : MonoBehaviour {
     public SonidoConfig sfxQTEPerfect;
     public SonidoConfig sfxQTEGreat;
     public SonidoConfig sfxQTEFailure;
+    public SonidoConfig sfxGolpe;
 
     [Header("SFX - Exploración")]
     public SonidoConfig sfxEspada;
@@ -34,6 +35,7 @@ public class AudioManager : MonoBehaviour {
     public SonidoConfig sfxPuerta;
     public SonidoConfig sfxFuente;
     public SonidoConfig sfxSonidoClic;
+    public SonidoConfig sfxSonidoInteraccion;
     
     void Awake() {
         if (Instance == null) Instance = this;
@@ -77,4 +79,6 @@ public class AudioManager : MonoBehaviour {
     public void PlayPuerta() => ReproducirSFX(sfxPuerta);
     public void PlayFuente() => ReproducirSFX(sfxFuente);
     public void PlayClic() => ReproducirSFX(sfxSonidoClic);
+    public void PlayGolpe() => ReproducirSFX(sfxGolpe);
+    public void PlayInteraccion() => ReproducirSFX(sfxSonidoInteraccion);
 }

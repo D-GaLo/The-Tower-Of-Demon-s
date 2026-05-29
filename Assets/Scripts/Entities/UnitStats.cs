@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public enum UnitClass { None, Melee, Rango, Tanque }
 public enum UnitPosition { Tierra, BajoTierra, Volando }
@@ -25,5 +26,24 @@ public class UnitStats : MonoBehaviour {
         if (currentHP < 0) currentHP = 0;
         
         Debug.Log($"{unitName} recibió {damage} de daño. HP restante: {currentHP}");
+
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayGolpe();
+        StartCoroutine(ParpadearDano());
+    }
+
+    IEnumerator ParpadearDano() {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null) {
+            sr.color = Color.red;
+            yield return new WaitForSeconds(0.15f);
+            sr.color = Color.white;
+        } else {
+            UnityEngine.UI.Image img = GetComponent<UnityEngine.UI.Image>();
+            if (img != null) {
+                img.color = Color.red;
+                yield return new WaitForSeconds(0.15f);
+                img.color = Color.white;
+            }
+        }
     }
 }

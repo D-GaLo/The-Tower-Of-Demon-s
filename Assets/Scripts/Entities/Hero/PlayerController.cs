@@ -14,7 +14,9 @@ public class PlayerController : MonoBehaviour {
     private Vector2 direccionMirada = Vector2.right;
     private Vector2 inputMovimiento;
     private float escalaFija = 1f;
+    
     private bool isAttacking = false;
+    private bool interaccionSono = false;
 
     [Header("Botones HUD (UI)")]
     public Button botonAtacarHUD;
@@ -51,11 +53,6 @@ public class PlayerController : MonoBehaviour {
             return; 
         }
 
-        if (isAttacking) {
-            inputMovimiento = Vector2.zero;
-            return;
-        }
-
         inputMovimiento.x = Input.GetAxisRaw("Horizontal");
         inputMovimiento.y = Input.GetAxisRaw("Vertical");
 
@@ -81,6 +78,7 @@ public class PlayerController : MonoBehaviour {
             rb.velocity = Vector2.zero;
             return;
         }
+        
         rb.velocity = inputMovimiento.normalized * speed;
     }
 
@@ -93,9 +91,10 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void BotonAtacarHUD_Click() {
-        if (Time.timeScale == 0) return;
+        if (Time.timeScale == 0 || isAttacking) return; 
+        
         if (AudioManager.Instance != null) AudioManager.Instance.PlayEspada();
-        StopAllCoroutines();
+        
         StartCoroutine(AnimacionAtaqueSemicircular());
         Atacar();
     }
@@ -151,8 +150,14 @@ public class PlayerController : MonoBehaviour {
         botonInteractuarHUD.interactable = interactableCerca;
         if (interactableCerca) {
             botonInteractuarHUD.image.color = colorOriginalInteract;
+            
+            if (!interaccionSono && AudioManager.Instance != null) {
+                AudioManager.Instance.PlayInteraccion();
+                interaccionSono = true;
+            }
         } else {
             botonInteractuarHUD.image.color = new Color(0.4f, 0.4f, 0.4f, 1f);
+            interaccionSono = false;
         }
     }
 

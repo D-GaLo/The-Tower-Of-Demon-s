@@ -146,16 +146,20 @@ public class CombatManager : MonoBehaviour {
                 textoVictoriaNivel.text = string.IsNullOrEmpty(recuentoNiveles) ? "Los héroes ganaron experiencia." : recuentoNiveles;
             }
 
+            if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
+            if (panelVictoria != null) panelVictoria.SetActive(true);
+
             if (textoVictoriaObjeto != null) {
+                StopCoroutine("ParpadearTextoVictoria"); 
+                textoVictoriaObjeto.color = Color.white; 
+
                 if (botinDelCombate.Count > 0) {
-                    textoVictoriaObjeto.text = "Objetos obtenidos:\n<color=#FFD700>• " + string.Join("\n• ", botinDelCombate) + "</color>";
+                    textoVictoriaObjeto.text = "Objetos obtenidos:\n• " + string.Join("\n• ", botinDelCombate);
+                    StartCoroutine("ParpadearTextoVictoria");
                 } else {
                     textoVictoriaObjeto.text = "Ningún objeto obtenido.";
                 }
             }
-
-            if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
-            if (panelVictoria != null) panelVictoria.SetActive(true);
 
         } else {
             state = CombatState.LOST;
@@ -168,6 +172,16 @@ public class CombatManager : MonoBehaviour {
         }
 
         RestaurarPosiciones();
+    }
+
+    IEnumerator ParpadearTextoVictoria() {
+        while (panelVictoria != null && panelVictoria.activeSelf && textoVictoriaObjeto != null) {
+            textoVictoriaObjeto.color = Color.yellow;
+            yield return new WaitForSecondsRealtime(0.3f);
+            textoVictoriaObjeto.color = Color.white;
+            yield return new WaitForSecondsRealtime(0.3f);
+        }
+        if (textoVictoriaObjeto != null) textoVictoriaObjeto.color = Color.white; 
     }
 
     IEnumerator PrepararArenaYMostrarFormacion(bool ventajaJugador) {
@@ -552,9 +566,17 @@ public class CombatManager : MonoBehaviour {
         HeroStats hero = currentActor.GetComponent<HeroStats>();
         if (hero != null) {
             heroesDefendiendo[hero] = true; 
-            Debug.Log($"¡{hero.unitName} adopta una postura defensiva!");
+            
+            int curaHP = Mathf.RoundToInt(hero.maxHP * 0.15f);
+            int curaEnergia = Mathf.RoundToInt(hero.maxEnergy * 0.20f);
+            
+            hero.currentHP = Mathf.Clamp(hero.currentHP + curaHP, 0, hero.maxHP);
+            hero.currentEnergy = Mathf.Clamp(hero.currentEnergy + curaEnergia, 0, hero.maxEnergy);
+
+            Debug.Log($"¡{hero.unitName} se defiende! Recupera {curaHP} HP y {curaEnergia} ENG.");
         }
         
+        ActualizarPantallaVida();
         AvanzarTurno(); 
     }
 
@@ -767,8 +789,8 @@ public class CombatManager : MonoBehaviour {
                     }
 
                     if (damage > 0 && heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
-                        damage = damage / 2;
-                        Debug.Log($"¡Pero {targetHero.unitName} estaba DEFENDIENDO! Daño reducido.");
+                        damage = Mathf.RoundToInt(damage * 0.75f);
+                        Debug.Log($"¡Pero {targetHero.unitName} estaba DEFENDIENDO! Daño reducido a {damage}.");
                     }
 
                     if (damage > 0) targetHero.TakeDamage(damage);
@@ -798,8 +820,8 @@ public class CombatManager : MonoBehaviour {
                     if (enemyAttacker.level > targetHero.level || estaDefendiendo) {
                         
                         if (estaDefendiendo) {
-                            Debug.Log($"<color=cyan>¡{targetHero.unitName} espera el golpe en posición defensiva!</color> Daño reducido a la mitad.");
-                            damage = damage / 2;
+                            damage = Mathf.RoundToInt(damage * 0.75f);
+                            Debug.Log($"<color=cyan>¡{targetHero.unitName} espera el golpe en posición defensiva!</color> Daño reducido a {damage}.");
                         } else {
                             Debug.Log($"<color=red>¡PELIGRO!</color> ¡Ataque ineludible de {enemyAttacker.unitName}!");
                         }
@@ -903,9 +925,9 @@ public class CombatManager : MonoBehaviour {
             if (textoEspecial3 != null) textoEspecial3.text = "Tajo Divino (50)";
         } 
         else if (attacker.unitName == "Merlin") {
-            if (textoEspecial1 != null) textoEspecial1.text = "Bala de Hielo (15)";
-            if (textoEspecial2 != null) textoEspecial2.text = "Rayo Arcano (30)";
-            if (textoEspecial3 != null) textoEspecial3.text = "Lluvia de Meteoros (60)";
+            if (textoEspecial1 != null) textoEspecial1.text = "Bala de Hielo (15) (Área)";
+            if (textoEspecial2 != null) textoEspecial2.text = "Rayo Arcano (30) (Área)";
+            if (textoEspecial3 != null) textoEspecial3.text = "Lluvia de Meteoros (60) (Área)";
         }
         else if (attacker.unitName == "Heracles") {
             if (textoEspecial1 != null) textoEspecial1.text = "Rompe Cráneos (15)";

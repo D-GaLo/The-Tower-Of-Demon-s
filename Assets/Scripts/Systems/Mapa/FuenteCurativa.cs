@@ -37,7 +37,7 @@ public class FuenteCurativa : MonoBehaviour {
 
         if (fuenteVacia && GameFlowController.Instance != null) {
             if (GameFlowController.Instance.combatesCompletados >= (combatesAlVaciar + combatesParaRecargar)) {
-                RecargarFuente();
+                Regenerar();
             }
         }
 
@@ -53,7 +53,7 @@ public class FuenteCurativa : MonoBehaviour {
         else AbrirPanel(panelSeca);
     }
 
-    void RecargarFuente() {
+    public void Regenerar() {
         fuenteVacia = false;
         if (objetoFuenteLlena) objetoFuenteLlena.SetActive(true);
         if (objetoFuenteVacia) objetoFuenteVacia.SetActive(false);

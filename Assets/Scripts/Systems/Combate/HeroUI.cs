@@ -29,6 +29,9 @@ public class HeroUI : MonoBehaviour {
     public Sprite spriteBajoTierra;
     public Sprite spriteVolando;
 
+    [Header("Muerte")]
+    public Image imagenMuerteX; 
+
     private HeroStats miHeroe;
 
     public void ConfigurarUI(HeroStats heroe) {
@@ -94,6 +97,23 @@ public class HeroUI : MonoBehaviour {
             if (barraHP != null && miHeroe.maxHP > 0) {
                 float porcentajeHP = (float)miHeroe.currentHP / (float)miHeroe.maxHP;
                 barraHP.fillAmount = porcentajeHP;
+            }
+
+            if (miHeroe.currentHP <= 0) {
+                if (imagenMuerteX != null) imagenMuerteX.gameObject.SetActive(true);
+                SpriteRenderer sr = miHeroe.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.enabled = false; 
+                
+                Transform canvasNombre = miHeroe.transform.Find("Canvas_NombreHeroe");
+                if (canvasNombre != null) canvasNombre.gameObject.SetActive(false);
+                
+            } else {
+                if (imagenMuerteX != null) imagenMuerteX.gameObject.SetActive(false);
+                SpriteRenderer sr = miHeroe.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.enabled = true;  
+                
+                Transform canvasNombre = miHeroe.transform.Find("Canvas_NombreHeroe");
+                if (canvasNombre != null) canvasNombre.gameObject.SetActive(true);
             }
         }
     }

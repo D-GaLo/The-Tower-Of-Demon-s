@@ -17,10 +17,11 @@ public class GameFlowController : MonoBehaviour {
     public GameObject pantallaTransicion; 
     public GameObject uiCombate; 
     
-    [Header("Botones de Exploración (Restantes en HUD)")]
+    [Header("Objetos de Exploración")]
     public GameObject botonEspada;
     public GameObject botonInteraccion;
     public GameObject visualEspada; 
+    public GameObject visualMinimapa;
 
     [Header("Numero de combates completados")]
     public int combatesCompletados = 0;
@@ -31,6 +32,8 @@ public class GameFlowController : MonoBehaviour {
     private GameObject enemigoActual;
     
     public bool enCombate = false;
+    
+    public bool isImmune = false; 
 
     void Awake() {
         if (Instance == null) Instance = this;
@@ -58,6 +61,7 @@ public class GameFlowController : MonoBehaviour {
         if (botonEspada != null) botonEspada.SetActive(false);
         if (botonInteraccion != null) botonInteraccion.SetActive(false);
         if (visualEspada != null) visualEspada.SetActive(false); 
+        if (visualMinimapa != null) visualMinimapa.SetActive(false);
 
         Time.timeScale = 1f;
         if (uiCombate != null) uiCombate.SetActive(true);
@@ -94,6 +98,20 @@ public class GameFlowController : MonoBehaviour {
             Destroy(enemigoActual);
         }
 
+        HeroStats[] heroes = FindObjectsOfType<HeroStats>();
+        foreach (HeroStats h in heroes) {
+            SpriteRenderer sr = h.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.enabled = true;
+            
+            Transform canvasNombre = h.transform.Find("Canvas_NombreHeroe");
+            if (canvasNombre != null) canvasNombre.gameObject.SetActive(true);
+
+            if (!victoria && !huyo) {
+                h.currentHP = Mathf.Max(1, Mathf.RoundToInt(h.maxHP * 0.25f));
+                h.currentEnergy = 0;
+            }
+        }
+
         if (!victoria && !huyo) {
             PlayerController player = FindObjectOfType<PlayerController>();
             if (player != null) {
@@ -102,10 +120,9 @@ public class GameFlowController : MonoBehaviour {
                 player.TeletransportarAlSpawn(destino);
             }
 
-            HeroStats[] heroes = FindObjectsOfType<HeroStats>();
-            foreach (HeroStats h in heroes) {
-                h.currentHP = Mathf.Max(1, Mathf.RoundToInt(h.maxHP * 0.25f));
-                h.currentEnergy = 0;
+            FuenteCurativa[] fuentes = FindObjectsOfType<FuenteCurativa>();
+            foreach(var f in fuentes) {
+                f.Regenerar();
             }
         }
 
@@ -113,11 +130,56 @@ public class GameFlowController : MonoBehaviour {
         
         if (botonEspada != null) botonEspada.SetActive(true);
         if (botonInteraccion != null) botonInteraccion.SetActive(true);
-
+        if (visualMinimapa != null) visualMinimapa.SetActive(true);
         if (pantallaTransicion != null) pantallaTransicion.SetActive(false);
+        
         enCombate = false;
 
         if (AudioManager.Instance != null) AudioManager.Instance.ReproducirMusicaAmbiental();
+
+        if (victoria || huyo) {
+            isImmune = true; 
+            StartCoroutine(RutinaInmunidad());
+        }
+    }
+
+    IEnumerator RutinaInmunidad() {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        PartyFollower[] followers = FindObjectsOfType<PartyFollower>(); 
+        
+        float timer = 0;
+        bool blink = false;
+        
+        while (timer < 4f) {
+            timer += 0.2f;
+            blink = !blink;
+            float alpha = blink ? 0.3f : 0.8f;
+            
+            if (player != null) {
+                SpriteRenderer sr = player.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.color = new Color(1, 1, 1, alpha);
+            }
+            foreach(var f in followers) {
+                if (f != null) {
+                    SpriteRenderer sr = f.GetComponent<SpriteRenderer>();
+                    if (sr != null) sr.color = new Color(1, 1, 1, alpha);
+                }
+            }
+            
+            yield return new WaitForSeconds(0.2f);
+        }
+        
+        isImmune = false;
+        if (player != null) {
+            SpriteRenderer sr = player.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.color = Color.white;
+        }
+        foreach(var f in followers) {
+            if (f != null) {
+                SpriteRenderer sr = f.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.color = Color.white;
+            }
+        }
     }
 
     public void VolverAlMenuPrincipal() {

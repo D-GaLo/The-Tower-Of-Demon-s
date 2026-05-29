@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1780022637.91093 "/home/emi19/Documentos/Videojuegos/The-Tower-Of-Demon-s/Reporte/main.tex" "main.pdf" "main" 1780022642.67011 0
+["pdflatex"] 1780030830.36348 "/home/emi19/Documentos/Videojuegos/The-Tower-Of-Demon-s/Reporte/main.tex" "main.pdf" "main" 1780030834.33853 0
   "/home/emi19/Documentos/Videojuegos/The-Tower-Of-Demon-s/Reporte/main.tex" 1780011913.36912 3504 a54f9e3e0839f854b6c5b5c5dbc69706 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1775415801 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1775415801 2900 1537cc8184ad1792082cd229ecc269f4 ""
@@ -238,11 +238,11 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1778451659 5418909 d48fb256e573d3b961fb0e6b9b49cec7 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1778451543 2448290 3e223dc00f8ebcc049d2a8d20535c313 ""
-  "contenido.tex" 1780022636.91539 39158 798d2dd3a336a821114f676c7dcf1924 ""
-  "main.aux" 1780022641.87777 8288 27ddade238f1729bdac3bcea2634a385 "pdflatex"
-  "main.out" 1780022641.88177 7616 195fb423fc438ae14067772febdb8630 "pdflatex"
+  "contenido.tex" 1780030824.34136 33781 29bba3bdb3344bc1d50e32b0abc049df ""
+  "main.aux" 1780030834.08744 7915 f05e7d3cd965207b3f6ab79e8fe9e16f "pdflatex"
+  "main.out" 1780030834.09144 7157 e8acef1cd4f5ca668349cf6e69903ef8 "pdflatex"
   "main.tex" 1780011913.36912 3504 a54f9e3e0839f854b6c5b5c5dbc69706 ""
-  "main.toc" 1780022641.88277 4160 a54e3d199cc84604fe5763f6e53b20cc "pdflatex"
+  "main.toc" 1780030834.09283 3910 8c229449153d04d8d4cae6cb09ba6953 "pdflatex"
   "portada.tex" 1780011923.11768 2243 97f1332a99a6d576e6c3b1292d734f66 ""
   "resources/imagenes/Logo_FC.png" 1779929988.67003 738485 ace96a7dc55f008f337eec0e070d7324 ""
   "resources/imagenes/Logo_UNAM.png" 1779930016.30221 442589 ee11860e41570f613aae15f3cf6f31e9 ""
@@ -254,7 +254,6 @@
   "resources/imagenes/Personajes/Nucifera.jpg" 1779929891.31976 18828394 29a536894b1b6d04755e85d466ee61cd ""
   "resources/imagenes/Personajes/Sieg.jpg" 1779929915.21899 8505304 e0e45d6437b621ba4a30fe2e55d40ed0 ""
   "resources/imagenes/Personajes/Slime.jpg" 1779929934.33818 6441455 6a69519cb6cc9e1eabe3f29717eabda2 ""
-  "resources/imagenes/Personajes/Topo.jpg" 1779929963.41642 6926143 a6010005cc6aa453310d5c09e4fc8b13 ""
   "resources/imagenes/Pruebas/Elias1.png" 1780018477.85709 467173 caaa61d15b454aaa9e53a8825234798c ""
   "resources/imagenes/Pruebas/Elias2.png" 1780018493.11223 656305 0f2f3304cbc16bfaef8672941110b6fd ""
   "resources/imagenes/Pruebas/Jessica1.png" 1779946398.78952 692974 d26b234176f03cb397372c60781b4f85 ""

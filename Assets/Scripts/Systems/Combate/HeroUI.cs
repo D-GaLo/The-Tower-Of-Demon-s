@@ -114,6 +114,9 @@ public class HeroUI : MonoBehaviour {
                 
                 Transform canvasNombre = miHeroe.transform.Find("Canvas_NombreHeroe");
                 if (canvasNombre != null) canvasNombre.gameObject.SetActive(true);
+
+                Transform enredadera = miHeroe.transform.Find("EnredaderaTrampa");
+                if (enredadera != null) enredadera.gameObject.SetActive(false);
             }
         }
     }

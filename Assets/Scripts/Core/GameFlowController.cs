@@ -32,8 +32,9 @@ public class GameFlowController : MonoBehaviour {
     private GameObject enemigoActual;
     
     public bool enCombate = false;
-    
     public bool isImmune = false; 
+
+    private Coroutine rutinaInmunidadActual;
 
     void Awake() {
         if (Instance == null) Instance = this;
@@ -42,9 +43,31 @@ public class GameFlowController : MonoBehaviour {
 
     public void IniciarCombate(GameObject enemigo, bool ventajaJugador = false) {
         if (enCombate) return; 
+
+        if (isImmune) {
+            if (rutinaInmunidadActual != null) StopCoroutine(rutinaInmunidadActual);
+            isImmune = false;
+            RestaurarTransparenciaHeroes();
+        }
+
         enCombate = true;
         enemigoActual = enemigo;
         StartCoroutine(TransicionACombate(ventajaJugador));
+    }
+
+    void RestaurarTransparenciaHeroes() {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null) {
+            SpriteRenderer sr = player.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.color = Color.white;
+        }
+        PartyFollower[] followers = FindObjectsOfType<PartyFollower>(); 
+        foreach(var f in followers) {
+            if (f != null) {
+                SpriteRenderer sr = f.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.color = Color.white;
+            }
+        }
     }
 
     IEnumerator TransicionACombate(bool ventajaJugador) {
@@ -139,7 +162,7 @@ public class GameFlowController : MonoBehaviour {
 
         if (victoria || huyo) {
             isImmune = true; 
-            StartCoroutine(RutinaInmunidad());
+            rutinaInmunidadActual = StartCoroutine(RutinaInmunidad());
         }
     }
 
@@ -170,16 +193,7 @@ public class GameFlowController : MonoBehaviour {
         }
         
         isImmune = false;
-        if (player != null) {
-            SpriteRenderer sr = player.GetComponent<SpriteRenderer>();
-            if (sr != null) sr.color = Color.white;
-        }
-        foreach(var f in followers) {
-            if (f != null) {
-                SpriteRenderer sr = f.GetComponent<SpriteRenderer>();
-                if (sr != null) sr.color = Color.white;
-            }
-        }
+        RestaurarTransparenciaHeroes();
     }
 
     public void VolverAlMenuPrincipal() {

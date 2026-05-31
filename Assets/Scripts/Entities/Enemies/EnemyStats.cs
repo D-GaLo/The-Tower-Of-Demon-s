@@ -14,9 +14,7 @@ public class EnemyStats : UnitStats {
     public bool statsManuales = false; 
     
     [Header("Compañeros de Combate")]
-    [Tooltip("Enemigos que pueden aparecer junto a este enemigo en combates normales.")]
     public GameObject[] posiblesCompaneros;
-    [Tooltip("Enemigos que el Jefe invocará cuando su vida baje al 50%.")]
     public GameObject[] enemigosAInvocar;
     [HideInInspector] public bool yaInvoco = false;
 
@@ -46,6 +44,8 @@ public class EnemyStats : UnitStats {
     [HideInInspector] public int baseDefense;
     [HideInInspector] public int baseSpeed;
     [HideInInspector] public bool basesGuardadas = false;
+    
+    [HideInInspector] public bool nivelPeligroso = false; 
 
     void Awake() {
         if (canvasUI != null) canvasUI.SetActive(false);
@@ -109,7 +109,10 @@ public class EnemyStats : UnitStats {
             barraVida.fillAmount = (float)currentHP / (float)maxHP;
         }
 
-        if (textoNivel != null) textoNivel.text = "Lv. " + level;
+        if (textoNivel != null) {
+            textoNivel.text = "Lv. " + level;
+            textoNivel.color = nivelPeligroso ? Color.red : Color.white;
+        }
 
         if (circuloClase != null) {
             if (unitClass == UnitClass.Melee) circuloClase.sprite = spriteMelee;

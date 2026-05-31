@@ -715,8 +715,6 @@ MonoBehaviour:
   enemigosAInvocar: []
   yaInvoco: 0
   posiblesDropeos:
-  - item: {fileID: 11400000, guid: ed9f313ad95ef5948885e89444d3afa6, type: 2}
-    probabilidad: 20
   - item: {fileID: 11400000, guid: e49989dec7377e34f801735ce39d441d, type: 2}
     probabilidad: 20
   canvasUI: {fileID: 4443194567776706443}

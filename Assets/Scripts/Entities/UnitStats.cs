@@ -25,8 +25,6 @@ public class UnitStats : MonoBehaviour {
         currentHP -= damage;
         if (currentHP < 0) currentHP = 0;
         
-        Debug.Log($"{unitName} recibió {damage} de daño. HP restante: {currentHP}");
-
         if (AudioManager.Instance != null) AudioManager.Instance.PlayGolpe();
         StartCoroutine(ParpadearDano());
     }

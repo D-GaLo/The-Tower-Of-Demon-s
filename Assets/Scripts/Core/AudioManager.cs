@@ -19,6 +19,7 @@ public class AudioManager : MonoBehaviour {
     public SonidoConfig musicaAmbiental;
     public SonidoConfig musicaCombateNormal;
     public SonidoConfig musicaCombateJefe;
+    public SonidoConfig musicaCombateFinal; 
 
     [Header("SFX - Combate")]
     public SonidoConfig sfxVictoria;
@@ -27,6 +28,8 @@ public class AudioManager : MonoBehaviour {
     public SonidoConfig sfxQTEGreat;
     public SonidoConfig sfxQTEFailure;
     public SonidoConfig sfxGolpe;
+    public SonidoConfig sfxCargaEnergia;
+    public SonidoConfig sfxRugido;
 
     [Header("SFX - Exploración")]
     public SonidoConfig sfxEspada;
@@ -56,6 +59,7 @@ public class AudioManager : MonoBehaviour {
 
     private void ReproducirMusica(SonidoConfig config) {
         if (musicaSource == null || config == null || config.clip == null) return;
+        
         if (musicaSource.clip == config.clip) return;
         
         musicaSource.clip = config.clip;
@@ -81,4 +85,9 @@ public class AudioManager : MonoBehaviour {
     public void PlayClic() => ReproducirSFX(sfxSonidoClic);
     public void PlayGolpe() => ReproducirSFX(sfxGolpe);
     public void PlayInteraccion() => ReproducirSFX(sfxSonidoInteraccion);
+    public void PlayCargaEnergia() => ReproducirSFX(sfxCargaEnergia);
+    public void PlayRugido() => ReproducirSFX(sfxRugido);
+    
+    public void PlayMusicaCombateFinal() => ReproducirMusica(musicaCombateFinal);
+
 }

@@ -74,6 +74,15 @@ public class CombatManager : MonoBehaviour {
     public GameObject panelTituloJefe;
     public TextMeshProUGUI textoTituloJefe;
 
+    [Header("Cinemática Nucifera Fase 2")]
+    public GameObject panelNegroTransicion;
+    public TextMeshProUGUI textoPanelNegro;
+    public GameObject prefabNuciferaFase2;
+    
+    private bool nuciferaFase2Iniciada = false;
+    private int turnosNuciferaFase2 = 0;
+    private Dictionary<HeroStats, bool> heroesAtrapados = new Dictionary<HeroStats, bool>();
+
     void Awake() {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
@@ -82,6 +91,15 @@ public class CombatManager : MonoBehaviour {
     public void StartCombat(GameObject enemy, bool ventajaJugador = false) {
         if (enCombateActivo) return;
         enCombateActivo = true;
+        
+
+        nuciferaFase2Iniciada = false;
+        turnosNuciferaFase2 = 0;
+        heroesAtrapados.Clear();
+
+        if (DialogoCombateUI.Instance != null) {
+            DialogoCombateUI.Instance.LimpiarMensajes();
+        }
         
         botinDelCombate.Clear();
         
@@ -196,27 +214,25 @@ public class CombatManager : MonoBehaviour {
             statsEnemigoPrincipal.unitName = activeEnemies[0].name;
         }
 
+        int maxNivelGrupo = 1;
+        foreach (HeroStats heroe in listaParty) {
+            if (heroe.level > maxNivelGrupo) maxNivelGrupo = heroe.level;
+        }
+
         if (!statsEnemigoPrincipal.nivelManual && !statsEnemigoPrincipal.esJefe) {
             
             int nivelMinimoGrupo = int.MaxValue;
             foreach (HeroStats heroe in listaParty) {
                 if (heroe.level < nivelMinimoGrupo) nivelMinimoGrupo = heroe.level;
             }
-            
             if (nivelMinimoGrupo == int.MaxValue) nivelMinimoGrupo = 1;
 
             int dado = Random.Range(1, 101);
             int nivelCalculado = nivelMinimoGrupo;
 
-            if (dado <= 65) {
-                nivelCalculado = nivelMinimoGrupo;
-            } 
-            else if (dado <= 85) {
-                nivelCalculado = nivelMinimoGrupo - 1;
-            } 
-            else {
-                nivelCalculado = nivelMinimoGrupo + 1;
-            }
+            if (dado <= 65) nivelCalculado = nivelMinimoGrupo;
+            else if (dado <= 85) nivelCalculado = nivelMinimoGrupo - 1;
+            else nivelCalculado = nivelMinimoGrupo + 1;
 
             if (nivelCalculado < 1) nivelCalculado = 1;
             if (nivelCalculado > 10) nivelCalculado = 10;
@@ -224,6 +240,8 @@ public class CombatManager : MonoBehaviour {
             statsEnemigoPrincipal.level = nivelCalculado;
             statsEnemigoPrincipal.EscalarEstadisticas();
         }
+
+        statsEnemigoPrincipal.nivelPeligroso = (statsEnemigoPrincipal.level > maxNivelGrupo);
 
         DesactivarAILocal(activeEnemies[0]);
 
@@ -247,14 +265,13 @@ public class CombatManager : MonoBehaviour {
                 DesactivarAILocal(clon); 
                 
                 EnemyStats statsClon = clon.GetComponent<EnemyStats>();
-                
-                if (string.IsNullOrEmpty(statsClon.unitName)) {
-                    statsClon.unitName = clon.name;
-                }
+                if (string.IsNullOrEmpty(statsClon.unitName)) statsClon.unitName = clon.name;
                 
                 statsClon.level = statsEnemigoPrincipal.level;
                 statsClon.nivelManual = false; 
                 statsClon.esJefe = false; 
+                
+                statsClon.nivelPeligroso = (statsClon.level > maxNivelGrupo);
                 statsClon.EscalarEstadisticas();
 
                 activeEnemies.Add(clon);
@@ -263,7 +280,6 @@ public class CombatManager : MonoBehaviour {
 
         for(int i = 0; i < activeEnemies.Count && i < enemyPositions.Length; i++) {
             activeEnemies[i].transform.position = enemyPositions[i].position;
-            
             Vector3 escalaLocal = activeEnemies[i].transform.localScale;
             activeEnemies[i].transform.localScale = new Vector3(-Mathf.Abs(escalaLocal.x), escalaLocal.y, escalaLocal.z);
 
@@ -278,7 +294,7 @@ public class CombatManager : MonoBehaviour {
         }
 
         if (ventajaJugador) {
-            Debug.Log("<color=green>¡ATAQUE SORPRESA!</color> Los enemigos inician con menos vida.");
+            DialogoCombateUI.Instance.AgregarMensaje("<color=green>¡ATAQUE SORPRESA!</color> Los enemigos inician con menos vida.");
             foreach(GameObject obj in activeEnemies) {
                 EnemyStats eStats = obj.GetComponent<EnemyStats>();
                 if (eStats != null) {
@@ -290,7 +306,7 @@ public class CombatManager : MonoBehaviour {
                 }
             }
         } else {
-            Debug.Log("<color=red>¡EMBOSCADA!</color> Los héroes inician con -20% de vida.");
+            DialogoCombateUI.Instance.AgregarMensaje("<color=red>¡EMBOSCADA!</color> Los héroes inician con menos vida.");
             foreach(HeroStats hStats in listaParty) {
                 if (hStats != null && hStats.currentHP > 0) {
                     int damage = Mathf.RoundToInt(hStats.maxHP * 0.20f);
@@ -328,12 +344,10 @@ public class CombatManager : MonoBehaviour {
 
         ActualizarPantallaVida(); 
 
-
         if (statsEnemigoPrincipal.esJefe) {
             if (panelTituloJefe != null) {
                 panelTituloJefe.SetActive(true);
                 if (textoTituloJefe != null) {
-                    
                     string tituloImponente = "";
                     
                     if (statsEnemigoPrincipal.unitName.Contains("Nucifera")) {
@@ -342,6 +356,9 @@ public class CombatManager : MonoBehaviour {
                     else if (statsEnemigoPrincipal.unitName.Contains("Slime")) {
                         tituloImponente = "<color=#006400><size=130%><b>SLIME PADRE</b></size></color>\n<size=50%><i><color=#32CD32>La Pesadilla Gelatinosa</color></i></size>";
                     } 
+                    else if (statsEnemigoPrincipal.unitName.Contains("Rebone")) {
+                        tituloImponente = "<color=#9370DB><size=130%><b>REBONE</b></size></color>\n<size=50%><i><color=#8A2BE2>El Portero del Abismo</color></i></size>";
+                    }
                     else {
                         tituloImponente = $"<color=red><size=130%><b>{statsEnemigoPrincipal.unitName.ToUpper()}</b></size></color>";
                     }
@@ -357,64 +374,77 @@ public class CombatManager : MonoBehaviour {
 
         if (panelFormacion != null) panelFormacion.SetActive(true);
         else ConfirmarFormacion(); 
-    } 
+    }
 
     IEnumerator RevisarInvocacionJefe(EnemyStats jefe) {
         if (jefe.esJefe && !jefe.yaInvoco && jefe.currentHP > 0 && jefe.currentHP <= (jefe.maxHP / 2)) {
             jefe.yaInvoco = true;
-            Debug.Log($"<color=red>¡ALERTA!</color> ¡{jefe.unitName} se ha enfurecido e invoca refuerzos!");
             
-            if (jefe.enemigosAInvocar != null && jefe.enemigosAInvocar.Length > 0) {
+            if (nuciferaFase2Iniciada && jefe.unitName.Contains("Nucifera")) {
+                DialogoCombateUI.Instance.AgregarMensaje($"<color=#32CD32>¡Nucifera reacciona violentamente y lanza sus enredaderas!</color>");
+                HeroStats[] heroes = FindObjectsOfType<HeroStats>();
+                List<HeroStats> libres = heroes.Where(h => h.currentHP > 0 && (!heroesAtrapados.ContainsKey(h) || !heroesAtrapados[h])).ToList();
                 
-                List<int> huecosLibres = new List<int>();
-                for (int i = 0; i < enemyPositions.Length; i++) {
-                    bool ocupado = false;
-                    foreach (var enemy in activeEnemies) {
-                        if (enemy.activeSelf && Vector3.Distance(enemy.transform.position, enemyPositions[i].position) < 0.5f) {
-                            ocupado = true;
-                            break;
+                if (libres.Count > 0) {
+                    HeroStats victima = libres[Random.Range(0, libres.Count)];
+                    heroesAtrapados[victima] = true;
+                    Transform enredadera = victima.transform.Find("EnredaderaTrampa");
+                    if (enredadera != null) enredadera.gameObject.SetActive(true);
+                    DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#00BFFF>{victima.unitName}</color> ha sido atrapado y no podrá moverse!");
+                }
+                yield return new WaitForSecondsRealtime(2f);
+            } 
+            else {
+                DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡ALERTA!</color> ¡{jefe.unitName} se enfurece e invoca refuerzos!");
+                
+                if (jefe.enemigosAInvocar != null && jefe.enemigosAInvocar.Length > 0) {
+                    
+                    List<int> huecosLibres = new List<int>();
+                    for (int i = 0; i < enemyPositions.Length; i++) {
+                        bool ocupado = false;
+                        foreach (var enemy in activeEnemies) {
+                            if (enemy.activeSelf && Vector3.Distance(enemy.transform.position, enemyPositions[i].position) < 0.5f) {
+                                ocupado = true;
+                                break;
+                            }
+                        }
+                        if (!ocupado) huecosLibres.Add(i);
+                    }
+
+                    int cantidadAInvocar = Mathf.Min(huecosLibres.Count, jefe.enemigosAInvocar.Length);
+
+                    for (int i = 0; i < cantidadAInvocar; i++) {
+                        GameObject prefab = jefe.enemigosAInvocar[i];
+                        GameObject clon = Instantiate(prefab);
+                        clon.name = prefab.name; 
+                        
+                        DesactivarAILocal(clon); 
+                        
+                        EnemyStats statsClon = clon.GetComponent<EnemyStats>();
+                        if (string.IsNullOrEmpty(statsClon.unitName)) statsClon.unitName = clon.name;
+                        
+                        statsClon.level = jefe.level; 
+                        statsClon.nivelManual = false;
+                        statsClon.esJefe = false; 
+                        statsClon.EscalarEstadisticas();
+
+                        activeEnemies.Add(clon);
+                        turnQueue.Add(clon); 
+
+                        int posIndex = huecosLibres[i];
+                        clon.transform.position = enemyPositions[posIndex].position;
+
+                        Vector3 escalaLocal = clon.transform.localScale;
+                        clon.transform.localScale = new Vector3(-Mathf.Abs(escalaLocal.x), escalaLocal.y, escalaLocal.z);
+
+                        statsClon.ActivarUICombate();
+                        if (statsClon.canvasUI != null) {
+                            Vector3 escalaCanvas = statsClon.canvasUI.transform.localScale;
+                            statsClon.canvasUI.transform.localScale = new Vector3(-Mathf.Abs(escalaCanvas.x), escalaCanvas.y, escalaCanvas.z);
                         }
                     }
-                    if (!ocupado) huecosLibres.Add(i);
+                    if (cantidadAInvocar > 0) yield return new WaitForSecondsRealtime(1.5f);
                 }
-
-                int cantidadAInvocar = Mathf.Min(huecosLibres.Count, jefe.enemigosAInvocar.Length);
-
-                for (int i = 0; i < cantidadAInvocar; i++) {
-                    GameObject prefab = jefe.enemigosAInvocar[i];
-                    GameObject clon = Instantiate(prefab);
-                    clon.name = prefab.name; 
-                    
-                    DesactivarAILocal(clon); 
-                    
-                    EnemyStats statsClon = clon.GetComponent<EnemyStats>();
-                    
-                    if (string.IsNullOrEmpty(statsClon.unitName)) {
-                        statsClon.unitName = clon.name;
-                    }
-                    
-                    statsClon.level = jefe.level; 
-                    statsClon.nivelManual = false;
-                    statsClon.esJefe = false; 
-                    statsClon.EscalarEstadisticas();
-
-                    activeEnemies.Add(clon);
-                    turnQueue.Add(clon); 
-
-                    int posIndex = huecosLibres[i];
-                    clon.transform.position = enemyPositions[posIndex].position;
-
-                    Vector3 escalaLocal = clon.transform.localScale;
-                    clon.transform.localScale = new Vector3(-Mathf.Abs(escalaLocal.x), escalaLocal.y, escalaLocal.z);
-
-                    statsClon.ActivarUICombate();
-                    if (statsClon.canvasUI != null) {
-                        Vector3 escalaCanvas = statsClon.canvasUI.transform.localScale;
-                        statsClon.canvasUI.transform.localScale = new Vector3(-Mathf.Abs(escalaCanvas.x), escalaCanvas.y, escalaCanvas.z);
-                    }
-                }
-                
-                if (cantidadAInvocar > 0) yield return new WaitForSecondsRealtime(1.5f);
             }
         }
     }
@@ -488,8 +518,18 @@ public class CombatManager : MonoBehaviour {
 
         HeroStats heroActor = currentActor.GetComponent<HeroStats>();
         if (heroActor != null) {
+            if (heroesAtrapados.ContainsKey(heroActor) && heroesAtrapados[heroActor]) {
+                heroesAtrapados[heroActor] = false;
+                Transform enredadera = heroActor.transform.Find("EnredaderaTrampa");
+                if (enredadera != null) enredadera.gameObject.SetActive(false);
+                
+                DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#00BFFF>{heroActor.unitName}</color> logra zafarse de las enredaderas, pero pierde su turno!");
+                StartCoroutine(SaltarTurnoAtrapado());
+                return;
+            }
+
             state = CombatState.WAITING_FOR_INPUT;
-            Debug.Log($"¡Es turno de {heroActor.unitName}! Esperando acción...");
+            DialogoCombateUI.Instance.AgregarMensaje($"¡Es el turno de <color=#00BFFF>{heroActor.unitName}</color>!");
             if (panelBotonesAccion != null){ 
                 panelBotonesAccion.SetActive(true);
                 MostrarMenu(menuPrincipal);
@@ -497,6 +537,9 @@ public class CombatManager : MonoBehaviour {
             }
         } else {
             state = CombatState.BUSY;
+            EnemyStats enemyStats = currentActor.GetComponent<EnemyStats>();
+            if (enemyStats != null) DialogoCombateUI.Instance.AgregarMensaje($"Turno de <color=#FF8C00>{enemyStats.unitName}</color>.");
+            
             if (panelBotonesAccion != null) panelBotonesAccion.SetActive(false);
             StartCoroutine(EnemyTurnRoutine());
         }
@@ -512,15 +555,24 @@ public class CombatManager : MonoBehaviour {
 
     bool RevisarVictoriaODerrota() {
         bool todosEnemigosMuertos = true;
+        bool nuciferaFase1Derrotado = false;
+
         foreach(var enemyObj in activeEnemies) {
             EnemyStats eStats = enemyObj.GetComponent<EnemyStats>();
             if (eStats != null && eStats.currentHP > 0) {
                 todosEnemigosMuertos = false;
                 break;
             }
+            if (eStats != null && eStats.currentHP <= 0 && eStats.unitName.Contains("Nucifera") && !nuciferaFase2Iniciada) {
+                nuciferaFase1Derrotado = true;
+            }
         }
 
         if (todosEnemigosMuertos) {
+            if (nuciferaFase1Derrotado) {
+                StartCoroutine(TransicionNuciferaFase2());
+                return true; 
+            }
             EndCombat(true); 
             return true;
         }
@@ -573,7 +625,7 @@ public class CombatManager : MonoBehaviour {
             hero.currentHP = Mathf.Clamp(hero.currentHP + curaHP, 0, hero.maxHP);
             hero.currentEnergy = Mathf.Clamp(hero.currentEnergy + curaEnergia, 0, hero.maxEnergy);
 
-            Debug.Log($"¡{hero.unitName} se defiende! Recupera {curaHP} HP y {curaEnergia} ENG.");
+            DialogoCombateUI.Instance.AgregarMensaje($"¡{hero.unitName} se defiende! Recupera <color=green>{curaHP} HP</color> y <color=yellow>{curaEnergia} ENG</color>.");
         }
         
         ActualizarPantallaVida();
@@ -592,23 +644,24 @@ public class CombatManager : MonoBehaviour {
         if (GameFlowController.Instance != null) GameFlowController.Instance.TerminarCombate(false, true);
     }
 
-    float CalcularMultiplicadorClasePosicion(UnitStats atacante, UnitStats defensor) {
+    float CalcularMultiplicadorClasePosicion(UnitStats atacante, UnitStats defensor, out int nivelVentaja) {
         float multiplicador = 1.0f;
+        nivelVentaja = 0;
 
-        if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) { multiplicador += 0.15f; }
-        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) { multiplicador += 0.15f; }
-        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) { multiplicador += 0.15f; }
-        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Melee) { multiplicador -= 0.15f; }
-        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Rango) { multiplicador -= 0.15f; }
-        else if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Tanque) { multiplicador -= 0.15f; }
+        if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Rango) { multiplicador += 0.15f; nivelVentaja++; }
+        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Tanque) { multiplicador += 0.15f; nivelVentaja++; }
+        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Melee) { multiplicador += 0.15f; nivelVentaja++; }
+        else if (atacante.unitClass == UnitClass.Rango && defensor.unitClass == UnitClass.Melee) { multiplicador -= 0.15f; nivelVentaja--; }
+        else if (atacante.unitClass == UnitClass.Tanque && defensor.unitClass == UnitClass.Rango) { multiplicador -= 0.15f; nivelVentaja--; }
+        else if (atacante.unitClass == UnitClass.Melee && defensor.unitClass == UnitClass.Tanque) { multiplicador -= 0.15f; nivelVentaja--; }
 
 
-        if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.Tierra) { multiplicador += 0.15f; }
-        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.BajoTierra) { multiplicador += 0.15f; }
-        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Volando) { multiplicador += 0.15f; }
-        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) { multiplicador -= 0.15f; }
-        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Tierra) { multiplicador -= 0.15f; }
-        else if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.BajoTierra) { multiplicador -= 0.15f; }
+        if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.Tierra) { multiplicador += 0.15f; nivelVentaja++; }
+        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.BajoTierra) { multiplicador += 0.15f; nivelVentaja++; }
+        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Volando) { multiplicador += 0.15f; nivelVentaja++; }
+        else if (atacante.unitPosition == UnitPosition.Tierra && defensor.unitPosition == UnitPosition.Volando) { multiplicador -= 0.15f; nivelVentaja--; }
+        else if (atacante.unitPosition == UnitPosition.BajoTierra && defensor.unitPosition == UnitPosition.Tierra) { multiplicador -= 0.15f; nivelVentaja--; }
+        else if (atacante.unitPosition == UnitPosition.Volando && defensor.unitPosition == UnitPosition.BajoTierra) { multiplicador -= 0.15f; nivelVentaja--; }
 
         return Mathf.Max(0.0f, multiplicador); 
     }
@@ -620,24 +673,42 @@ public class CombatManager : MonoBehaviour {
 
         heroesDefendiendo[attacker] = false;
 
+        if (ataquePendienteEsEspecial) {
+            DialogoCombateUI.Instance.AgregarMensaje($"{attacker.unitName} usó un Especial. Consumió <color=yellow>{ataquePendienteCosto} ENG</color>.");
+        }
+
         if (multiplicadorQTE <= 0f) {
-            Debug.Log($"¡{attacker.unitName} falló el ataque por completo!");
+            DialogoCombateUI.Instance.AgregarMensaje($"¡{attacker.unitName} falló el ataque por completo!");
         } 
         else {
+            if (ataquePendienteEsEspecial) {
+                if (multiplicadorQTE >= ataquePendienteMultiplicador) DialogoCombateUI.Instance.AgregarMensaje("¡Secuencia <color=green>PERFECTA</color>!");
+                else DialogoCombateUI.Instance.AgregarMensaje("Secuencia completada <color=yellow>a medias</color>.");
+            }
 
             float danoBruto = attacker.GetTotalAttack() - target.defense;
             if (danoBruto < 1) danoBruto = 1;
 
-            float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target);
+            int nivelVentaja;
+            float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target, out nivelVentaja);
             
+            if (nivelVentaja == 1) DialogoCombateUI.Instance.AgregarMensaje("¡El ataque tiene <color=yellow>Ventaja x1</color>!");
+            else if (nivelVentaja >= 2) DialogoCombateUI.Instance.AgregarMensaje("¡El ataque tiene <color=green>VENTAJA x2</color>!");
+            else if (nivelVentaja == -1) DialogoCombateUI.Instance.AgregarMensaje("El ataque tiene <color=orange>Desventaja x1</color>.");
+            else if (nivelVentaja <= -2) DialogoCombateUI.Instance.AgregarMensaje("El ataque tiene <color=red>DESVENTAJA x2</color>.");
+
             int damage = Mathf.RoundToInt(danoBruto * ataquePendienteMultiplicador * multiplicadorQTE * multiplicadorClase);
             if (damage < 1) damage = 1;
 
-            Debug.Log($"¡{attacker.unitName} ataca a {target.unitName}! Hizo {damage} de daño.");
+            DialogoCombateUI.Instance.AgregarMensaje($"¡{attacker.unitName} hizo <color=red>{damage} de daño</color> a {target.unitName}!");
             target.TakeDamage(damage);
 
             if (target.currentHP <= 0) {
-                Debug.Log($"{target.unitName} ha sido derrotado y desaparece.");
+                DialogoCombateUI.Instance.AgregarMensaje($"¡{target.unitName} ha sido derrotado!");
+                
+                if (nuciferaFase2Iniciada && target.unitName.Contains("Nucifera")) {
+                    if (AudioManager.Instance != null) AudioManager.Instance.SendMessage("PlayRugido", SendMessageOptions.DontRequireReceiver);
+                }
                 
                 if (target.posiblesDropeos != null && target.posiblesDropeos.Length > 0) {
                     int tirada = Random.Range(1, 101);
@@ -646,24 +717,21 @@ public class CombatManager : MonoBehaviour {
                     foreach (DropData drop in target.posiblesDropeos) {
                         if (drop.item != null) {
                             probabilidadAcumulada += drop.probabilidad;
-                            
                             if (tirada <= probabilidadAcumulada) {
                                 InventarioEnum.Instance.AddItem(drop.item.itemID, 1);
                                 botinDelCombate.Add(drop.item.itemName);
-                                Debug.Log($"<color=yellow>¡{target.unitName} dropeó {drop.item.itemName}!</color>");
                                 break; 
                             }
                         }
                     }
                 }
-                
                 target.gameObject.SetActive(false); 
             } else {
                 yield return StartCoroutine(RevisarInvocacionJefe(target));
             }
         }
 
-        yield return new WaitForSecondsRealtime(1f); 
+        yield return new WaitForSecondsRealtime(1.5f); 
         ActualizarPantallaVida();
         AvanzarTurno(); 
     }
@@ -672,11 +740,16 @@ public class CombatManager : MonoBehaviour {
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
         heroesDefendiendo[attacker] = false;
 
+        if (ataquePendienteEsEspecial) {
+            DialogoCombateUI.Instance.AgregarMensaje($"{attacker.unitName} usó un Especial en ÁREA. Consumió <color=yellow>{ataquePendienteCosto} ENG</color>.");
+        }
+
         if (multiplicadorQTE <= 0f) {
-            Debug.Log($"¡{attacker.unitName} falló el ataque en ÁREA por completo!");
+            DialogoCombateUI.Instance.AgregarMensaje($"¡{attacker.unitName} falló el ataque por completo!");
         } 
         else {
-            Debug.Log($"¡{attacker.unitName} lanza un ataque en ÁREA a todos los enemigos!");
+            if (multiplicadorQTE >= ataquePendienteMultiplicador) DialogoCombateUI.Instance.AgregarMensaje("¡Secuencia <color=green>PERFECTA</color>!");
+            else DialogoCombateUI.Instance.AgregarMensaje("Secuencia completada <color=yellow>a medias</color>.");
 
             List<EnemyStats> jefesHeridos = new List<EnemyStats>();
 
@@ -687,33 +760,43 @@ public class CombatManager : MonoBehaviour {
                     float danoBruto = attacker.GetTotalAttack() - target.defense;
                     if (danoBruto < 1) danoBruto = 1;
 
-                    float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target);
+                    int nivelVentaja;
+                    float multiplicadorClase = CalcularMultiplicadorClasePosicion(attacker, target, out nivelVentaja);
                     
                     int damage = Mathf.RoundToInt(danoBruto * ataquePendienteMultiplicador * multiplicadorQTE * multiplicadorClase);
                     if (damage < 1) damage = 1;
 
+                    string msgVentaja = "";
+                    if (nivelVentaja == 1) msgVentaja = " (Ventaja x1)";
+                    else if (nivelVentaja >= 2) msgVentaja = " (Ventaja x2)";
+                    else if (nivelVentaja == -1) msgVentaja = " (Desventaja x1)";
+                    else if (nivelVentaja <= -2) msgVentaja = " (Desventaja x2)";
+
+                    DialogoCombateUI.Instance.AgregarMensaje($"¡Daño a {target.unitName}: <color=red>{damage}</color>!{msgVentaja}");
                     target.TakeDamage(damage);
 
                     if (target.currentHP <= 0) {
-                        
-                        if (target.posiblesDropeos != null && target.posiblesDropeos.Length > 0) {
+                DialogoCombateUI.Instance.AgregarMensaje($"¡{target.unitName} ha sido derrotado!");
+                
+
+                if (nuciferaFase2Iniciada && target.unitName.Contains("Nucifera")) {
+                    if (AudioManager.Instance != null) AudioManager.Instance.SendMessage("PlayRugido", SendMessageOptions.DontRequireReceiver);
+                }
+                
+                if (target.posiblesDropeos != null && target.posiblesDropeos.Length > 0) {
                             int tirada = Random.Range(1, 101);
                             int probabilidadAcumulada = 0;
-
                             foreach (DropData drop in target.posiblesDropeos) {
                                 if (drop.item != null) {
                                     probabilidadAcumulada += drop.probabilidad;
-                                    
                                     if (tirada <= probabilidadAcumulada) {
                                         InventarioEnum.Instance.AddItem(drop.item.itemID, 1);
                                         botinDelCombate.Add(drop.item.itemName);
-                                        Debug.Log($"<color=yellow>¡{target.unitName} dropeó {drop.item.itemName}!</color>");
                                         break; 
                                     }
                                 }
                             }
                         }
-
                         target.gameObject.SetActive(false); 
                     } else if (target.esJefe && !target.yaInvoco && target.currentHP <= (target.maxHP / 2)) {
                         jefesHeridos.Add(target);
@@ -726,13 +809,12 @@ public class CombatManager : MonoBehaviour {
             }
         }
 
-        yield return new WaitForSecondsRealtime(1f); 
+        yield return new WaitForSecondsRealtime(1.5f); 
         ActualizarPantallaVida();
         AvanzarTurno(); 
     }
 
     IEnumerator EnemyTurnRoutine() {
-        Debug.Log("Turno del enemigo...");
         yield return new WaitForSecondsRealtime(1f); 
 
         EnemyStats enemyAttacker = currentActor.GetComponent<EnemyStats>();
@@ -745,8 +827,19 @@ public class CombatManager : MonoBehaviour {
 
         if (heroesVivos.Count > 0 && enemyAttacker != null) {
             
+            if (nuciferaFase2Iniciada && enemyAttacker.unitName.Contains("Nucifera")) {
+                turnosNuciferaFase2++;
+                if (turnosNuciferaFase2 % 2 == 0) {
+                    enemyAttacker.unitClass = (UnitClass)Random.Range(1, 4);
+                    enemyAttacker.unitPosition = (UnitPosition)Random.Range(0, 3);
+                    enemyAttacker.ActualizarVisuales();
+                    DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#FF8C00>{enemyAttacker.unitName}</color> muta! Ahora es <color=yellow>{enemyAttacker.unitClass}</color> y está <color=yellow>{enemyAttacker.unitPosition}</color>.");
+                    yield return new WaitForSecondsRealtime(2f);
+                }
+            }
+
             if (enemyAttacker.esJefe && enemyAttacker.currentHP <= (enemyAttacker.maxHP / 2)) {
-                Debug.Log($"<color=red>¡{enemyAttacker.unitName} USA SU ATAQUE DEFINITIVO EN ÁREA!</color>");
+                DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡{enemyAttacker.unitName.ToUpper()} USA SU ATAQUE DEFINITIVO EN ÁREA!</color>");
 
                 bool terminoEsquive = false;
                 float multiplicadorJugador = 1f;
@@ -773,27 +866,42 @@ public class CombatManager : MonoBehaviour {
                     float danoBase = enemyAttacker.attack - targetHero.defense;
                     if (danoBase < 1) danoBase = 1;
 
-                    float multClase = CalcularMultiplicadorClasePosicion(enemyAttacker, targetHero);
+                    int nivelVentaja;
+                    float multClase = CalcularMultiplicadorClasePosicion(enemyAttacker, targetHero, out nivelVentaja);
                     int damage = Mathf.RoundToInt(danoBase * multClase);
                     if (damage < 1) damage = 1;
 
-                    if (multiplicadorJugador == 1.0f) {
-                        damage = 0; 
-                        Debug.Log($"<color=cyan>¡{targetHero.unitName} ESQUIVÓ PERFECTAMENTE! (Daño 0)</color>");
+                    float multFinalJugador = multiplicadorJugador;
+                    if (heroesAtrapados.ContainsKey(targetHero) && heroesAtrapados[targetHero]) {
+                        if (multFinalJugador == 1.0f) {
+                            multFinalJugador = 0.5f;
+                            DialogoCombateUI.Instance.AgregarMensaje($"<color=orange>¡{targetHero.unitName} está atrapado y solo esquiva a medias!</color>");
+                        }
                     }
-                    else if (multiplicadorJugador == 0.5f) {
+
+                    if (multFinalJugador == 1.0f) {
+                        damage = 0; 
+                        DialogoCombateUI.Instance.AgregarMensaje($"<color=#32CD32>¡{targetHero.unitName} esquivó el ataque definitivo!</color>");
+                    }
+                    else if (multFinalJugador == 0.5f) {
                         damage = damage / 2; 
-                        Debug.Log($"<color=yellow>¡{targetHero.unitName} esquivó parcialmente! Recibe {damage} de daño.</color>");
+                        DialogoCombateUI.Instance.AgregarMensaje($"<color=yellow>{targetHero.unitName} esquivó parcialmente.</color>");
                     } else {
-                        Debug.Log($"<color=purple>¡{targetHero.unitName} falló al esquivar! Recibe el daño completo: {damage}.</color>");
+                        DialogoCombateUI.Instance.AgregarMensaje($"<color=purple>¡{targetHero.unitName} falló al esquivar!</color>");
                     }
 
                     if (damage > 0 && heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero]) {
                         damage = Mathf.RoundToInt(damage * 0.75f);
-                        Debug.Log($"¡Pero {targetHero.unitName} estaba DEFENDIENDO! Daño reducido a {damage}.");
                     }
 
-                    if (damage > 0) targetHero.TakeDamage(damage);
+                    if (damage > 0) {
+                        DialogoCombateUI.Instance.AgregarMensaje($"{targetHero.unitName} recibe <color=#FF4444>{damage} de daño</color>.");
+                        targetHero.TakeDamage(damage);
+                        if (targetHero.currentHP <= 0) {
+                            LimpiarMuerteHeroe(targetHero);
+                            DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡{targetHero.unitName} ha caído!</color>");
+                        }
+                    }
                 }
                 ActualizarPantallaVida();
             } 
@@ -806,56 +914,104 @@ public class CombatManager : MonoBehaviour {
                     foreach (var hero in heroes) if (hero.currentHP > 0) heroesVivos.Add(hero);
                     if (heroesVivos.Count == 0) break; 
 
-                    HeroStats targetHero = heroesVivos[Random.Range(0, heroesVivos.Count)];
+                    List<HeroStats> objetivos = new List<HeroStats>();
 
-                    float danoBase = enemyAttacker.attack - targetHero.defense;
-                    if (danoBase < 1) danoBase = 1;
+                    if (enemyAttacker.unitName.Contains("Rebone") || (nuciferaFase2Iniciada && enemyAttacker.unitName.Contains("Nucifera"))) {
+                        DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#FF8C00>{enemyAttacker.unitName}</color> lanza un poderoso ataque en ÁREA!");
+                        objetivos.AddRange(heroesVivos);
+                    } else {
+                        HeroStats targetHero = heroesVivos[Random.Range(0, heroesVivos.Count)];
+                        DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#FF8C00>{enemyAttacker.unitName}</color> ataca a <color=#00BFFF>{targetHero.unitName}</color>!");
+                        objetivos.Add(targetHero);
+                    }
 
-                    float multClase = CalcularMultiplicadorClasePosicion(enemyAttacker, targetHero);
-                    int damage = Mathf.RoundToInt(danoBase * multClase);
-                    if (damage < 1) damage = 1;
+                    foreach (HeroStats targetHero in objetivos) {
+                        if (targetHero.currentHP <= 0) continue; 
 
-                    bool estaDefendiendo = heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero];
+                        float danoBase = enemyAttacker.attack - targetHero.defense;
+                        if (danoBase < 1) danoBase = 1;
 
-                    if (enemyAttacker.level > targetHero.level || estaDefendiendo) {
-                        
-                        if (estaDefendiendo) {
-                            damage = Mathf.RoundToInt(damage * 0.75f);
-                            Debug.Log($"<color=cyan>¡{targetHero.unitName} espera el golpe en posición defensiva!</color> Daño reducido a {damage}.");
-                        } else {
-                            Debug.Log($"<color=red>¡PELIGRO!</color> ¡Ataque ineludible de {enemyAttacker.unitName}!");
-                        }
-                        
-                        targetHero.TakeDamage(damage);
-                        ActualizarPantallaVida();
-                        yield return new WaitForSecondsRealtime(1.5f); 
-                    } 
-                    else {
-                        KeyCode teclaEsquive = KeyCode.Space;
-                        if (targetHero.unitName.Contains("Sieg")) teclaEsquive = KeyCode.E;
-                        else if (targetHero.unitName.Contains("Merlin")) teclaEsquive = KeyCode.R;
-                        else if (targetHero.unitName.Contains("Heracles")) teclaEsquive = KeyCode.T;
+                        int nivelVentaja;
+                        float multClase = CalcularMultiplicadorClasePosicion(enemyAttacker, targetHero, out nivelVentaja);
+                        int damage = Mathf.RoundToInt(danoBase * multClase);
+                        if (damage < 1) damage = 1;
 
-                        Debug.Log($"¡El enemigo ataca a {targetHero.unitName}! Presiona {teclaEsquive} para esquivar.");
+                        bool estaDefendiendo = heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero];
 
-                        bool terminoEsquive = false;
-
-                        float aumentoTiempo = (targetHero.mastery / 30) * 0.10f;
-                        float tiempoFinal = (QTEManager.Instance.tiempoParaQTE / 3f) * (1.0f + aumentoTiempo);
-
-                        QTEManager.Instance.IniciarEsquive(teclaEsquive, tiempoFinal, (multiplicadorEsquive) => {
-                            if (multiplicadorEsquive == 1.0f) damage = 0; 
-                            else if (multiplicadorEsquive == 0.5f) damage = damage / 2;
-
-                            if (damage > 0) targetHero.TakeDamage(damage);
+                        if (enemyAttacker.level > targetHero.level || estaDefendiendo) {
+                            if (estaDefendiendo) {
+                                damage = Mathf.RoundToInt(damage * 0.75f);
+                                DialogoCombateUI.Instance.AgregarMensaje($"¡{targetHero.unitName} bloqueó con su guardia!");
+                            } else {
+                                if (!enemyAttacker.unitName.Contains("Rebone") && !enemyAttacker.unitName.Contains("Nucifera")) {
+                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=#FF8C00>¡Ataque ineludible de {enemyAttacker.unitName}!</color>");
+                                } else {
+                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=#FF8C00>¡Ineludible para {targetHero.unitName}!</color>");
+                                }
+                            }
+                            
+                            targetHero.TakeDamage(damage);
+                            DialogoCombateUI.Instance.AgregarMensaje($"{targetHero.unitName} recibe <color=#FF4444>{damage} de daño</color>.");
+                            if (targetHero.currentHP <= 0) {
+                                LimpiarMuerteHeroe(targetHero);
+                                DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡{targetHero.unitName} ha caído!</color>");
+                            }
                             
                             ActualizarPantallaVida();
-                            terminoEsquive = true;
-                        });
+                            yield return new WaitForSecondsRealtime(1.0f); 
+                        } 
+                        else {
+                            KeyCode teclaEsquive = KeyCode.Space;
+                            if (targetHero.unitName.Contains("Sieg")) teclaEsquive = KeyCode.E;
+                            else if (targetHero.unitName.Contains("Merlin")) teclaEsquive = KeyCode.R;
+                            else if (targetHero.unitName.Contains("Heracles")) teclaEsquive = KeyCode.T;
 
-                        yield return new WaitUntil(() => terminoEsquive);
+                            bool terminoEsquive = false;
+
+                            float aumentoTiempo = (targetHero.mastery / 30) * 0.10f;
+                            float tiempoFinal = (QTEManager.Instance.tiempoParaQTE / 3f) * (1.0f + aumentoTiempo);
+
+                            if (enemyAttacker.unitName.Contains("Rebone") || enemyAttacker.unitName.Contains("Nucifera")) {
+                                DialogoCombateUI.Instance.AgregarMensaje($"¡{targetHero.unitName}, presiona {teclaEsquive}!");
+                            }
+
+                            QTEManager.Instance.IniciarEsquive(teclaEsquive, tiempoFinal, (multiplicadorEsquive) => {
+                                
+                                float multFinalJugador = multiplicadorEsquive;
+                                if (heroesAtrapados.ContainsKey(targetHero) && heroesAtrapados[targetHero]) {
+                                    if (multFinalJugador == 1.0f) {
+                                        multFinalJugador = 0.5f;
+                                        DialogoCombateUI.Instance.AgregarMensaje($"<color=orange>¡{targetHero.unitName} está atrapado y solo esquiva a medias!</color>");
+                                    }
+                                }
+
+                                if (multFinalJugador == 1.0f) {
+                                    damage = 0; 
+                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=#32CD32>¡{targetHero.unitName} lo esquivó perfectamente!</color>");
+                                }
+                                else if (multFinalJugador == 0.5f) {
+                                    damage = damage / 2;
+                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=yellow>{targetHero.unitName} esquivó parcialmente.</color>");
+                                } else {
+                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=purple>¡{targetHero.unitName} no pudo esquivar!</color>");
+                                }
+
+                                if (damage > 0) {
+                                    targetHero.TakeDamage(damage);
+                                    DialogoCombateUI.Instance.AgregarMensaje($"{targetHero.unitName} recibe <color=#FF4444>{damage} de daño</color>.");
+                                    if (targetHero.currentHP <= 0) {
+                                        LimpiarMuerteHeroe(targetHero);
+                                        DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡{targetHero.unitName} ha caído!</color>");
+                                    }
+                                }
+                                
+                                ActualizarPantallaVida();
+                                terminoEsquive = true;
+                            });
+
+                            yield return new WaitUntil(() => terminoEsquive);
+                        }
                     }
-                    
                     if (i < ataquesRestantes - 1) yield return new WaitForSecondsRealtime(0.5f);
                 }
             }
@@ -880,6 +1036,10 @@ public class CombatManager : MonoBehaviour {
         }
 
         if (activeEnemies.Count > 0 && activeEnemies[0] != null) {
+            if (state != CombatState.WON) {
+                activeEnemies[0].SetActive(true); 
+            }
+            
             activeEnemies[0].transform.position = enemyOriginalPosition;
             
             MonoBehaviour ai = (MonoBehaviour)activeEnemies[0].GetComponent("EnemyAI");
@@ -990,7 +1150,7 @@ public class CombatManager : MonoBehaviour {
         HeroStats attacker = currentActor.GetComponent<HeroStats>();
         
         if (esEspecial && attacker.currentEnergy < costo) {
-            Debug.LogWarning($"<color=red>¡ERROR!</color> {attacker.unitName} intentó usar un ataque de coste {costo}, pero solo tiene {attacker.currentEnergy} de energía.");
+            DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡Sin Energía!</color> {attacker.unitName} necesita {costo} ENG.");
             return;
         }
 
@@ -1001,7 +1161,6 @@ public class CombatManager : MonoBehaviour {
         ataquePendienteEsAoE = esAoE;
 
         if (esAoE) {
-            Debug.Log("<color=yellow>[Combate]</color> Preparando ataque en área. Omitiendo selección de objetivo.");
             ConfirmarAtaqueAEnemigo(-1); 
         } else {
             for (int i = 0; i < botonesSeleccionEnemigo.Length; i++) {
@@ -1098,4 +1257,131 @@ public class CombatManager : MonoBehaviour {
             UnityEngine.SceneManagement.SceneManager.LoadScene("Menu"); 
         }
     }
+
+    void LimpiarMuerteHeroe(HeroStats hero) {
+        if (heroesAtrapados.ContainsKey(hero)) heroesAtrapados[hero] = false;
+        Transform enredadera = hero.transform.Find("EnredaderaTrampa");
+        if (enredadera != null) enredadera.gameObject.SetActive(false);
+    }
+
+    IEnumerator TransicionNuciferaFase2() {
+        enCombateActivo = false; 
+
+        if (AudioManager.Instance != null) {
+            AudioSource bgm = AudioManager.Instance.GetComponent<AudioSource>();
+            if (bgm != null) bgm.Stop();
+            AudioManager.Instance.SendMessage("PlayCargaEnergia", SendMessageOptions.DontRequireReceiver);
+        }
+
+        if (panelNegroTransicion != null) {
+            panelNegroTransicion.SetActive(true);
+            panelNegroTransicion.transform.SetAsLastSibling();
+            if (textoPanelNegro != null) textoPanelNegro.text = "<color=red>Nucifera florece y acaba con esas alimañas...</color>";
+        }
+
+        yield return new WaitForSecondsRealtime(4f);
+
+        GameObject nuciferaFase1 = activeEnemies[0];
+        nuciferaFase1.SetActive(false); 
+        
+        for (int i = 1; i < activeEnemies.Count; i++) {
+            if (activeEnemies[i] != null) Destroy(activeEnemies[i]);
+        }
+        
+        activeEnemies.Clear();
+        activeEnemies.Add(nuciferaFase1);
+        
+        botinDelCombate.Clear();
+        turnQueue.Clear();
+        if (DialogoCombateUI.Instance != null) DialogoCombateUI.Instance.LimpiarMensajes();
+
+        // Spawn Nucifera Fase 2
+        GameObject nucifera2 = Instantiate(prefabNuciferaFase2);
+        nucifera2.name = "Nucifera Fase 2";
+        DesactivarAILocal(nucifera2);
+        
+        EnemyStats statsF2 = nucifera2.GetComponent<EnemyStats>();
+        if (string.IsNullOrEmpty(statsF2.unitName)) statsF2.unitName = "Nucifera";
+        statsF2.esJefe = true;
+        statsF2.nivelManual = true; 
+        statsF2.EscalarEstadisticas();
+
+        int maxNivelGrupo = 1;
+        foreach (HeroStats heroe in listaParty) {
+            if (heroe.level > maxNivelGrupo) maxNivelGrupo = heroe.level;
+        }
+        statsF2.nivelPeligroso = (statsF2.level > maxNivelGrupo);
+        if (!statsF2.unitName.Contains("(Lv.")) {
+            if (statsF2.nivelPeligroso) statsF2.unitName += $" <color=#FF4444>(Lv.{statsF2.level})</color>";
+            else statsF2.unitName += $" (Lv.{statsF2.level})";
+        }
+
+        nucifera2.transform.position = enemyPositions[0].position; 
+        
+        Vector3 esc = nucifera2.transform.localScale;
+        nucifera2.transform.localScale = new Vector3(-Mathf.Abs(esc.x), esc.y, esc.z);
+        statsF2.ActivarUICombate();
+        if (statsF2.canvasUI != null) {
+            Vector3 cEsc = statsF2.canvasUI.transform.localScale;
+            statsF2.canvasUI.transform.localScale = new Vector3(-Mathf.Abs(cEsc.x), cEsc.y, cEsc.z);
+        }
+
+        activeEnemies.Add(nucifera2);
+        
+        if (AudioManager.Instance != null) AudioManager.Instance.SendMessage("PlayMusicaCombateFinal", SendMessageOptions.DontRequireReceiver);
+        if (panelNegroTransicion != null) panelNegroTransicion.SetActive(false);
+
+        if (panelTituloJefe != null) {
+            panelTituloJefe.SetActive(true);
+            if (textoTituloJefe != null) textoTituloJefe.text = "<color=#8B0000><size=130%><b>NUCIFERA</b></size></color>\n<size=50%><i><color=#32CD32>Flor de la Oscuridad</color></i></size>";
+        }
+        yield return new WaitForSecondsRealtime(3f);
+        if (panelTituloJefe != null) panelTituloJefe.SetActive(false);
+
+        foreach (HeroStats heroe in listaParty) {
+            heroe.currentHP = heroe.maxHP;
+            heroe.currentEnergy = heroe.maxEnergy;
+            
+            heroe.gameObject.SetActive(true);
+            SpriteRenderer sr = heroe.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.enabled = true;
+            Transform canvasNombre = heroe.transform.Find("Canvas_NombreHeroe");
+            if (canvasNombre != null) canvasNombre.gameObject.SetActive(true);
+            
+            LimpiarMuerteHeroe(heroe);
+        }
+        ActualizarPantallaVida();
+
+        DialogoCombateUI.Instance.AgregarMensaje("<color=#32CD32>La Fuente de los Sueños ha restaurado las fuerzas de los heroes...</color>");
+        yield return new WaitForSecondsRealtime(2.5f);
+
+        if (AudioManager.Instance != null) AudioManager.Instance.SendMessage("PlayRugido", SendMessageOptions.DontRequireReceiver);
+        yield return StartCoroutine(ShakeCamera(2f, 0.15f));
+
+        DialogoCombateUI.Instance.AgregarMensaje("<color=red>Nucifera ha florecido gracias al poder del rey demonio.</color>");
+        yield return new WaitForSecondsRealtime(2f);
+
+        nuciferaFase2Iniciada = true;
+        enCombateActivo = true;
+        ConfirmarFormacion(); 
+    }
+
+    IEnumerator ShakeCamera(float duration, float magnitude) {
+        Vector3 originalPos = Camera.main.transform.position;
+        float elapsed = 0.0f;
+        while (elapsed < duration) {
+            float x = Random.Range(-1f, 1f) * magnitude;
+            float y = Random.Range(-1f, 1f) * magnitude;
+            Camera.main.transform.position = new Vector3(originalPos.x + x, originalPos.y + y, originalPos.z);
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        Camera.main.transform.position = originalPos;
+    }
+
+    IEnumerator SaltarTurnoAtrapado() {
+        yield return new WaitForSecondsRealtime(2.0f);
+        AvanzarTurno();
+    }
+    
 }

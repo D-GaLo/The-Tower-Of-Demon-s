@@ -43,3 +43,4 @@
 \contentsline {subsubsection}{\numberline {10.5.2}Cuestionario}{28}{subsubsection.10.5.2}%
 \contentsline {subsection}{\numberline {10.6}Hallagos}{30}{subsection.10.6}%
 \contentsline {subsection}{\numberline {10.7}Lista de Cambios Implementados en el Prototipo}{30}{subsection.10.7}%
+\contentsline {subsection}{\numberline {10.8}Comparación}{31}{subsection.10.8}%

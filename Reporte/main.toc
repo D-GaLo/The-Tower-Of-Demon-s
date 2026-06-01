@@ -49,4 +49,6 @@
 \contentsline {subsubsection}{\numberline {10.8.3}Comabte}{45}{subsubsection.10.8.3}%
 \contentsline {subsubsection}{\numberline {10.8.4}Obtencion de objetos}{46}{subsubsection.10.8.4}%
 \contentsline {subsubsection}{\numberline {10.8.5}Enemigos}{46}{subsubsection.10.8.5}%
+\contentsline {subsection}{\numberline {10.9}Videos de pruebas con usuarios}{48}{subsection.10.9}%
 \contentsline {section}{\numberline {11}Video Demostrativo}{48}{section.11}%
+\contentsline {section}{\numberline {12}Descarga del Juego}{48}{section.12}%

@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1780333025.35451 "c:/Users/danie/Downloads/PapuLatex/The-Tower-Of-Demon-s/Reporte/main.tex" "main.pdf" "main" 1780333031.02297 0
+["pdflatex"] 1780334015.92306 "c:/Users/danie/Downloads/PapuLatex/The-Tower-Of-Demon-s/Reporte/main.tex" "main.pdf" "main" 1780334022.06161 0
   "C:/Users/danie/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1780320461 81068 299f700eb05b1217173e62b88b513bd0 ""
   "C:/Users/danie/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/ecbx1440.pk" 1780219358 40136 0dbbfa9e48e411d821dc2baf15cc5389 ""
   "C:/Users/danie/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/ecbx1728.pk" 1780219348 49100 cffe40085a0fd139af2a3a4304822373 ""
@@ -234,11 +234,11 @@
   "C:/Users/danie/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "C:/Users/danie/AppData/Local/Programs/MiKTeX/tex/latex/xkeyval/xkeyval.sty" 1656236919 4937 4ce600ce9bd4ec84d0250eb6892fcf4f ""
   "c:/Users/danie/Downloads/PapuLatex/The-Tower-Of-Demon-s/Reporte/main.tex" 1780320259 3668 f6186227c66a75c4fbb13e5361a474ac ""
-  "contenido.tex" 1780333024 48114 19a043c7fc4d3ff03f887cf89c5e8d44 ""
-  "main.aux" 1780333030 15484 d202998fb794c6b518a32de7f3ea72e3 "pdflatex"
-  "main.out" 1780333030 7883 fb5e4e3d05f8744147da7a5b4babba4b "pdflatex"
+  "contenido.tex" 1780334008 48599 3e2739cce2fe09adf46c57f07afb75fa ""
+  "main.aux" 1780334021 15742 e68d897bf9d1381caf8ca7de0807b426 "pdflatex"
+  "main.out" 1780334021 8246 72e2b3952f6efc7505dd2a61155e20a9 "pdflatex"
   "main.tex" 1780320259 3668 f6186227c66a75c4fbb13e5361a474ac ""
-  "main.toc" 1780333030 4458 48c595540ec4ab02370bbc4c6167eaa4 "pdflatex"
+  "main.toc" 1780334021 4634 038530c6e80b0cbddb1fb3e531cb2737 "pdflatex"
   "portada.tex" 1780219072 2306 0d8ced2bbc0908f1950f7fa7e292f8a5 ""
   "resources/imagenes/Capturas/Captura 1.png" 1780321064 1365931 4e6177f78f51fa96929cba2eeff9ceb1 ""
   "resources/imagenes/Capturas/Captura 10.png" 1780321939 68574 13662c41f1ed4e3c7a36c2f7e399d470 ""

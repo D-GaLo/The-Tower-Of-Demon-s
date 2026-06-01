@@ -2370,7 +2370,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteSomething: {fileID: 737709719}
-  tiempoParaAparecer: 30
+  tiempoParaAparecer: 300
   isZeldaMapActive: 0
 --- !u!4 &545939566
 Transform:

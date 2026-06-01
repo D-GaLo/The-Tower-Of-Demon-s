@@ -126,4 +126,17 @@ public class EasterEggsManager : MonoBehaviour {
             }
         }
     }
+
+    public void ResetearSecretos() {
+        PlayerPrefs.SetInt("KonamiActivado", 0);
+        PlayerPrefs.Save();
+        
+        isZeldaMapActive = false;
+        indiceKonami = 0;
+        bufferTeclas = "";
+        
+        somethingActivo = false;
+        temporizadorIdle = 0f;
+        if (spriteSomething != null) spriteSomething.SetActive(false);
+    }
 }

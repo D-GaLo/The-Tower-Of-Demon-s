@@ -27,8 +27,11 @@ public class MainMenuController : MonoBehaviour {
     void Start() {
         CerrarTodosLosPaneles(); 
         
+        PlayerPrefs.SetInt("KonamiActivado", 0);
+        PlayerPrefs.Save();
+
         if (EasterEggsManager.Instance != null) {
-            EasterEggsManager.Instance.isZeldaMapActive = false;
+            EasterEggsManager.Instance.ResetearSecretos();
         }
 
         if (fuenteMusica != null && !fuenteMusica.isPlaying) {

@@ -86566,9 +86566,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1532609929}
-        m_TargetAssemblyTypeName: Menu, Assembly-CSharp
-        m_MethodName: SalirJuego
+      - m_Target: {fileID: 2125056630}
+        m_TargetAssemblyTypeName: PuertaFinal, Assembly-CSharp
+        m_MethodName: BotonVolverAlMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

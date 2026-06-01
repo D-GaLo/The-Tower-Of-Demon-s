@@ -68,7 +68,7 @@ public class HeroStats : UnitStats {
 
         if (unitName == "Sieg") {
             maxHP += 40;
-            attack += 20;
+            attack += 21;
             defense += 20;
             speed += 20;
             maxEnergy += 22;
@@ -78,7 +78,7 @@ public class HeroStats : UnitStats {
             maxHP += 25;
             attack += 25;
             defense += 10;
-            speed += 18;
+            speed += 25;
             maxEnergy += 25;
             mastery += 15;
         }

@@ -1,51 +1,52 @@
 \babel@toc {spanish}{}\relax 
-\contentsline {section}{\numberline {1}The Tower Of Demon´s}{3}{section.1}%
+\contentsline {section}{\numberline {1}The Tower Of Demon's}{3}{section.1}%
 \contentsline {section}{\numberline {2}Descripción General del Juego}{3}{section.2}%
-\contentsline {section}{\numberline {3}Experiencia a Transmitir}{3}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Objetivos}{4}{subsection.3.1}%
-\contentsline {section}{\numberline {4}Mecánicas y Recursos}{4}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Recursos del Juego}{4}{subsection.4.1}%
-\contentsline {section}{\numberline {5}Reglas del Sistema}{5}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Reglas del piso}{5}{subsection.5.1}%
-\contentsline {subsection}{\numberline {5.2}Reglas del combate}{6}{subsection.5.2}%
-\contentsline {subsection}{\numberline {5.3}Reglas de las armas}{7}{subsection.5.3}%
-\contentsline {subsection}{\numberline {5.4}Reglas de clases}{7}{subsection.5.4}%
-\contentsline {subsection}{\numberline {5.5}Reglas de posicion}{8}{subsection.5.5}%
-\contentsline {subsection}{\numberline {5.6}Reglas de los stats}{8}{subsection.5.6}%
-\contentsline {subsection}{\numberline {5.7}Reglas de la fuente}{9}{subsection.5.7}%
-\contentsline {subsection}{\numberline {5.8}Reglas generales}{9}{subsection.5.8}%
-\contentsline {section}{\numberline {6}Personajes y Enemigos}{10}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Héroes}{10}{subsection.6.1}%
-\contentsline {subsection}{\numberline {6.2}Personajes Enemigos}{11}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}Personajes Enemigos}{12}{subsection.6.3}%
-\contentsline {section}{\numberline {7}Procedimientos y Límites}{15}{section.7}%
-\contentsline {subsection}{\numberline {7.1}Procedimientos}{15}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}Límites}{16}{subsection.7.2}%
-\contentsline {section}{\numberline {8}Conflicto y Resultados}{17}{section.8}%
-\contentsline {subsection}{\numberline {8.1}Conflictos}{17}{subsection.8.1}%
-\contentsline {subsection}{\numberline {8.2}Resultados}{17}{subsection.8.2}%
-\contentsline {section}{\numberline {9}Narrativa}{17}{section.9}%
-\contentsline {section}{\numberline {10}Pruebas con usuarios}{18}{section.10}%
-\contentsline {subsection}{\numberline {10.1}Usuario 1: Oscar Tapia Sanchez}{18}{subsection.10.1}%
-\contentsline {subsubsection}{\numberline {10.1.1}Descripcion de prueba}{19}{subsubsection.10.1.1}%
-\contentsline {subsubsection}{\numberline {10.1.2}Cuestionario}{20}{subsubsection.10.1.2}%
-\contentsline {subsection}{\numberline {10.2}Usuario 2: Joshua Juarez Cruz}{21}{subsection.10.2}%
-\contentsline {subsubsection}{\numberline {10.2.1}Descripcion de prueba}{21}{subsubsection.10.2.1}%
-\contentsline {subsubsection}{\numberline {10.2.2}Cuestionario}{22}{subsubsection.10.2.2}%
-\contentsline {subsection}{\numberline {10.3}Usuario 3: Jessica Mayrin Garcia Lopez}{23}{subsection.10.3}%
-\contentsline {subsubsection}{\numberline {10.3.1}Descripcion de prueba}{23}{subsubsection.10.3.1}%
-\contentsline {subsubsection}{\numberline {10.3.2}Cuestionario}{24}{subsubsection.10.3.2}%
-\contentsline {subsection}{\numberline {10.4}Usuario 4: Jose Luis Flores Gutierrez}{25}{subsection.10.4}%
-\contentsline {subsubsection}{\numberline {10.4.1}Descripcion de prueba}{25}{subsubsection.10.4.1}%
-\contentsline {subsubsection}{\numberline {10.4.2}Cuestionario}{27}{subsubsection.10.4.2}%
-\contentsline {subsection}{\numberline {10.5}Usuario 5: Jesus Elias Vazquez Reyes}{27}{subsection.10.5}%
-\contentsline {subsubsection}{\numberline {10.5.1}Descripcion de prueba}{28}{subsubsection.10.5.1}%
-\contentsline {subsubsection}{\numberline {10.5.2}Cuestionario}{28}{subsubsection.10.5.2}%
-\contentsline {subsection}{\numberline {10.6}Hallagos}{30}{subsection.10.6}%
-\contentsline {subsection}{\numberline {10.7}Lista de Cambios Implementados en el Prototipo}{30}{subsection.10.7}%
-\contentsline {subsection}{\numberline {10.8}Comparación}{31}{subsection.10.8}%
-\contentsline {subsubsection}{\numberline {10.8.1}Interfaz}{31}{subsubsection.10.8.1}%
-\contentsline {subsubsection}{\numberline {10.8.2}Mapa}{33}{subsubsection.10.8.2}%
-\contentsline {subsubsection}{\numberline {10.8.3}Comabte}{34}{subsubsection.10.8.3}%
-\contentsline {subsubsection}{\numberline {10.8.4}Obtencion de objetos}{35}{subsubsection.10.8.4}%
-\contentsline {subsubsection}{\numberline {10.8.5}Enemigos}{35}{subsubsection.10.8.5}%
+\contentsline {section}{\numberline {3}Experiencia a Transmitir}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Objetivos}{5}{subsection.3.1}%
+\contentsline {section}{\numberline {4}Mecánicas y Recursos}{6}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Recursos del Juego}{6}{subsection.4.1}%
+\contentsline {section}{\numberline {5}Reglas del Sistema}{8}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Reglas del piso}{8}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Reglas del combate}{9}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Reglas de las armas}{11}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Reglas de clases}{11}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Reglas de posicion}{12}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}Reglas de los stats}{13}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}Reglas de la fuente}{14}{subsection.5.7}%
+\contentsline {subsection}{\numberline {5.8}Reglas generales}{15}{subsection.5.8}%
+\contentsline {section}{\numberline {6}Personajes y Enemigos}{16}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Héroes}{16}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Personajes Enemigos}{17}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Personajes Enemigos}{18}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Procedimientos y Límites}{21}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Procedimientos}{21}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Límites}{22}{subsection.7.2}%
+\contentsline {section}{\numberline {8}Conflicto y Resultados}{24}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Conflictos}{24}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Resultados}{26}{subsection.8.2}%
+\contentsline {section}{\numberline {9}Narrativa}{27}{section.9}%
+\contentsline {section}{\numberline {10}Pruebas con usuarios}{29}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Usuario 1: Oscar Tapia Sanchez}{29}{subsection.10.1}%
+\contentsline {subsubsection}{\numberline {10.1.1}Descripcion de prueba}{30}{subsubsection.10.1.1}%
+\contentsline {subsubsection}{\numberline {10.1.2}Cuestionario}{31}{subsubsection.10.1.2}%
+\contentsline {subsection}{\numberline {10.2}Usuario 2: Joshua Juarez Cruz}{32}{subsection.10.2}%
+\contentsline {subsubsection}{\numberline {10.2.1}Descripcion de prueba}{32}{subsubsection.10.2.1}%
+\contentsline {subsubsection}{\numberline {10.2.2}Cuestionario}{33}{subsubsection.10.2.2}%
+\contentsline {subsection}{\numberline {10.3}Usuario 3: Jessica Mayrin Garcia Lopez}{34}{subsection.10.3}%
+\contentsline {subsubsection}{\numberline {10.3.1}Descripcion de prueba}{34}{subsubsection.10.3.1}%
+\contentsline {subsubsection}{\numberline {10.3.2}Cuestionario}{35}{subsubsection.10.3.2}%
+\contentsline {subsection}{\numberline {10.4}Usuario 4: Jose Luis Flores Gutierrez}{36}{subsection.10.4}%
+\contentsline {subsubsection}{\numberline {10.4.1}Descripcion de prueba}{36}{subsubsection.10.4.1}%
+\contentsline {subsubsection}{\numberline {10.4.2}Cuestionario}{38}{subsubsection.10.4.2}%
+\contentsline {subsection}{\numberline {10.5}Usuario 5: Jesus Elias Vazquez Reyes}{38}{subsection.10.5}%
+\contentsline {subsubsection}{\numberline {10.5.1}Descripcion de prueba}{39}{subsubsection.10.5.1}%
+\contentsline {subsubsection}{\numberline {10.5.2}Cuestionario}{39}{subsubsection.10.5.2}%
+\contentsline {subsection}{\numberline {10.6}Hallagos}{41}{subsection.10.6}%
+\contentsline {subsection}{\numberline {10.7}Lista de Cambios Implementados en el Prototipo}{41}{subsection.10.7}%
+\contentsline {subsection}{\numberline {10.8}Comparación}{42}{subsection.10.8}%
+\contentsline {subsubsection}{\numberline {10.8.1}Interfaz}{42}{subsubsection.10.8.1}%
+\contentsline {subsubsection}{\numberline {10.8.2}Mapa}{44}{subsubsection.10.8.2}%
+\contentsline {subsubsection}{\numberline {10.8.3}Comabte}{45}{subsubsection.10.8.3}%
+\contentsline {subsubsection}{\numberline {10.8.4}Obtencion de objetos}{46}{subsubsection.10.8.4}%
+\contentsline {subsubsection}{\numberline {10.8.5}Enemigos}{46}{subsubsection.10.8.5}%
+\contentsline {section}{\numberline {11}Video Demostrativo}{48}{section.11}%

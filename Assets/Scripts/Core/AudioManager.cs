@@ -20,6 +20,7 @@ public class AudioManager : MonoBehaviour {
     public SonidoConfig musicaCombateNormal;
     public SonidoConfig musicaCombateJefe;
     public SonidoConfig musicaCombateFinal; 
+    public SonidoConfig musicaCreditos;
 
     [Header("SFX - Combate")]
     public SonidoConfig sfxVictoria;
@@ -39,6 +40,12 @@ public class AudioManager : MonoBehaviour {
     public SonidoConfig sfxFuente;
     public SonidoConfig sfxSonidoClic;
     public SonidoConfig sfxSonidoInteraccion;
+
+    [Header("Easter Eggs")]
+    public SonidoConfig musicaMenuZelda;
+    public SonidoConfig musicaAmbientalZelda;
+    public SonidoConfig sfxKonami;
+    public SonidoConfig sfxOmoriVanish;
     
     void Awake() {
         if (Instance == null) Instance = this;
@@ -89,5 +96,11 @@ public class AudioManager : MonoBehaviour {
     public void PlayRugido() => ReproducirSFX(sfxRugido);
     
     public void PlayMusicaCombateFinal() => ReproducirMusica(musicaCombateFinal);
+
+    public void PlayMusicaCreditos() => ReproducirMusica(musicaCreditos);
+    public void PlayMusicaMenuZelda() => ReproducirMusica(musicaMenuZelda);
+    public void PlayMusicaAmbientalZelda() => ReproducirMusica(musicaAmbientalZelda);
+    public void PlayKonami() => ReproducirSFX(sfxKonami);
+    public void PlayOmoriVanish() => ReproducirSFX(sfxOmoriVanish);
 
 }

@@ -381,17 +381,7 @@ public class CombatManager : MonoBehaviour {
             jefe.yaInvoco = true;
             
             if (nuciferaFase2Iniciada && jefe.unitName.Contains("Nucifera")) {
-                DialogoCombateUI.Instance.AgregarMensaje($"<color=#32CD32>¡Nucifera reacciona violentamente y lanza sus enredaderas!</color>");
-                HeroStats[] heroes = FindObjectsOfType<HeroStats>();
-                List<HeroStats> libres = heroes.Where(h => h.currentHP > 0 && (!heroesAtrapados.ContainsKey(h) || !heroesAtrapados[h])).ToList();
-                
-                if (libres.Count > 0) {
-                    HeroStats victima = libres[Random.Range(0, libres.Count)];
-                    heroesAtrapados[victima] = true;
-                    Transform enredadera = victima.transform.Find("EnredaderaTrampa");
-                    if (enredadera != null) enredadera.gameObject.SetActive(true);
-                    DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#00BFFF>{victima.unitName}</color> ha sido atrapado y no podrá moverse!");
-                }
+                DialogoCombateUI.Instance.AgregarMensaje($"<color=#32CD32>¡Nucifera revela su auténtica forma!</color>");
                 yield return new WaitForSecondsRealtime(2f);
             } 
             else {
@@ -827,18 +817,26 @@ public class CombatManager : MonoBehaviour {
 
         if (heroesVivos.Count > 0 && enemyAttacker != null) {
             
-            if (nuciferaFase2Iniciada && enemyAttacker.unitName.Contains("Nucifera")) {
+            bool esNuciferaP2 = nuciferaFase2Iniciada && enemyAttacker.unitName.Contains("Nucifera");
+
+            if (esNuciferaP2) {
                 turnosNuciferaFase2++;
                 if (turnosNuciferaFase2 % 2 == 0) {
                     enemyAttacker.unitClass = (UnitClass)Random.Range(1, 4);
                     enemyAttacker.unitPosition = (UnitPosition)Random.Range(0, 3);
                     enemyAttacker.ActualizarVisuales();
                     DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#FF8C00>{enemyAttacker.unitName}</color> muta! Ahora es <color=yellow>{enemyAttacker.unitClass}</color> y está <color=yellow>{enemyAttacker.unitPosition}</color>.");
-                    yield return new WaitForSecondsRealtime(2f);
+                    yield return new WaitForSecondsRealtime(1.5f);
                 }
             }
 
-            if (enemyAttacker.esJefe && enemyAttacker.currentHP <= (enemyAttacker.maxHP / 2)) {
+            bool usarDefinitivo = enemyAttacker.esJefe && (enemyAttacker.currentHP <= (enemyAttacker.maxHP / 2));
+            
+            if (esNuciferaP2) {
+                usarDefinitivo = (turnosNuciferaFase2 % 2 == 0);
+            }
+
+            if (usarDefinitivo) {
                 DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡{enemyAttacker.unitName.ToUpper()} USA SU ATAQUE DEFINITIVO EN ÁREA!</color>");
 
                 bool terminoEsquive = false;
@@ -906,113 +904,137 @@ public class CombatManager : MonoBehaviour {
                 ActualizarPantallaVida();
             } 
             else {
-                int ataquesRestantes = enemyAttacker.ataquesPorTurno;
-                if (ataquesRestantes < 1) ataquesRestantes = 1;
-
-                for (int i = 0; i < ataquesRestantes; i++) {
-                    heroesVivos.Clear();
-                    foreach (var hero in heroes) if (hero.currentHP > 0) heroesVivos.Add(hero);
-                    if (heroesVivos.Count == 0) break; 
-
-                    List<HeroStats> objetivos = new List<HeroStats>();
-
-                    if (enemyAttacker.unitName.Contains("Rebone") || (nuciferaFase2Iniciada && enemyAttacker.unitName.Contains("Nucifera"))) {
-                        DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#FF8C00>{enemyAttacker.unitName}</color> lanza un poderoso ataque en ÁREA!");
-                        objetivos.AddRange(heroesVivos);
-                    } else {
-                        HeroStats targetHero = heroesVivos[Random.Range(0, heroesVivos.Count)];
-                        DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#FF8C00>{enemyAttacker.unitName}</color> ataca a <color=#00BFFF>{targetHero.unitName}</color>!");
-                        objetivos.Add(targetHero);
+                bool hizoEnredaderas = false;
+                if (esNuciferaP2 && enemyAttacker.currentHP <= (enemyAttacker.maxHP / 2)) {
+                    if (Random.Range(0, 100) < 35) {
+                        hizoEnredaderas = true;
                     }
+                }
 
-                    foreach (HeroStats targetHero in objetivos) {
-                        if (targetHero.currentHP <= 0) continue; 
+                if (hizoEnredaderas) {
+                    DialogoCombateUI.Instance.AgregarMensaje($"<color=#32CD32>¡Nucifera lanza enredaderas traicioneras!</color>");
+                    List<HeroStats> libres = heroesVivos.Where(h => !heroesAtrapados.ContainsKey(h) || !heroesAtrapados[h]).ToList();
+                    
+                    if (libres.Count > 0) {
+                        HeroStats victima = libres[Random.Range(0, libres.Count)];
+                        heroesAtrapados[victima] = true;
+                        Transform enredadera = victima.transform.Find("EnredaderaTrampa");
+                        if (enredadera != null) enredadera.gameObject.SetActive(true);
+                        DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#00BFFF>{victima.unitName}</color> fue atrapado y perderá su turno!");
+                    } else {
+                        DialogoCombateUI.Instance.AgregarMensaje($"¡Pero todos los héroes ya están atrapados!");
+                    }
+                    yield return new WaitForSecondsRealtime(2f);
+                } 
+                else {
+                    int ataquesRestantes = enemyAttacker.ataquesPorTurno;
+                    if (ataquesRestantes < 1) ataquesRestantes = 1;
 
-                        float danoBase = enemyAttacker.attack - targetHero.defense;
-                        if (danoBase < 1) danoBase = 1;
+                    for (int i = 0; i < ataquesRestantes; i++) {
+                        heroesVivos.Clear();
+                        foreach (var hero in heroes) if (hero.currentHP > 0) heroesVivos.Add(hero);
+                        if (heroesVivos.Count == 0) break; 
 
-                        int nivelVentaja;
-                        float multClase = CalcularMultiplicadorClasePosicion(enemyAttacker, targetHero, out nivelVentaja);
-                        int damage = Mathf.RoundToInt(danoBase * multClase);
-                        if (damage < 1) damage = 1;
+                        List<HeroStats> objetivos = new List<HeroStats>();
 
-                        bool estaDefendiendo = heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero];
+                        if (enemyAttacker.unitName.Contains("Rebone") || esNuciferaP2) {
+                            DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#FF8C00>{enemyAttacker.unitName}</color> lanza un poderoso ataque en ÁREA!");
+                            objetivos.AddRange(heroesVivos);
+                        } else {
+                            HeroStats targetHero = heroesVivos[Random.Range(0, heroesVivos.Count)];
+                            DialogoCombateUI.Instance.AgregarMensaje($"¡<color=#FF8C00>{enemyAttacker.unitName}</color> ataca a <color=#00BFFF>{targetHero.unitName}</color>!");
+                            objetivos.Add(targetHero);
+                        }
 
-                        if (enemyAttacker.level > targetHero.level || estaDefendiendo) {
-                            if (estaDefendiendo) {
-                                damage = Mathf.RoundToInt(damage * 0.75f);
-                                DialogoCombateUI.Instance.AgregarMensaje($"¡{targetHero.unitName} bloqueó con su guardia!");
-                            } else {
-                                if (!enemyAttacker.unitName.Contains("Rebone") && !enemyAttacker.unitName.Contains("Nucifera")) {
-                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=#FF8C00>¡Ataque ineludible de {enemyAttacker.unitName}!</color>");
+                        foreach (HeroStats targetHero in objetivos) {
+                            if (targetHero.currentHP <= 0) continue; 
+
+                            float danoBase = enemyAttacker.attack - targetHero.defense;
+                            if (danoBase < 1) danoBase = 1;
+
+                            int nivelVentaja;
+                            float multClase = CalcularMultiplicadorClasePosicion(enemyAttacker, targetHero, out nivelVentaja);
+                            int damage = Mathf.RoundToInt(danoBase * multClase);
+                            if (damage < 1) damage = 1;
+
+                            bool estaDefendiendo = heroesDefendiendo.ContainsKey(targetHero) && heroesDefendiendo[targetHero];
+
+                            if (enemyAttacker.level > targetHero.level || estaDefendiendo) {
+                                if (estaDefendiendo) {
+                                    damage = Mathf.RoundToInt(damage * 0.75f);
+                                    DialogoCombateUI.Instance.AgregarMensaje($"¡{targetHero.unitName} bloqueó con su guardia!");
                                 } else {
-                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=#FF8C00>¡Ineludible para {targetHero.unitName}!</color>");
+                                    if (!enemyAttacker.unitName.Contains("Rebone") && !esNuciferaP2) {
+                                        DialogoCombateUI.Instance.AgregarMensaje($"<color=#FF8C00>¡Ataque ineludible de {enemyAttacker.unitName}!</color>");
+                                    } else {
+                                        DialogoCombateUI.Instance.AgregarMensaje($"<color=#FF8C00>¡Ineludible para {targetHero.unitName}!</color>");
+                                    }
                                 }
-                            }
-                            
-                            targetHero.TakeDamage(damage);
-                            DialogoCombateUI.Instance.AgregarMensaje($"{targetHero.unitName} recibe <color=#FF4444>{damage} de daño</color>.");
-                            if (targetHero.currentHP <= 0) {
-                                LimpiarMuerteHeroe(targetHero);
-                                DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡{targetHero.unitName} ha caído!</color>");
-                            }
-                            
-                            ActualizarPantallaVida();
-                            yield return new WaitForSecondsRealtime(1.0f); 
-                        } 
-                        else {
-                            KeyCode teclaEsquive = KeyCode.Space;
-                            if (targetHero.unitName.Contains("Sieg")) teclaEsquive = KeyCode.E;
-                            else if (targetHero.unitName.Contains("Merlin")) teclaEsquive = KeyCode.R;
-                            else if (targetHero.unitName.Contains("Heracles")) teclaEsquive = KeyCode.T;
-
-                            bool terminoEsquive = false;
-
-                            float aumentoTiempo = (targetHero.mastery / 30) * 0.10f;
-                            float tiempoFinal = (QTEManager.Instance.tiempoParaQTE / 3f) * (1.0f + aumentoTiempo);
-
-                            if (enemyAttacker.unitName.Contains("Rebone") || enemyAttacker.unitName.Contains("Nucifera")) {
-                                DialogoCombateUI.Instance.AgregarMensaje($"¡{targetHero.unitName}, presiona {teclaEsquive}!");
-                            }
-
-                            QTEManager.Instance.IniciarEsquive(teclaEsquive, tiempoFinal, (multiplicadorEsquive) => {
                                 
-                                float multFinalJugador = multiplicadorEsquive;
-                                if (heroesAtrapados.ContainsKey(targetHero) && heroesAtrapados[targetHero]) {
-                                    if (multFinalJugador == 1.0f) {
-                                        multFinalJugador = 0.5f;
-                                        DialogoCombateUI.Instance.AgregarMensaje($"<color=orange>¡{targetHero.unitName} está atrapado y solo esquiva a medias!</color>");
-                                    }
-                                }
-
-                                if (multFinalJugador == 1.0f) {
-                                    damage = 0; 
-                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=#32CD32>¡{targetHero.unitName} lo esquivó perfectamente!</color>");
-                                }
-                                else if (multFinalJugador == 0.5f) {
-                                    damage = damage / 2;
-                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=yellow>{targetHero.unitName} esquivó parcialmente.</color>");
-                                } else {
-                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=purple>¡{targetHero.unitName} no pudo esquivar!</color>");
-                                }
-
-                                if (damage > 0) {
-                                    targetHero.TakeDamage(damage);
-                                    DialogoCombateUI.Instance.AgregarMensaje($"{targetHero.unitName} recibe <color=#FF4444>{damage} de daño</color>.");
-                                    if (targetHero.currentHP <= 0) {
-                                        LimpiarMuerteHeroe(targetHero);
-                                        DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡{targetHero.unitName} ha caído!</color>");
-                                    }
+                                targetHero.TakeDamage(damage);
+                                DialogoCombateUI.Instance.AgregarMensaje($"{targetHero.unitName} recibe <color=#FF4444>{damage} de daño</color>.");
+                                if (targetHero.currentHP <= 0) {
+                                    LimpiarMuerteHeroe(targetHero);
+                                    DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡{targetHero.unitName} ha caído!</color>");
                                 }
                                 
                                 ActualizarPantallaVida();
-                                terminoEsquive = true;
-                            });
+                                yield return new WaitForSecondsRealtime(1.0f); 
+                            } 
+                            else {
+                                KeyCode teclaEsquive = KeyCode.Space;
+                                if (targetHero.unitName.Contains("Sieg")) teclaEsquive = KeyCode.E;
+                                else if (targetHero.unitName.Contains("Merlin")) teclaEsquive = KeyCode.R;
+                                else if (targetHero.unitName.Contains("Heracles")) teclaEsquive = KeyCode.T;
 
-                            yield return new WaitUntil(() => terminoEsquive);
+                                bool terminoEsquive = false;
+
+                                float aumentoTiempo = (targetHero.mastery / 30) * 0.10f;
+                                float tiempoFinal = (QTEManager.Instance.tiempoParaQTE / 3f) * (1.0f + aumentoTiempo);
+
+                                if (enemyAttacker.unitName.Contains("Rebone") || esNuciferaP2) {
+                                    DialogoCombateUI.Instance.AgregarMensaje($"¡{targetHero.unitName}, presiona {teclaEsquive}!");
+                                }
+
+                                QTEManager.Instance.IniciarEsquive(teclaEsquive, tiempoFinal, (multiplicadorEsquive) => {
+                                    
+                                    float multFinalJugador = multiplicadorEsquive;
+                                    if (heroesAtrapados.ContainsKey(targetHero) && heroesAtrapados[targetHero]) {
+                                        if (multFinalJugador == 1.0f) {
+                                            multFinalJugador = 0.5f;
+                                            DialogoCombateUI.Instance.AgregarMensaje($"<color=orange>¡{targetHero.unitName} está atrapado y solo esquiva a medias!</color>");
+                                        }
+                                    }
+
+                                    if (multFinalJugador == 1.0f) {
+                                        damage = 0; 
+                                        DialogoCombateUI.Instance.AgregarMensaje($"<color=#32CD32>¡{targetHero.unitName} lo esquivó perfectamente!</color>");
+                                    }
+                                    else if (multFinalJugador == 0.5f) {
+                                        damage = damage / 2;
+                                        DialogoCombateUI.Instance.AgregarMensaje($"<color=yellow>{targetHero.unitName} esquivó parcialmente.</color>");
+                                    } else {
+                                        DialogoCombateUI.Instance.AgregarMensaje($"<color=purple>¡{targetHero.unitName} no pudo esquivar!</color>");
+                                    }
+
+                                    if (damage > 0) {
+                                        targetHero.TakeDamage(damage);
+                                        DialogoCombateUI.Instance.AgregarMensaje($"{targetHero.unitName} recibe <color=#FF4444>{damage} de daño</color>.");
+                                        if (targetHero.currentHP <= 0) {
+                                            LimpiarMuerteHeroe(targetHero);
+                                            DialogoCombateUI.Instance.AgregarMensaje($"<color=red>¡{targetHero.unitName} ha caído!</color>");
+                                        }
+                                    }
+                                    
+                                    ActualizarPantallaVida();
+                                    terminoEsquive = true;
+                                });
+
+                                yield return new WaitUntil(() => terminoEsquive);
+                            }
                         }
+                        if (i < ataquesRestantes - 1) yield return new WaitForSecondsRealtime(0.5f);
                     }
-                    if (i < ataquesRestantes - 1) yield return new WaitForSecondsRealtime(0.5f);
                 }
             }
         }
@@ -1038,6 +1060,8 @@ public class CombatManager : MonoBehaviour {
         if (activeEnemies.Count > 0 && activeEnemies[0] != null) {
             if (state != CombatState.WON) {
                 activeEnemies[0].SetActive(true); 
+                SpriteRenderer sr = activeEnemies[0].GetComponent<SpriteRenderer>();
+                if (sr != null) sr.color = Color.white;
             }
             
             activeEnemies[0].transform.position = enemyOriginalPosition;
@@ -1282,7 +1306,10 @@ public class CombatManager : MonoBehaviour {
         yield return new WaitForSecondsRealtime(4f);
 
         GameObject nuciferaFase1 = activeEnemies[0];
-        nuciferaFase1.SetActive(false); 
+        SpriteRenderer srNucifera1 = nuciferaFase1.GetComponent<SpriteRenderer>();
+        if (srNucifera1 != null) srNucifera1.color = Color.white;
+        
+        nuciferaFase1.SetActive(false);
         
         for (int i = 1; i < activeEnemies.Count; i++) {
             if (activeEnemies[i] != null) Destroy(activeEnemies[i]);
@@ -1295,7 +1322,6 @@ public class CombatManager : MonoBehaviour {
         turnQueue.Clear();
         if (DialogoCombateUI.Instance != null) DialogoCombateUI.Instance.LimpiarMensajes();
 
-        // Spawn Nucifera Fase 2
         GameObject nucifera2 = Instantiate(prefabNuciferaFase2);
         nucifera2.name = "Nucifera Fase 2";
         DesactivarAILocal(nucifera2);
@@ -1311,10 +1337,6 @@ public class CombatManager : MonoBehaviour {
             if (heroe.level > maxNivelGrupo) maxNivelGrupo = heroe.level;
         }
         statsF2.nivelPeligroso = (statsF2.level > maxNivelGrupo);
-        if (!statsF2.unitName.Contains("(Lv.")) {
-            if (statsF2.nivelPeligroso) statsF2.unitName += $" <color=#FF4444>(Lv.{statsF2.level})</color>";
-            else statsF2.unitName += $" (Lv.{statsF2.level})";
-        }
 
         nucifera2.transform.position = enemyPositions[0].position; 
         

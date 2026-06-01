@@ -27,6 +27,10 @@ public class MainMenuController : MonoBehaviour {
     void Start() {
         CerrarTodosLosPaneles(); 
         
+        if (EasterEggsManager.Instance != null) {
+            EasterEggsManager.Instance.isZeldaMapActive = false;
+        }
+
         if (fuenteMusica != null && !fuenteMusica.isPlaying) {
             fuenteMusica.Play();
         }
@@ -36,6 +40,10 @@ public class MainMenuController : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Escape)) {
             BotonCerrarPanel();
         }
+    }
+
+    public void DetenerMusicaMenu() {
+        if (fuenteMusica != null) fuenteMusica.Stop();
     }
 
     public void ReproducirSonidoClic() {

@@ -78,7 +78,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6799053375079553517, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -290
+      value: -319
       objectReference: {fileID: 0}
     - target: {fileID: 6799053375079553517, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -150,7 +150,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: maxHP
-      value: 12000
+      value: 10000
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: speed
@@ -158,28 +158,36 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: attack
-      value: 380
+      value: 400
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: defense
-      value: 300
+      value: 170
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: canvasUI
       value: 
       objectReference: {fileID: 954106679132736455}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
+      propertyPath: unitName
+      value: ' Nucifera Florecido'
+      objectReference: {fileID: 0}
+    - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: barraVida
       value: 
       objectReference: {fileID: 249159954221929654}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: currentHP
-      value: 12000
+      value: 10000
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: textoNivel
       value: 
       objectReference: {fileID: 6359486667010964547}
+    - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
+      propertyPath: nivelManual
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: circuloClase
       value: 

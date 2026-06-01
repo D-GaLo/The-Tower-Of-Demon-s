@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using System.Collections;
 using System.Collections.Generic;
 
 public class DialogoCombateUI : MonoBehaviour {
@@ -11,42 +10,37 @@ public class DialogoCombateUI : MonoBehaviour {
     public TextMeshProUGUI textoDialogo; 
 
     [Header("Configuración")]
-    public float tiempoPorMensaje = 1.5f; 
+    [Tooltip("Cuántos mensajes se muestran al mismo tiempo antes de borrar el más viejo.")]
+    public int maxLineas = 4; 
 
-    private Queue<string> colaMensajes = new Queue<string>();
-    private bool mostrandoMensaje = false;
+    private List<string> lineasActivas = new List<string>();
 
     void Awake() {
         if (Instance == null) Instance = this;
     }
 
     public void AgregarMensaje(string mensaje) {
-        colaMensajes.Enqueue(mensaje);
-        if (!mostrandoMensaje) {
-            StartCoroutine(MostrarMensajesRoutine());
-        }
-    }
-
-    IEnumerator MostrarMensajesRoutine() {
-        mostrandoMensaje = true;
-
         if (panelDialogo != null && !panelDialogo.activeSelf) {
             panelDialogo.SetActive(true);
         }
+        lineasActivas.Add(mensaje);
 
-        while (colaMensajes.Count > 0) {
-            string mensajeActual = colaMensajes.Dequeue();
-            textoDialogo.text = mensajeActual;
-            
-            yield return new WaitForSecondsRealtime(tiempoPorMensaje);
+        if (lineasActivas.Count > maxLineas) {
+            lineasActivas.RemoveAt(0); 
         }
 
-        mostrandoMensaje = false;
+        ActualizarTexto();
     }
     
+    void ActualizarTexto() {
+        if (textoDialogo != null) {
+            textoDialogo.text = string.Join("\n", lineasActivas);
+        }
+    }
+
     public void LimpiarMensajes() {
-        colaMensajes.Clear();
-        textoDialogo.text = "";
-        mostrandoMensaje = false;
+        lineasActivas.Clear();
+        if (textoDialogo != null) textoDialogo.text = "";
+        if (panelDialogo != null) panelDialogo.SetActive(false);
     }
 }

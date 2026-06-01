@@ -16,6 +16,7 @@ public class PuertaFinal : MonoBehaviour {
     public GameObject panelPregunta;
     public GameObject panelSinLlave;
     public GameObject panelVictoria;
+    public GameObject panelCreditos; 
 
     void Start() {
         colisionMuro = GetComponent<BoxCollider2D>();
@@ -28,6 +29,7 @@ public class PuertaFinal : MonoBehaviour {
         if(panelPregunta) panelPregunta.SetActive(false);
         if(panelSinLlave) panelSinLlave.SetActive(false);
         if(panelVictoria) panelVictoria.SetActive(false);
+        if(panelCreditos) panelCreditos.SetActive(false);
 
         GameObject p = GameObject.FindGameObjectWithTag("Player");
         if (p != null) player = p.transform;
@@ -91,6 +93,15 @@ public class PuertaFinal : MonoBehaviour {
             Time.timeScale = 0f; 
             if(contenedorPrincipal) contenedorPrincipal.SetActive(true); 
             if(panelVictoria) panelVictoria.SetActive(true);
+        }
+    }
+
+    public void BotonAceptarVictoria() {
+        if(panelVictoria) panelVictoria.SetActive(false);
+        if(panelCreditos) panelCreditos.SetActive(true);
+        
+        if (AudioManager.Instance != null) {
+            AudioManager.Instance.SendMessage("PlayMusicaCreditos", SendMessageOptions.DontRequireReceiver);
         }
     }
 

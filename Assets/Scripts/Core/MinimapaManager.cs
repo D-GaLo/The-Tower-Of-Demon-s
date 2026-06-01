@@ -34,10 +34,8 @@ public class MinimapaManager : MonoBehaviour {
             }
         }
 
-        // Mueve tu puntero rojo a la sala correspondiente del minimapa
         if (centrosUI.Length > indiceSalaActual && centrosUI[indiceSalaActual] != null) {
             punteroJugador.position = centrosUI[indiceSalaActual].position;
-            // Garantiza que el puntero siempre se dibuje encima de las salas
             punteroJugador.SetAsLastSibling(); 
         }
     }

@@ -158,7 +158,11 @@ public class GameFlowController : MonoBehaviour {
         
         enCombate = false;
 
-        if (AudioManager.Instance != null) AudioManager.Instance.ReproducirMusicaAmbiental();
+        if (EasterEggsManager.Instance != null && EasterEggsManager.Instance.isZeldaMapActive) {
+            if (AudioManager.Instance != null) AudioManager.Instance.SendMessage("PlayMusicaAmbientalZelda", SendMessageOptions.DontRequireReceiver);
+        } else {
+            if (AudioManager.Instance != null) AudioManager.Instance.ReproducirMusicaAmbiental();
+        }
 
         if (victoria || huyo) {
             isImmune = true; 

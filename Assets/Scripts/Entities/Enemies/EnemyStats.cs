@@ -80,8 +80,8 @@ public class EnemyStats : UnitStats {
         if (level > 1) {
             int nivelesExtra = level - 1;
             
-            maxHP = baseMaxHP + (nivelesExtra * 50);
-            attack = baseAttack + (nivelesExtra * 25);
+            maxHP = baseMaxHP + (nivelesExtra * 65);
+            attack = baseAttack + (nivelesExtra * 30);
             defense = baseDefense + (nivelesExtra * 20);
             speed = baseSpeed + (nivelesExtra * 20);
         } else {

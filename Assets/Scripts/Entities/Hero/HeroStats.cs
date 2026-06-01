@@ -23,6 +23,16 @@ public class HeroStats : UnitStats {
 
     void Start() {
         ConfigurarStatsBaseIniciales();
+        if (PlayerPrefs.GetInt("KonamiActivado", 0) == 1) {
+            Debug.Log($"<color=magenta>[Konami]</color> ¡{unitName} ha activado el poder prohibido!");
+            
+            currentXP = xpParaNivel[maxLevel - 1]; 
+            
+            while (level < maxLevel) {
+                SubirDeNivel();
+            }
+        }
+
         currentHP = maxHP;
         currentEnergy = maxEnergy;
     }

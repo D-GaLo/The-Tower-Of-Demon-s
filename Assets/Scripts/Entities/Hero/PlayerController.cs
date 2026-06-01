@@ -181,7 +181,10 @@ public class PlayerController : MonoBehaviour {
     }
 
     void Atacar() {
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(transform.position, attackRange);
+        Vector2 centroAtaque = (Vector2)transform.position + (direccionMirada * distanciaEspada);
+
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(centroAtaque, attackRange);
+        
         foreach(Collider2D enemy in hitEnemies) {
             if(enemy.CompareTag("Enemy")) {
                 EnemyStats stats = enemy.GetComponentInParent<EnemyStats>();

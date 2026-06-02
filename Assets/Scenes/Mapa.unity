@@ -119295,7 +119295,7 @@ MonoBehaviour:
     volumen: 0.3
   musicaAmbientalZelda:
     clip: {fileID: 8300000, guid: ca7b2a2390fa9e14490efcbd5efb0f6c, type: 3}
-    volumen: 0.3
+    volumen: 0.6
   sfxKonami:
     clip: {fileID: 8300000, guid: c1cedfcfb149aa64994ff99396a48b92, type: 3}
     volumen: 1

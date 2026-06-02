@@ -201,8 +201,20 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2373501038032095467}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
+      propertyPath: posiblesDropeos.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: enemigosAInvocar.Array.size
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
+      propertyPath: posiblesDropeos.Array.data[0].item
+      value: 
+      objectReference: {fileID: 11400000, guid: 3dfd9a4670baa0647886a5145d04c281, type: 2}
+    - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
+      propertyPath: posiblesDropeos.Array.data[0].probabilidad
+      value: 100
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

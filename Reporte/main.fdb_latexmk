@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1780370567.03427 "c:/Users/danie/Downloads/PapuLatex/The-Tower-Of-Demon-s/Reporte/main.tex" "main.pdf" "main" 1780370572.88849 0
+["pdflatex"] 1780370990.50462 "c:/Users/danie/Downloads/PapuLatex/The-Tower-Of-Demon-s/Reporte/main.tex" "main.pdf" "main" 1780370996.97546 0
   "C:/Users/danie/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1780320461 81068 299f700eb05b1217173e62b88b513bd0 ""
   "C:/Users/danie/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/ecbx1440.pk" 1780219358 40136 0dbbfa9e48e411d821dc2baf15cc5389 ""
   "C:/Users/danie/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/ecbx1728.pk" 1780219348 49100 cffe40085a0fd139af2a3a4304822373 ""
@@ -235,12 +235,12 @@
   "C:/Users/danie/AppData/Local/Programs/MiKTeX/tex/latex/xkeyval/xkeyval.sty" 1656236919 4937 4ce600ce9bd4ec84d0250eb6892fcf4f ""
   "c:/Users/danie/Downloads/PapuLatex/The-Tower-Of-Demon-s/Reporte/main.tex" 1780320259 3668 f6186227c66a75c4fbb13e5361a474ac ""
   "contenido.tex" 1780370559 49423 d43a383a47f3099d9586ce15c4ba461d ""
-  "main.aux" 1780370572 15624 d0578e9f35e1fa6d38307290edd01112 "pdflatex"
-  "main.out" 1780370572 8400 d4b930f685ae4aef91479b3b944584bd "pdflatex"
+  "main.aux" 1780370996 15624 d0578e9f35e1fa6d38307290edd01112 "pdflatex"
+  "main.out" 1780370996 8400 d4b930f685ae4aef91479b3b944584bd "pdflatex"
   "main.tex" 1780320259 3668 f6186227c66a75c4fbb13e5361a474ac ""
-  "main.toc" 1780370572 4719 4b6febb65726556f642d657d69ea268a "pdflatex"
+  "main.toc" 1780370996 4719 4b6febb65726556f642d657d69ea268a "pdflatex"
   "portada.tex" 1780219072 2306 0d8ced2bbc0908f1950f7fa7e292f8a5 ""
-  "resources/imagenes/Capturas/Captura 1.png" 1780321064 1365931 4e6177f78f51fa96929cba2eeff9ceb1 ""
+  "resources/imagenes/Capturas/Captura 1.png" 1780370948 1365505 b882b34278bc724bc5184f9c6f0a9b88 ""
   "resources/imagenes/Capturas/Captura 10.png" 1780321939 68574 13662c41f1ed4e3c7a36c2f7e399d470 ""
   "resources/imagenes/Capturas/Captura 11.png" 1780322002 216710 feaddc76761d352fcb0a195a74af8644 ""
   "resources/imagenes/Capturas/Captura 12.png" 1780322083 99103 46dd4b3ff05229cadd4499c321b81864 ""

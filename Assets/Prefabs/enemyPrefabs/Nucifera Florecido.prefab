@@ -26,19 +26,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1320362321341584338, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2
+      value: 2.3
       objectReference: {fileID: 0}
     - target: {fileID: 1320362321341584338, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2
+      value: 2.3
       objectReference: {fileID: 0}
     - target: {fileID: 1320362321341584338, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -125
+      value: -122.99999
       objectReference: {fileID: 0}
     - target: {fileID: 1320362321341584338, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 242.99998
+      value: 264.99997
       objectReference: {fileID: 0}
     - target: {fileID: 3700284312049141177, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_LocalScale.x
@@ -134,19 +134,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8841597566161959151, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2
+      value: 2.3
       objectReference: {fileID: 0}
     - target: {fileID: 8841597566161959151, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2
+      value: 2.3
       objectReference: {fileID: 0}
     - target: {fileID: 8841597566161959151, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -252
+      value: -250
       objectReference: {fileID: 0}
     - target: {fileID: 8841597566161959151, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 243
+      value: 265
       objectReference: {fileID: 0}
     - target: {fileID: 9062314051789148326, guid: 015b666d6e9df744babdaf9bd3d7a146, type: 3}
       propertyPath: maxHP

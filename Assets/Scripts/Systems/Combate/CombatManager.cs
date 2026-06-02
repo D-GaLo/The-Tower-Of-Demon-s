@@ -908,7 +908,7 @@ public class CombatManager : MonoBehaviour {
                 if (esNuciferaP2 && enemyAttacker.currentHP <= (enemyAttacker.maxHP / 2)) {
                     bool hayAtrapados = heroesVivos.Any(h => heroesAtrapados.ContainsKey(h) && heroesAtrapados[h]);
                     
-                    if (!hayAtrapados && Random.Range(0, 100) < 50) {
+                    if (!hayAtrapados && Random.Range(0, 100) < 40) {
                         hizoEnredaderas = true;
                     }
                 }

@@ -38,6 +38,7 @@ public class HeroEquipment : MonoBehaviour
         slots[slotIndex] = item;
         
         if (slotIndex == 0) myStats.equippedWeapon = item;
+        if (HeroStatsPanelUI.Instance != null) HeroStatsPanelUI.Instance.ActualizarVistaActiva();
 
         return true;
     }
@@ -52,15 +53,15 @@ public class HeroEquipment : MonoBehaviour
 
         slots[slotIndex] = null;
         if (slotIndex == 0) myStats.equippedWeapon = null;
+
+        if (HeroStatsPanelUI.Instance != null) HeroStatsPanelUI.Instance.ActualizarVistaActiva();
     }
 
     private void AplicarBonoDeStats(ItemData item) {
         if (item == null) return;
-        myStats.maxHP += item.bonusHP;
-        myStats.currentHP += item.bonusHP;
-        myStats.maxEnergy += item.bonusEnergy;
-        myStats.currentEnergy += item.bonusEnergy;
         
+        myStats.maxHP += item.bonusHP;
+        myStats.maxEnergy += item.bonusEnergy;
         myStats.attack += item.bonusATK;
         myStats.defense += item.bonusDEF;
         myStats.speed += item.bonusSPD;
@@ -70,6 +71,7 @@ public class HeroEquipment : MonoBehaviour
     private void RemoverBonoDeStats(ItemData item) {
         if (item == null) return;
         myStats.maxHP -= item.bonusHP;
+        
         if (myStats.currentHP > myStats.maxHP) myStats.currentHP = myStats.maxHP;
         
         myStats.maxEnergy -= item.bonusEnergy;

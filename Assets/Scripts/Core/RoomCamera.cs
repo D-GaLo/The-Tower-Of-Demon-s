@@ -9,18 +9,14 @@ public class RoomCamera : MonoBehaviour {
     private bool enCombate = false;
 
     void Start() {
-        // Buscamos todos los centros que existan en el mapa al iniciar
         todosLosCentros = FindObjectsOfType<RoomCenter>();
     }
 
-    // Función llamada por el GameFlowController
     public void CambiarModoCombate(bool estado, Vector3 posicionCombate) {
         enCombate = estado;
         if (enCombate) {
-            // Teletransporte instantáneo a la arena
             transform.position = posicionCombate;
         } else {
-            // Al volver del combate, la cámara salta instantáneamente a la sala actual
             if (player != null) {
                 Transform masCercano = ObtenerCentroMasCercano();
                 if (masCercano != null) {
@@ -33,12 +29,10 @@ public class RoomCamera : MonoBehaviour {
     void LateUpdate() {
         if (player == null || enCombate) return; 
 
-        // Buscamos cuál es el centro más cercano a Sieg
         centroActual = ObtenerCentroMasCercano();
 
         if (centroActual != null) {
             Vector3 targetPosition = new Vector3(centroActual.position.x, centroActual.position.y, -10f);
-            // Usamos unscaledDeltaTime por si acaso hay pausas de tiempo
             transform.position = Vector3.Lerp(transform.position, targetPosition, Time.unscaledDeltaTime * suavizado);
         }
     }

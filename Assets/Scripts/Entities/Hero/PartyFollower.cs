@@ -8,7 +8,7 @@ public class PartyFollower : MonoBehaviour {
 
     private SpriteRenderer spriteHeroe;
     private List<Vector3> historialPosiciones = new List<Vector3>();
-    private float escalaFija = 0.7f;
+    private float escalaFija = 1f;
 
     void Start() {
         spriteHeroe = GetComponent<SpriteRenderer>();
@@ -16,7 +16,18 @@ public class PartyFollower : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        if (targetToFollow == null) return;
+        
+        if (targetToFollow == null || Time.timeScale == 0) return;
+        
+        bool enCombate = false;
+        if (GameFlowController.Instance != null) {
+            enCombate = GameFlowController.Instance.enCombate || 
+                       (GameFlowController.Instance.uiCombate != null && GameFlowController.Instance.uiCombate.activeSelf);
+        }
+
+        if (enCombate) {
+            return;
+        }
 
         historialPosiciones.Add(targetToFollow.position);
 
@@ -24,12 +35,9 @@ public class PartyFollower : MonoBehaviour {
             Vector3 puntoDestino = historialPosiciones[0];
             float distanciaAlLider = Vector3.Distance(transform.position, targetToFollow.position);
 
-            // Solo nos movemos si el líder se aleja para mantener la formación de serpiente
             if (distanciaAlLider > distanciaSeguridad) {
-                // MoveTowards es más suave y evita que los personajes "tiemblen"
                 transform.position = Vector3.MoveTowards(transform.position, puntoDestino, 5f * Time.fixedDeltaTime);
                 
-                // Flip visual según la dirección del movimiento
                 float difX = puntoDestino.x - transform.position.x;
                 if (difX > 0.01f) spriteHeroe.flipX = false;
                 else if (difX < -0.01f) spriteHeroe.flipX = true;
